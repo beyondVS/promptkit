@@ -10,7 +10,7 @@
 
 1. **외부 확장 도구의 전용 컨텍스트**: (예: 프레임워크 특화 에이전트 가이드, `.cursorrules`, GitHub Copilot `constitution.md` 등)
 2. **프로젝트 환경 설정 파일**: (예: `package.json`, `tsconfig.json`, `.eslintrc`, `.prettierrc` 등에 명시된 기계적 규칙)
-3. **프로젝트 헌법 (Project Constitution)**: [constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md)에 기재된 설계 원칙 및 개발 표준
+3. **프로젝트 헌법 (Project Constitution)**: [constitution.md](.specify/memory/constitution.md)에 기재된 설계 원칙 및 개발 표준
 4. **수정 대상 파일의 기존 코드 스타일**: (가이드라인보다 일관성이 우선합니다. 기존 코드를 존중하십시오.)
 5. **본 `AGENTS.md` 문서**
 
@@ -24,6 +24,7 @@
 
 ### 2.1 기술 스택 및 패키지 관리
 - **Package Manager**: `uv` (반드시 uv 패키지 매니저의 명령어만 사용할 것)
+  - **선언적 의존성 통제**: 모든 파이썬 의존성은 반드시 `pyproject.toml` 및 `uv.lock`에 선언적으로 명세 및 잠금 관리되어야 하며, 임의의 ad-hoc `pip install`은 엄격히 금지됩니다. 환경 동기화 시에는 오직 `uv sync` 또는 `uv run`을 사용하십시오.
 - **Language / Framework**: `Python 3.13+ / Django, Django REST Framework`
 - **Database / ORM**: `PostgreSQL / Django ORM`
 
@@ -54,7 +55,9 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 - 에러 발생 시, 에러 메시지가 없어질 때까지 스스로 코드를 수정(Self-healing)하십시오.
 
 ### 3.2 개발 표준 및 출력 무결성 준수
-- 출력 무결성(Zero Tolerance), 절대 보안(No Hardcoding), 최소 변경 원칙 등 개발 일반에 적용되는 품질 및 보안 표준은 **프로젝트 헌법**([constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md))의 규격을 100% 동일하게 준수합니다.
+- **출력 무결성 (Zero Tolerance)**: 수정 지시를 받은 특정 부분을 제외한 모든 기존 코드는 단 한 글자도 누락 없이 원본과 100% 동일하게 유지해야 합니다 (`... (중략) ...` 등의 임의 요약 표현 절대 금지).
+- **수술적 편집 (Surgical Update)**: 가급적 파일 전체를 덮어쓰기보다 치환 도구를 사용하여 변경이 필요한 특정 블록만 정밀하게 교체하십시오.
+- **기타 개발 표준**: 절대 보안(No Hardcoding), 최소 변경 원칙 등 개발 일반에 적용되는 표준은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 규격을 100% 동등하게 준수합니다.
 
 ### 3.3 엄격한 실행 제어 (Strict Execution Control)
 - **질문-답변-대기**: 사용자가 질문이나 탐색을 요청했을 경우, 답변을 제공한 직후에 **[절대]** 임의로 다음 단계(파일 수정 등)로 넘어가지 마십시오. 답변과 제안을 먼저 하고 사용자의 추가 지시를 철저히 대기합니다.
@@ -66,7 +69,11 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 코드베이스 검색만으로는 파악할 수 없는 아키텍처 결정의 "이유(Why)", 비직관적 도메인 로직, 해결되지 않은 기술 부채 등은 이 섹션에 명시하여 AI가 치명적인 실수를 하지 않도록 방어합니다.
 
-- **아키텍처 결정의 이유**: Prompt Server 역할에 특화(LLM Gateway 배제)하며, 장기적으로 Enterprise Configuration Server of AI Domain 확장 가능한 유연한 구조 설계.
+- **아키텍처 결정의 이유**:
+  - **Prompt Registry Focus (LLM Gateway 배제)**: Prompt Server는 LLM 호출을 대행하지 않으며, 오직 프롬프트의 저장, 버전 관리, 검색 역할에만 집중합니다. 애플리케이션 코드 수정 및 재배포 없이 프롬프트를 중앙에서 안전하게 관리/릴리즈하기 위한 목적입니다.
+  - **SDK-First & Framework Agnostic**: 코어 SDK인 `packages/promptkit`은 특정 프레임워크에 종속되지 않는 Pure Python 표준으로 가볍게 유지하고, Django 연동 및 최적화 기능은 완전히 독립된 `packages/promptkit-django` 패키지로 확장 설계합니다.
+  - **Client-Side `compile()` 렌더링**: 동적 변수 주입 렌더링 연산 오버헤드를 Prompt Server에 전가하지 않고 SDK단에서 처리하여 서버 부하 및 지연(Latency)을 최소화합니다.
+  - **Subdirectory 독립 배포 스펙**: 외부 비즈니스 서비스에서 모노레포를 격리하여 독립 설치(`pip install "git+https://...#subdirectory=packages/promptkit"`)할 수 있도록 모노레포 각 패키지 간의 강결합을 엄격히 차단합니다.
 - **엄격한 접근 제약**: `.specify/memory/constitution.md` 및 프로젝트 규칙을 정의하는 파일은 거버넌스 확인 없이 독단적으로 변경하지 않음.
 
 ---
@@ -99,10 +106,10 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 ## 📏 6. 코딩 및 문서화 표준 (Standards Reference)
 
-새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다. 에이전트는 코드 작성 전 해당 문서의 표준을 먼저 정렬한 후 작업을 시작하십시오.
+새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다. 에이전트는 코드 작성 전 해당 문서의 표준을 먼저 정렬한 후 작업을 시작하십시오.
 
 ---
 
 ## 🤖 7. 검증용 서브에이전트 정의 (Auditor Subagent Specification)
 
-메인 에이전트는 구현 단계 완료 후 독립적인 코드 감사를 수행하기 위해 [.agents/agents/auditor/AGENT.md](file:///D:/Projects/Private/promptkit/.agents/agents/auditor/AGENT.md)에 정의된 명세를 파싱 및 연동하여 `auditor` 서브에이전트를 동적으로 기동해야 합니다.
+메인 에이전트는 구현 단계 완료 후 독립적인 코드 감사를 수행하기 위해 [.agents/agents/auditor/AGENT.md](.agents/agents/auditor/AGENT.md)에 정의된 명세를 파싱 및 연동하여 `auditor` 서브에이전트를 동적으로 기동해야 합니다.
