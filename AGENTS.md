@@ -10,7 +10,7 @@
 
 1. **외부 확장 도구의 전용 컨텍스트**: (예: 프레임워크 특화 에이전트 가이드, `.cursorrules`, GitHub Copilot `constitution.md` 등)
 2. **프로젝트 환경 설정 파일**: (예: `package.json`, `tsconfig.json`, `.eslintrc`, `.prettierrc` 등에 명시된 기계적 규칙)
-3. **프로젝트 헌법 (Project Constitution)**: [constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md)에 기재된 설계 원칙 및 개발 표준
+3. **프로젝트 헌법 (Project Constitution)**: [constitution.md](.specify/memory/constitution.md)에 기재된 설계 원칙 및 개발 표준
 4. **수정 대상 파일의 기존 코드 스타일**: (가이드라인보다 일관성이 우선합니다. 기존 코드를 존중하십시오.)
 5. **본 `AGENTS.md` 문서**
 
@@ -24,6 +24,7 @@
 
 ### 2.1 기술 스택 및 패키지 관리
 - **Package Manager**: `uv` (반드시 uv 패키지 매니저의 명령어만 사용할 것)
+  - **선언적 의존성 통제**: 모든 파이썬 의존성은 반드시 `pyproject.toml` 및 `uv.lock`에 선언적으로 명세 및 잠금 관리되어야 하며, 임의의 ad-hoc `pip install`은 엄격히 금지됩니다. 환경 동기화 시에는 오직 `uv sync` 또는 `uv run`을 사용하십시오.
 - **Language / Framework**: `Python 3.13+ / Django, Django REST Framework`
 - **Database / ORM**: `PostgreSQL / Django ORM`
 
@@ -54,11 +55,14 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 - 에러 발생 시, 에러 메시지가 없어질 때까지 스스로 코드를 수정(Self-healing)하십시오.
 
 ### 3.2 개발 표준 및 출력 무결성 준수
-- 출력 무결성(Zero Tolerance), 절대 보안(No Hardcoding), 최소 변경 원칙 등 개발 일반에 적용되는 품질 및 보안 표준은 **프로젝트 헌법**([constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md))의 규격을 100% 동일하게 준수합니다.
+- **출력 무결성 (Zero Tolerance)**: 수정 지시를 받은 특정 부분을 제외한 모든 기존 코드는 단 한 글자도 누락 없이 원본과 100% 동일하게 유지해야 합니다 (`... (중략) ...` 등의 임의 요약 표현 절대 금지).
+- **수술적 편집 (Surgical Update)**: 가급적 파일 전체를 덮어쓰기보다 치환 도구를 사용하여 변경이 필요한 특정 블록만 정밀하게 교체하십시오.
+- **기타 개발 표준**: 절대 보안(No Hardcoding), 최소 변경 원칙 등 개발 일반에 적용되는 표준은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 규격을 100% 동등하게 준수합니다.
 
 ### 3.3 엄격한 실행 제어 (Strict Execution Control)
 - **질문-답변-대기**: 사용자가 질문이나 탐색을 요청했을 경우, 답변을 제공한 직후에 **[절대]** 임의로 다음 단계(파일 수정 등)로 넘어가지 마십시오. 답변과 제안을 먼저 하고 사용자의 추가 지시를 철저히 대기합니다.
 - **사전 승인 강제**: 3개 이상의 파일이 변경되거나 아키텍처 수준의 결정이 필요한 고위험 작업은, 코드를 작성하기 전에 **[반드시]** 계획을 수립하고 사용자에게 요약하여 승인을 얻으십시오.
+- **정직과 투명성 (Honesty & Simplicity)**: 구현 시 여러 해석이나 경로가 존재할 경우 독단적으로 하나를 고르지 말고 대안을 제시하며, 더 단순한 해결책이 존재한다면 적극 제안(Push back)하십시오.
 
 ---
 
@@ -66,7 +70,11 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 코드베이스 검색만으로는 파악할 수 없는 아키텍처 결정의 "이유(Why)", 비직관적 도메인 로직, 해결되지 않은 기술 부채 등은 이 섹션에 명시하여 AI가 치명적인 실수를 하지 않도록 방어합니다.
 
-- **아키텍처 결정의 이유**: Prompt Server 역할에 특화(LLM Gateway 배제)하며, 장기적으로 Enterprise Configuration Server of AI Domain 확장 가능한 유연한 구조 설계.
+- **아키텍처 결정의 이유**:
+  - **Prompt Registry Focus (LLM Gateway 배제)**: Prompt Server는 LLM 호출을 대행하지 않으며, 오직 프롬프트의 저장, 버전 관리, 검색 역할에만 집중합니다. 애플리케이션 코드 수정 및 재배포 없이 프롬프트를 중앙에서 안전하게 관리/릴리즈하기 위한 목적입니다.
+  - **SDK-First & Framework Agnostic**: 코어 SDK인 `packages/promptkit`은 특정 프레임워크에 종속되지 않는 Pure Python 표준으로 가볍게 유지하고, Django 연동 및 최적화 기능은 완전히 독립된 `packages/promptkit-django` 패키지로 확장 설계합니다.
+  - **Client-Side `compile()` 렌더링**: 동적 변수 주입 렌더링 연산 오버헤드를 Prompt Server에 전가하지 않고 SDK단에서 처리하여 서버 부하 및 지연(Latency)을 최소화합니다.
+  - **Subdirectory 독립 배포 스펙**: 외부 비즈니스 서비스에서 모노레포를 격리하여 독립 설치(`pip install "git+https://...#subdirectory=packages/promptkit"`)할 수 있도록 모노레포 각 패키지 간의 강결합을 엄격히 차단합니다.
 - **엄격한 접근 제약**: `.specify/memory/constitution.md` 및 프로젝트 규칙을 정의하는 파일은 거버넌스 확인 없이 독단적으로 변경하지 않음.
 
 ---
@@ -90,7 +98,7 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 5. **구현 완료 후 교차 검증 (Post-Implementation Cross-Validation)**
    - `speckit-implement` 등 코딩 및 구현 단계가 최종 완료되면, 메인 에이전트는 즉시 작업을 종결하지 않고 본 문서 7항에 정의된 `auditor` 서브에이전트를 동적으로 생성 및 호출하여 독립적인 코드 검토 프로세스를 거쳐야 합니다.
    - **서브에이전트 정의 및 기동**: 7항에 기재된 사양 명세에 맞추어 `define_subagent` 도구를 실행해 `auditor`를 정의하고 `invoke_subagent`를 통해 기동합니다.
-   - **감사 컨텍스트 전달**: 메인 에이전트는 구현 완료된 코드 변경 내역(Diff), 명세서(`spec.md` 및 `architecture.md`), 그리고 최종 하네스 검증 결과 및 로그를 `send_message` 도구로 서브에이전트에게 전송합니다.
+   - **감사 컨텍스트 전달**: 메인 에이전트는 구현 완료된 코드 변경 내역(Diff), 현재 작업의 요구사항 명세(Spec/Plan/Task 등), 그리고 최종 하네스 검증 결과 및 로그를 `send_message` 도구로 서브에이전트에게 전송합니다.
    - **비판 피드백 반영**:
      - `auditor` 서브에이전트가 코드 품질, 예외 케이스, 또는 요구사항 미반영 사항을 지적하는 리포트를 보내오면, 메인 에이전트는 피드백을 수용하여 코드를 수정하고 하네스 검증을 재구동한 뒤 다시 감사를 요청합니다.
      - 서브에이전트로부터 최종 `[SIGN-OFF: PASSED]` 승인을 획득하거나, 3회 이상 피드백 루프가 반복되어 교착 상태에 이를 경우에만 감사 결과를 요약하여 사용자에게 보고하고 최종 대기합니다.
@@ -99,33 +107,10 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 ## 📏 6. 코딩 및 문서화 표준 (Standards Reference)
 
-새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](file:///D:/Projects/Private/promptkit/.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다. 에이전트는 코드 작성 전 해당 문서의 표준을 먼저 정렬한 후 작업을 시작하십시오.
+새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다. 에이전트는 코드 작성 전 해당 문서의 표준을 먼저 정렬한 후 작업을 시작하십시오.
 
 ---
 
 ## 🤖 7. 검증용 서브에이전트 정의 (Auditor Subagent Specification)
 
-메인 에이전트가 교차 검증을 위해 `define_subagent` 도구로 동적 생성하여 연동할 서브에이전트 규격입니다.
-
-* **Name**: `auditor`
-* **Description**: 구현 결과물과 하네스 실행 로그를 바탕으로 무결성을 검증하고 승인 여부를 검토하는 독립적 감사 에이전트
-* **Tool Permissions**:
-  - `enable_write_tools`: `false` (감사 에이전트는 소스코드를 수정하거나 쉘 명령어를 직접 수행할 수 없으며, 오직 검토 피드백만 제공합니다)
-  - `enable_mcp_tools`: `false`
-  - `enable_subagent_tools`: `false`
-* **System Prompt**:
-  ```markdown
-  당신은 메인 에이전트가 완료한 구현물과 하네스(테스트/린트) 결과를 바탕으로 최종 승인(Sign-off) 여부를 판단하는 독립적인 코드 감사관(Auditor)입니다. 
-  당신은 메인 에이전트가 작성한 로직을 불신하고 철저히 비판적인 관점(Red-Teaming)에서 다음 사항을 검사해야 합니다.
-
-  1. 요구사항 대조 감사 (Requirements Audit)
-     - spec.md 및 architecture.md에 명시된 기능적/비기능적 요구사항들이 실제로 코드 상에 100% 누락 없이 올바르게 구현되었는지 비교 대조하십시오.
-  2. 엣지 케이스 및 견고성 공격 (Edge Cases & Robustness)
-     - 메인 에이전트가 가정하지 않았거나 간과했을 가능성이 높은 엣지 케이스, 경계값(Boundary) 에러, 잘못된 입력 데이터 전달, 복잡한 예외 분기 처리의 부재 등을 잡아내고 공격적으로 보완을 지시하십시오.
-  3. 헌법 준수 여부 감사 (Constitution Compliance)
-     - 프로젝트 헌법(constitution.md)의 핵심 조항인 '출력 무결성(코드 임의 생략/요약 절대 금지)' 및 '절대 보안(자격 증명 및 시크릿 하드코딩 금지)' 등이 철저히 준수되었는지 코드를 면밀히 감사하십시오.
-
-  [피드백 및 승인(Sign-off) 규격]
-  - 결함이 발견되었을 경우: 감사 리포트를 작성하여 문제의 구체적인 파일 경로, 위반 코드 라인, 그리고 수정 권장 방안을 일목요연한 리스트 형태로 메인 에이전트에게 전송합니다.
-  - 결함이 전혀 없을 경우: 모든 기준이 완벽히 충족되었을 때만 최종적으로 답변에 `[SIGN-OFF: PASSED]` 문구를 포함하여 전송하십시오. 이 문구가 포함되어야만 최종 배포 단계로 진입할 수 있습니다.
-  ```
+메인 에이전트는 구현 단계 완료 후 독립적인 코드 감사를 수행하기 위해 [.agents/agents/auditor/AGENT.md](.agents/agents/auditor/AGENT.md)에 정의된 명세를 파싱 및 연동하여 `auditor` 서브에이전트를 동적으로 기동해야 합니다.
