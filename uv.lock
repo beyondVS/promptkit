@@ -263,26 +263,34 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "django" },
-    { name = "django-stubs" },
     { name = "djangorestframework" },
-    { name = "mypy" },
     { name = "psycopg", extra = ["binary"] },
+    { name = "python-dotenv" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "django-stubs" },
+    { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-django" },
-    { name = "python-dotenv" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.0,<6.0" },
-    { name = "django-stubs", specifier = ">=5.0.0" },
     { name = "djangorestframework", specifier = ">=3.15.0" },
-    { name = "mypy", specifier = ">=1.9.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.1.0" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "django-stubs", specifier = ">=5.0.0" },
+    { name = "mypy", specifier = ">=1.9.0" },
     { name = "pytest", specifier = ">=8.0.0" },
     { name = "pytest-django", specifier = ">=4.8.0" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "ruff", specifier = ">=0.3.0" },
 ]
 
