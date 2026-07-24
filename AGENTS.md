@@ -25,6 +25,9 @@
 ### 2.1 기술 스택 및 패키지 관리
 - **Package Manager**: `uv` (반드시 uv 패키지 매니저의 명령어만 사용할 것)
   - **선언적 의존성 통제**: 모든 파이썬 의존성은 반드시 `pyproject.toml` 및 `uv.lock`에 선언적으로 명세 및 잠금 관리되어야 하며, 임의의 ad-hoc `pip install`은 엄격히 금지됩니다. 환경 동기화 시에는 오직 `uv sync` 또는 `uv run`을 사용하십시오.
+  - **의존성 그룹 분류 표준 (Dependency Grouping)**:
+    - **프로덕션 런타임 의존성 (`[project.dependencies]`)**: 서비스 구동, API 서빙 및 SDK 실행 시 필수적인 런타임 패키지만 포함시킵니다 (예: `django`, `djangorestframework`, `psycopg`, `python-dotenv`).
+    - **개발 및 테스트 전용 의존성 (`[dependency-groups.dev]`)**: 테스트 러너, 린터, 정적 타입 검사기 등 개발 단계 전용 도구는 프로덕션 이미지 및 라이브러리 경량화를 위해 반드시 `[dependency-groups.dev]` 그룹으로 격리 선언해야 합니다 (예: `pytest`, `pytest-django`, `ruff`, `mypy`, `django-stubs`).
 - **Language / Framework**: `Python 3.13+ / Django, Django REST Framework`
 - **Database / ORM**: `PostgreSQL / Django ORM`
 
