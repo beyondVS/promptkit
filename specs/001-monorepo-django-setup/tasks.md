@@ -18,9 +18,9 @@
 
 **Purpose**: Project initialization and basic workspace setup
 
-- [ ] T001 Define root `pyproject.toml` with `uv` workspace members (`apps/server`, `packages/*`) and Python 3.13+ requirement
-- [ ] T002 Create `.env.example` file specifying PostgreSQL and Django configuration variables per `contracts/env-contract.md`
-- [ ] T003 [P] Configure `.gitignore` to prevent tracking `.env`, `.venv`, and build artifacts
+- [x] T001 Define root `pyproject.toml` with `uv` workspace members (`apps/server`, `packages/*`) and Python 3.13+ requirement
+- [x] T002 Create `.env.example` file specifying PostgreSQL and Django configuration variables per `contracts/env-contract.md`
+- [x] T003 [P] Configure `.gitignore` to prevent tracking `.env`, `.venv`, and build artifacts
 
 ---
 
@@ -28,10 +28,10 @@
 
 **Purpose**: Core infrastructure that MUST be complete before user stories can be tested and run
 
-- [ ] T004 Create Django project structure in `apps/server` with settings module in `apps/server/config`
-- [ ] T005 Configure `pyproject.toml` dependencies for Django 5.x, Django REST Framework, psycopg v3, and django-environ
-- [ ] T006 [P] Configure Ruff, MyPy, and Pytest configuration blocks in `pyproject.toml`
-- [ ] T007 Configure `apps/server/config/settings.py` to dynamically load PostgreSQL credentials from `.env`
+- [x] T004 Create Django project structure in `apps/server` with settings module in `apps/server/config`
+- [x] T005 Configure `pyproject.toml` dependencies for Django 5.x, Django REST Framework, psycopg v3, and django-environ
+- [x] T006 [P] Configure Ruff, MyPy, and Pytest configuration blocks in `pyproject.toml`
+- [x] T007 Configure `apps/server/config/settings.py` to dynamically load PostgreSQL credentials from `.env`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -45,8 +45,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Run `uv sync` to lock dependencies in `uv.lock` and build `.venv` environment
-- [ ] T009 [US1] Create unit test in `tests/unit/test_workspace.py` to verify Python 3.13+ version and workspace isolation
+- [x] T008 [P] [US1] Run `uv sync` to lock dependencies in `uv.lock` and build `.venv` environment
+- [x] T009 [US1] Create unit test in `tests/unit/test_workspace.py` to verify Python 3.13+ version and workspace isolation
 
 **Checkpoint**: User Story 1 is independently testable via `uv sync` and pytest unit test
 
@@ -60,8 +60,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Configure URL routing in `apps/server/config/urls.py` and WSGI/ASGI entrypoints
-- [ ] T011 [US2] Create integration test in `tests/integration/test_server_app.py` using `django.test.TestCase` to verify Django application initialization
+- [x] T010 [P] [US2] Configure URL routing in `apps/server/config/urls.py` and WSGI/ASGI entrypoints
+- [x] T011 [US2] Create integration test in `tests/integration/test_server_app.py` using `django.test.TestCase` to verify Django application initialization
 
 **Checkpoint**: User Story 2 is independently testable via Django system check and integration test
 
@@ -75,8 +75,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Implement database connection health check logic in `apps/server/config/settings.py`
-- [ ] T013 [US3] Execute `uv run python apps/server/manage.py migrate` and create integration test in `tests/integration/test_db_connection.py` to verify PostgreSQL schema state
+- [x] T012 [P] [US3] Implement database connection health check logic in `apps/server/config/settings.py`
+- [x] T013 [US3] Execute `uv run python apps/server/manage.py migrate` and create integration test in `tests/integration/test_db_connection.py` to verify PostgreSQL schema state
 
 **Checkpoint**: User Story 3 is independently testable via DB migration and integration test
 
@@ -86,8 +86,8 @@
 
 **Purpose**: Validate code quality, formatting, and quickstart documentation
 
-- [ ] T014 [P] Run full harness check (`uv run ruff check ; uv run ruff format --check ; uv run mypy . ; uv run pytest`) and ensure 0 exit code
-- [ ] T015 Execute end-to-end validation procedure documented in `specs/001-monorepo-django-setup/quickstart.md`
+- [x] T014 [P] Run full harness check (`uv run ruff check ; uv run ruff format --check ; uv run mypy . ; uv run pytest`) and ensure 0 exit code
+- [x] T015 Execute end-to-end validation procedure documented in `specs/001-monorepo-django-setup/quickstart.md`
 
 ---
 
