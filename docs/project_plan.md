@@ -23,7 +23,7 @@
 * [x] **Day 02 (1h): DB 모델링 및 마이그레이션**
     *   프롬프트 명세를 위한 Django ORM 모델 설계 (`Prompt`, `Version`, `Label`, `VariableDefinition`, `Section` 모델).
     *   각 모델간의 관계 설정(1:N) 및 마이그레이션 실행.
-* [ ] **Day 03 (1h): 기본 API 라우팅 및 인증(Auth) 구축**
+* [x] **Day 03 (1h): 기본 API 라우팅 및 인증(Auth) 구축**
     *   Django REST Framework(DRF) 기본 세팅 및 API Key 기반 인증 시스템 설계.
     *   하네스 자동 정적 분석기(Ruff, MyPy) 셋업 및 초기 코드 검사 통과.
 * [ ] **Day 04 (1h): Prompt & Section CRUD 및 다차원 검색 API 개발**
