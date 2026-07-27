@@ -32,17 +32,11 @@ uv run mypy .
 
 ---
 
-## 3. Interactive Health & Auth Endpoint Verification
+## 3. Interactive Public Health Endpoint Verification
 
 Start the Django dev server or test client:
 
 ```bash
 # 1. Access Public Health Check (expect 200 OK)
 curl -X GET http://127.0.0.1:8000/api/v1/health/
-
-# 2. Access Protected Endpoint without API Key (expect 401 Unauthorized)
-curl -X GET http://127.0.0.1:8000/api/v1/protected/
-
-# 3. Access Protected Endpoint with valid API Key (expect 200 OK)
-curl -X GET http://127.0.0.1:8000/api/v1/protected/ -H "X-API-Key: dev-secret-key"
 ```

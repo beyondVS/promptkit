@@ -20,8 +20,8 @@
 
 **Purpose**: Core package structure initialization and DRF settings configuration
 
-- [ ] T001 Create `core` package structure in `apps/server/core/` (`__init__.py`, `views.py`, `auth.py`)
-- [ ] T002 Configure `REST_FRAMEWORK` and `PROMPTKIT_API_KEY` settings in `apps/server/config/settings.py`
+- [x] T001 Create `core` package structure in `apps/server/core/` (`__init__.py`, `views.py`, `auth.py`)
+- [x] T002 Configure `REST_FRAMEWORK` and `PROMPTKIT_API_KEY` settings in `apps/server/config/settings.py`
 
 ---
 
@@ -29,7 +29,7 @@
 
 **Purpose**: Base test harness structure for authentication views
 
-- [ ] T003 Setup core authentication test module structure in `tests/server/test_auth.py`
+- [x] T003 Setup core authentication test module structure in `tests/server/test_auth.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -43,12 +43,12 @@
 
 ### Tests for User Story 1
 
-- [ ] T004 [P] [US1] Add unit tests for valid/invalid/missing API Key authentication scenarios in `tests/server/test_auth.py`
+- [x] T004 [P] [US1] Add unit tests for valid/invalid/missing API Key authentication scenarios in `tests/server/test_auth.py`
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Implement `APIKeyAuthentication` backend extending DRF `BaseAuthentication` in `apps/server/core/auth.py`
-- [ ] T006 [US1] Implement protected test endpoint `ProtectedTestView` in `apps/server/core/views.py`
+- [x] T005 [P] [US1] Implement `APIKeyAuthentication` backend extending DRF `BaseAuthentication` in `apps/server/core/auth.py`
+- [x] T006 [US1] Implement protected test endpoint `ProtectedTestView` in `apps/server/core/views.py`
 
 **Checkpoint**: User Story 1 fully functional and testable independently.
 
@@ -62,12 +62,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T007 [P] [US2] Add unit tests for `/api/v1/health/` public access and URL routing in `tests/server/test_auth.py`
+- [x] T007 [P] [US2] Add unit tests for `/api/v1/health/` public access and URL routing in `tests/server/test_auth.py`
 
 ### Implementation for User Story 2
 
-- [ ] T008 [P] [US2] Implement public health check view `HealthCheckView` in `apps/server/core/views.py`
-- [ ] T009 [US2] Configure `/api/v1/` routing inclusion and endpoints in `apps/server/config/urls.py`
+- [x] T008 [P] [US2] Implement public health check view `HealthCheckView` in `apps/server/core/views.py`
+- [x] T009 [US2] Configure `/api/v1/` routing inclusion and endpoints in `apps/server/config/urls.py`
 
 **Checkpoint**: User Stories 1 AND 2 functional independently.
 
@@ -81,8 +81,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T010 [P] [US3] Add strict type annotations to `apps/server/core/auth.py`, `apps/server/core/views.py`, and `apps/server/config/urls.py`
-- [ ] T011 [US3] Run Ruff check/format and MyPy static analysis verification across codebase
+- [x] T010 [P] [US3] Add strict type annotations to `apps/server/core/auth.py`, `apps/server/core/views.py`, and `apps/server/config/urls.py`
+- [x] T011 [US3] Run Ruff check/format and MyPy static analysis verification across codebase
 
 ---
 
@@ -90,8 +90,8 @@
 
 **Purpose**: Quality verification and quickstart validation
 
-- [ ] T012 Run full pytest test suite `uv run pytest tests/server/test_auth.py` and verify zero failures
-- [ ] T013 Perform manual HTTP verification per `specs/003-api-auth-routing/quickstart.md`
+- [x] T012 Run full pytest test suite `uv run pytest tests/server/test_auth.py` and verify zero failures
+- [x] T013 Perform manual HTTP verification per `specs/003-api-auth-routing/quickstart.md`
 
 ---
 

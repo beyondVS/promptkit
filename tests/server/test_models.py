@@ -20,20 +20,24 @@ class PromptRegistryModelTests(TestCase):
     Comprehensive tests for Prompt, Version, Label, VariableDefinition, and Section models.
     """
 
+    prompt: Prompt
+    version1: Version
+    version2: Version
+
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.prompt: Prompt = Prompt.objects.create(
+        cls.prompt = Prompt.objects.create(
             slug="welcome-email",
             name="Welcome Email Prompt",
             description="Email sent to new users",
         )
-        cls.version1: Version = Version.objects.create(
+        cls.version1 = Version.objects.create(
             prompt=cls.prompt,
             version_number=1,
             template_text="Hello {{ user_name }}, welcome to {{ app_name }}!",
             changelog="Initial v1 release",
         )
-        cls.version2: Version = Version.objects.create(
+        cls.version2 = Version.objects.create(
             prompt=cls.prompt,
             version_number=2,
             template_text="Hi {{ user_name }}, welcome aboard to {{ app_name }}!",
