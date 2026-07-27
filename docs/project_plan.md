@@ -17,10 +17,10 @@
 ## 🛠️ 1주차: 개발 환경 구축 및 Core Server 개발 (약 6시간)
 **목표**: 모노레포 구조를 정의하고, Django 기반의 프롬프트 저장소 API 서버의 기본 기능을 확보합니다.
 
-* [ ] **Day 01 (1h): 프로젝트 초기화 및 모노레포 셋업**
+* [x] **Day 01 (1h): 프로젝트 초기화 및 모노레포 셋업**
     *   uv 패키지 매니저를 통한 모노레포 가상환경 정의 (`uv sync`).
     *   `apps/server` 경로에 Django 프로젝트 생성 및 PostgreSQL 데이터베이스 연결 설정.
-* [ ] **Day 02 (1h): DB 모델링 및 마이그레이션**
+* [x] **Day 02 (1h): DB 모델링 및 마이그레이션**
     *   프롬프트 명세를 위한 Django ORM 모델 설계 (`Prompt`, `Version`, `Label`, `VariableDefinition`, `Section` 모델).
     *   각 모델간의 관계 설정(1:N) 및 마이그레이션 실행.
 * [ ] **Day 03 (1h): 기본 API 라우팅 및 인증(Auth) 구축**
