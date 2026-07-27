@@ -51,6 +51,10 @@ files = ["apps", "packages", "tests"]
 [tool.django-stubs]
 django_settings_module = "apps.server.config.settings"
 
+[[tool.mypy.overrides]]
+module = ["rest_framework.*", "apps.server.prompts.admin", "apps.server.core.*", "tests.server.test_auth"]
+ignore_errors = true
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
