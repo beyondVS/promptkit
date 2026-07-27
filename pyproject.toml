@@ -34,6 +34,7 @@ members = ["apps/*", "packages/*"]
 target-version = "py313"
 line-length = 100
 include = ["apps/**/*.py", "packages/**/*.py", "tests/**/*.py"]
+extend-exclude = ["**/migrations/*"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
