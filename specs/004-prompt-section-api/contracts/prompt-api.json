@@ -1,0 +1,303 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PromptKit Prompt & Section Registry API",
+    "version": "1.0.0",
+    "description": "API endpoints for Prompt & Section CRUD and Multidimensional Search"
+  },
+  "paths": {
+    "/api/v1/prompts/": {
+      "get": {
+        "summary": "List and Multidimensional Search Prompts",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Case-insensitive partial match search by prompt name"
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Exact match filter by task category"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Filter by tags using AND matching (all specified tags must be present)"
+          },
+          {
+            "name": "ordering",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Sort ordering (e.g. -created_at, name)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matching prompts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Prompt" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new Prompt asset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PromptCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Prompt created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Prompt" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or duplicate name/slug"
+          }
+        }
+      }
+    },
+    "/api/v1/prompts/{id}/": {
+      "get": {
+        "summary": "Get Prompt detail by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prompt details including sections",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PromptDetail" }
+              }
+            }
+          },
+          "404": { "description": "Prompt not found" }
+        }
+      },
+      "put": {
+        "summary": "Update Prompt asset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PromptCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prompt updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PromptDetail" }
+              }
+            }
+          },
+          "400": { "description": "Validation error or duplicate name" },
+          "404": { "description": "Prompt not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete Prompt asset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Prompt deleted successfully" },
+          "404": { "description": "Prompt not found" }
+        }
+      }
+    },
+    "/api/v1/prompts/{prompt_id}/sections/": {
+      "post": {
+        "summary": "Create a Section for a Prompt",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SectionCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Section created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Section" }
+              }
+            }
+          },
+          "400": { "description": "Validation error or order conflict" }
+        }
+      }
+    },
+    "/api/v1/sections/{id}/": {
+      "put": {
+        "summary": "Update a Section",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SectionCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Section updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Section" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Section",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Section deleted successfully" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Prompt": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "task": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PromptDetail": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Prompt" },
+          {
+            "type": "object",
+            "properties": {
+              "sections": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Section" }
+              }
+            }
+          }
+        ]
+      },
+      "PromptCreate": {
+        "type": "object",
+        "required": ["slug", "name"],
+        "properties": {
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "task": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "Section": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "prompt": { "type": "integer" },
+          "role": { "type": "string", "enum": ["system", "user", "assistant", "tool"] },
+          "order": { "type": "integer" },
+          "content": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SectionCreate": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": { "type": "string", "enum": ["system", "user", "assistant", "tool"] },
+          "order": { "type": "integer" },
+          "content": { "type": "string" }
+        }
+      }
+    }
+  }
+}
