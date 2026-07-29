@@ -5,13 +5,13 @@ Django settings for promptkit server project.
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'sub_dir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file at repo root if present
-load_dotenv(BASE_DIR / ".env")
+# Load environment variables from .env file (automatically searching ancestor directories)
+load_dotenv(find_dotenv())
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -72,7 +72,7 @@ WSGI_APPLICATION = "apps.server.config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DB_ENGINE = os.getenv("DB_ENGINE", "postgresql")
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "promptkit")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
