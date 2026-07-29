@@ -52,7 +52,15 @@ files = ["apps", "packages", "tests"]
 django_settings_module = "apps.server.config.settings"
 
 [[tool.mypy.overrides]]
-module = ["rest_framework.*", "apps.server.prompts.admin", "apps.server.core.*", "tests.server.test_auth"]
+module = [
+    "rest_framework.*",
+    "apps.server.prompts.admin",
+    "apps.server.prompts.serializers",
+    "apps.server.prompts.views",
+    "apps.server.prompts.tests.*",
+    "apps.server.core.*",
+    "tests.server.test_auth",
+]
 ignore_errors = true
 
 [tool.pytest.ini_options]

@@ -26,12 +26,15 @@
 * [x] **Day 03 (1h): 기본 API 라우팅 및 인증(Auth) 구축**
     *   Django REST Framework(DRF) 기본 세팅 및 API Key 기반 인증 시스템 설계.
     *   하네스 자동 정적 분석기(Ruff, MyPy) 셋업 및 초기 코드 검사 통과.
-* [ ] **Day 04 (1h): Prompt & Section CRUD 및 다차원 검색 API 개발**
+* [x] **Day 04 (1h): Prompt & Section CRUD 및 다차원 검색 API 개발**
     *   프롬프트 및 섹션(Section) 등록, 수정, 삭제, 상세 조회 API 엔드포인트 구현.
     *   이름(Name), 태그(Tag), 업무(Task) 기반의 다차원 프롬프트 검색 API 구현 및 유닛 테스트 작성.
-* [ ] **Day 05 (1h): Version API 개발**
+* [ ] **Day 05 (1h): PromptCategory(도메인 범주) 독립 모델링 및 관리 API 개발**
+    *   기존 단순 문자열 `task` 필드를 오해 없는 명확한 독립 엔티티인 `PromptCategory`(도메인 카테고리) 모델로 분리 및 정규화.
+    *   카테고리 CRUD API 구축 및 `Prompt` ↔ `PromptCategory` 관계 매핑/검색 API 개선.
+* [ ] **Day 06 (1h): Version API 개발**
     *   프롬프트 변경 시 자동으로 신규 버전을 생성하고 추적하는 이력 관리 API 및 롤백 기능 개발.
-* [ ] **Day 06 (1h): 1주차 주간 정렬 및 하네스 검증**
+* [ ] **Day 07 (1h): 1주차 주간 정렬 및 하네스 검증**
     *   작성된 API 서버 코드에 대해 Ruff 정렬, MyPy 타입 검사, DRF 유닛 테스트 구동 및 오류 제로 달성.
 
 ---
@@ -39,20 +42,20 @@
 ## 📦 2주차: 서버 기능 고도화 및 Python SDK Core 개발 (약 6시간)
 **목표**: 서버의 메타데이터 비즈니스 로직을 정교화하고, 프롬프트 변수 검증 및 변환을 제공하는 Python SDK 핵심 라이브러리를 개발합니다.
 
-* [ ] **Day 07 (1h): Label API 및 Fallback 로직 구현**
+* [ ] **Day 08 (1h): Label API 및 Fallback 로직 구현**
     *   프롬프트 라벨 지정(dev, draft 등) 기능 API 개발.
     *   조회 시 라벨이 생략된 경우 `production` 라벨 버전을 자동으로 탐색 및 반환하는 Fallback 로직 서버 구현.
-* [ ] **Day 08 (1h): Web Playground 기초 UI 및 변수 입력 폼 API 설계**
+* [ ] **Day 09 (1h): Web Playground 기초 UI 및 변수 입력 폼 API 설계**
     *   실제 컴파일 연동은 제외하고, 관리자가 프롬프트의 동적 변수를 입력받을 수 있는 Playground 기초 UI 레이아웃 및 변수 스키마 조회 API 개발.
-* [ ] **Day 09 (1h): Python SDK (`packages/promptkit`) 환경 셋업 및 REST Client 개발**
+* [ ] **Day 10 (1h): Python SDK (`packages/promptkit`) 환경 셋업 및 REST Client 개발**
     *   독자적인 패키지 디렉토리 구조 및 `pyproject.toml` 설정 후 즉시 Git subdirectory 독립 설치 테스트 실행.
     *   서버 API와 통신하여 프롬프트를 원격 조회하는 REST Client 모듈 및 유닛 테스트 작성.
-* [ ] **Day 10 (1h): SDK compile() 로컬 렌더링 엔진 개발**
+* [ ] **Day 11 (1h): SDK compile() 로컬 렌더링 엔진 개발**
     *   프롬프트 내 동적 변수를 파싱하고 렌더링하는 `compile()` 메서드 개발.
     *   헌법 규정에 명시된 **Pydantic v2**를 연동하여 주입될 변수의 구조 및 유효성(Validation) 검증 로직 및 유닛 테스트 작성.
-* [ ] **Day 11 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
+* [ ] **Day 12 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
     *   컴파일된 `CompiledPrompt`를 각 공급자 SDK(Gemini 및 OpenAI) 형식에 맞는 호출 인자 규격으로 치환하는 어댑터들 개발 및 어댑터 유닛 테스트 작성.
-* [ ] **Day 12 (1h): LiteLLM Adapter 구현 및 SDK 전체 하네스 통합 검증**
+* [ ] **Day 13 (1h): LiteLLM Adapter 구현 및 SDK 전체 하네스 통합 검증**
     *   LiteLLM 규격에 대응하는 어댑터 추가 구현.
     *   SDK core의 모든 Public API에 대해 `pytest` 100% 통합 하네스 검증 구동.
 
@@ -61,20 +64,20 @@
 ## ⚡ 3주차: Django Integration 및 최종 교차 검증 (약 6시간)
 **목표**: Django 환경 전용 연동 패키지를 완성하고, 모노레포의 빌드 배포 방식 및 에이전트 독립 감사를 거쳐 릴리즈를 준비합니다.
 
-* [ ] **Day 13 (1h): Django Integration 패키지 (`packages/promptkit-django`) 셋업**
+* [ ] **Day 14 (1h): Django Integration 패키지 (`packages/promptkit-django`) 셋업**
     *   Django 설정(`settings.py`) 파일과의 연동 매커니즘 구현 및 SDK 인스턴스 자동 등록.
     *   패키지 생성 직후 Git subdirectory 독립 설치 가능 여부 즉시 검증.
-* [ ] **Day 14 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
+* [ ] **Day 15 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
     *   조회 성능 향상 및 서버 부하 최소화를 위한 Django 내장 Cache API 연동 데코레이터/헬퍼 구현.
     *   HTTP ETag / If-None-Match 헤더 기반의 조건부 검증 및 짧은 TTL(Time-To-Live) 적용을 통한 캐시 정합성 전략 구현.
-* [ ] **Day 15 (1h): Playground SDK 연동 및 E2E 예제 구현**
+* [ ] **Day 16 (1h): Playground SDK 연동 및 E2E 예제 구현**
     *   `examples/` 디렉토리에 실제 DRF 서버-SDK-Gemini API 호출에 이르는 엔드투엔드 예제 시나리오 코드 작성.
-    *   Day 08에 개발한 Playground 뷰에 SDK의 `compile()` 엔진을 최종 결합하여 **LLM 호출 없는 CompiledPrompt 텍스트 프리뷰 기능** 완성.
-* [ ] **Day 16 (1h): 모노레포 통합 배포 및 패키지 상호 운용성 검증**
+    *   Day 09에 개발한 Playground 뷰에 SDK의 `compile()` 엔진을 최종 결합하여 **LLM 호출 없는 CompiledPrompt 텍스트 프리뷰 기능** 완성.
+* [ ] **Day 17 (1h): 모노레포 통합 배포 및 패키지 상호 운용성 검증**
     *   모노레포의 개별 패키지들이 상호 간섭 없이 각각 독립적으로 설치되고 연동되는지 전체 빌드/배포 격리 테스트.
-* [ ] **Day 17 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
+* [ ] **Day 18 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
     *   서버 다운, 잘못된 변수 주입, 인증 오류 발생 시 SDK의 예외 처리와 로깅 구조의 복원성 검증.
-* [ ] **Day 18 (1h): 에이전트 교차 검증(Audit) 및 Sign-off**
+* [ ] **Day 19 (1h): 에이전트 교차 검증(Audit) 및 Sign-off**
     *   `AGENTS.md` 7항의 명세서에 의거하여 `auditor` 서브에이전트를 동적으로 정의 및 호출하여 독립 코드 검토 수행.
     *   감사 리포트 피드백 루프(최대 3회)를 거쳐 발견된 결함 자가 치유 및 `[SIGN-OFF: PASSED]` 최종 승인 획득 후 릴리즈 완료.
 

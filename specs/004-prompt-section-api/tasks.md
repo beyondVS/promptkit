@@ -20,7 +20,7 @@
 
 **Purpose**: 개발 환경 준비 및 기본 구조 확인
 
-- [ ] T001 Verify project environment and dependencies with `uv sync`
+- [x] T001 Verify project environment and dependencies with `uv sync`
 
 ---
 
@@ -30,8 +30,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Expand Prompt and Section ORM models with `task`, `tags`, and `unique` name constraint in `apps/server/prompts/models.py`
-- [ ] T003 Generate and apply Django database migrations in `apps/server/prompts/migrations/`
+- [x] T002 Expand Prompt and Section ORM models with `task`, `tags`, and `unique` name constraint in `apps/server/prompts/models.py`
+- [x] T003 Generate and apply Django database migrations in `apps/server/prompts/migrations/`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -45,11 +45,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Create PromptSerializer and SectionSerializer in `apps/server/prompts/serializers.py`
-- [ ] T005 [P] [US1] Implement PromptViewSet CRUD endpoints in `apps/server/prompts/views.py`
-- [ ] T006 [P] [US1] Implement SectionViewSet CRUD endpoints in `apps/server/prompts/views.py`
-- [ ] T007 [US1] Register API routes for Prompts and Sections in `apps/server/prompts/urls.py`
-- [ ] T008 [P] [US1] Write unit test suite for Prompt & Section CRUD operations in `apps/server/prompts/tests/test_prompt_crud.py`
+- [x] T004 [P] [US1] Create PromptSerializer and SectionSerializer in `apps/server/prompts/serializers.py`
+- [x] T005 [P] [US1] Implement PromptViewSet CRUD endpoints in `apps/server/prompts/views.py`
+- [x] T006 [P] [US1] Implement SectionViewSet CRUD endpoints in `apps/server/prompts/views.py`
+- [x] T007 [US1] Register API routes for Prompts and Sections in `apps/server/prompts/urls.py`
+- [x] T008 [P] [US1] Write unit test suite for Prompt & Section CRUD operations in `apps/server/prompts/tests/test_prompt_crud.py`
 
 **Checkpoint**: User Story 1 MVP fully functional and testable independently
 
@@ -63,9 +63,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [P] [US2] Create PromptFilterSet supporting Name icontains, Task exact, and Tags AND matching in `apps/server/prompts/filters.py`
-- [ ] T010 [US2] Connect PromptFilterSet to PromptViewSet in `apps/server/prompts/views.py`
-- [ ] T011 [P] [US2] Write unit test suite for multidimensional search API in `apps/server/prompts/tests/test_search.py`
+- [x] T009 [P] [US2] Create PromptFilterSet supporting Name icontains, Task exact, and Tags AND matching in `apps/server/prompts/filters.py`
+- [x] T010 [US2] Connect PromptFilterSet to PromptViewSet in `apps/server/prompts/views.py`
+- [x] T011 [P] [US2] Write unit test suite for multidimensional search API in `apps/server/prompts/tests/test_search.py`
 
 **Checkpoint**: User Stories 1 and 2 work independently
 
@@ -79,8 +79,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T012 [P] [US3] Add OrderingFilter support (`created_at`, `updated_at`, `name`) to PromptViewSet in `apps/server/prompts/views.py`
-- [ ] T013 [P] [US3] Write unit test suite for search ordering in `apps/server/prompts/tests/test_ordering.py`
+- [x] T012 [P] [US3] Add OrderingFilter support (`created_at`, `updated_at`, `name`) to PromptViewSet in `apps/server/prompts/views.py`
+- [x] T013 [P] [US3] Write unit test suite for search ordering in `apps/server/prompts/tests/test_ordering.py`
 
 **Checkpoint**: All user stories functional and testable independently
 
@@ -90,8 +90,8 @@
 
 **Purpose**: 코드 품질 제어, 린팅, 타입 검사 및 최종 하네스 검증
 
-- [ ] T014 [P] Run linter, formatter and type checker (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
-- [ ] T015 Run full test suite (`uv run pytest apps/server/prompts/`) and validate scenarios in `quickstart.md`
+- [x] T014 [P] Run linter, formatter and type checker (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
+- [x] T015 Run full test suite (`uv run pytest apps/server/prompts/`) and validate scenarios in `quickstart.md`
 
 ---
 

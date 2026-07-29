@@ -6,6 +6,7 @@ Includes Prompt, Version, Label, VariableDefinition, and Section entities.
 from typing import ClassVar
 
 from django.db import models
+from django.utils import timezone
 
 
 class Prompt(models.Model):
@@ -21,17 +22,35 @@ class Prompt(models.Model):
     )
     name = models.CharField(
         max_length=255,
+        unique=True,
         help_text="Human-readable name for the prompt",
     )
     description = models.TextField(
         blank=True,
         help_text="Detailed description of prompt purpose",
     )
+    task = models.CharField(
+        max_length=100,
+        db_index=True,
+        blank=True,
+        default="",
+        help_text="Task/Domain category (e.g. customer-support)",
+    )
+    tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of tag keywords",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering: ClassVar[list[str]] = ["-updated_at"]
+
+    def get_or_create_default_version(self) -> "Version":
+        """Get or create default version (v1) for this prompt."""
+        version, _ = self.versions.get_or_create(version_number=1)
+        return version
 
     def __str__(self) -> str:
         return f"{self.name} ({self.slug})"
@@ -163,6 +182,8 @@ class Section(models.Model):
     )
     order = models.PositiveIntegerField(default=0)
     content = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering: ClassVar[list[str]] = ["version", "order"]

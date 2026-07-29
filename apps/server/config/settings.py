@@ -72,7 +72,7 @@ WSGI_APPLICATION = "apps.server.config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DB_ENGINE = os.getenv("DB_ENGINE", "postgresql")
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "promptkit")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
