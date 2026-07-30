@@ -14,6 +14,7 @@
 - **Alternatives Considered**:
   - `on_delete=models.SET_NULL`: 카테고리 삭제 시 프롬프트를 미분류 상태로 보존하는 방법. (기획 요구사항상 프롬프트는 필수적으로 카테고리에 속해야 하고 Restrict 제약을 준수해야 하므로 기각)
   - `on_delete=models.CASCADE`: 카테고리 삭제 시 소속 프롬프트 전체 연쇄 삭제. (치명적 프롬프트 자산 손실 위험이 있으므로 기각)
+  - `display_order` 커스텀 정렬 필드 포함: 현재 UI 커스텀 정렬 요구사항이 없으므로 YAGNI 원칙에 따라 필드를 제거하고 `name`(이름순) 정렬로 축소 단순화함.
 
 ---
 

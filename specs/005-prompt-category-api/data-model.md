@@ -14,7 +14,6 @@ erDiagram
         string name "Unique category name"
         string slug "Unique URL-friendly slug"
         text description "Category description"
-        integer display_order "Order of display"
         boolean is_active "Active status"
         datetime created_at
         datetime updated_at
@@ -45,7 +44,6 @@ erDiagram
 | `name` | `CharField(max_length=100)` | Unique, Non-null | 카테고리 이름 (예: "고객지원", "코드생성") |
 | `slug` | `SlugField(max_length=100)` | Unique, Non-null, db_index | API 및 URL용 영문 고유 슬러그 (예: "customer-support") |
 | `description` | `TextField` | Blank=True, Default="" | 카테고리에 대한 상세 설명 |
-| `display_order` | `IntegerField` | Default=0, db_index | 목록 조회 시 정렬 우선순위 |
 | `is_active` | `BooleanField` | Default=True, db_index | 카테고리 활성화/사용 가능 여부 |
 | `created_at` | `DateTimeField` | auto_now_add=True | 카테고리 생성 일시 |
 | `updated_at` | `DateTimeField` | auto_now=True | 카테고리 최종 수정 일시 |

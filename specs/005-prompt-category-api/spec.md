@@ -13,6 +13,7 @@
 
 - Q: 프롬프트가 연결된 카테고리의 삭제 시 ON DELETE 처리 방식 → A: Restrict/Protect (연결된 프롬프트가 1개 이상 존재하는 경우 카테고리 삭제를 거부하고 409 Conflict 오류를 반환하여 데이터 무결성을 보호함).
 - Q: 프롬프트 작성 시 카테고리 지정 필수 여부 (Nullability) → A: Mandatory (프롬프트 생성 및 수정 시 반드시 유효한 PromptCategory가 지정되어야 하며 미지정 시 400 Bad Request 유효성 에러를 반환함).
+- Q: PromptCategory 모델 내 display_order 필드 필요 여부 → A: Omit/Remove (YAGNI 원칙에 따라 불필요한 display_order 필드를 제거하고 카테고리 이름(name) 및 생성일시 정렬로 단순화함).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -27,7 +28,7 @@
 **Acceptance Scenarios**:
 
 1. **Given** 카테고리 이름(Name), 영문 슬러그(Slug), 설명(Description) 데이터가 주어졌을 때, **When** 카테고리 생성 요청을 보내면, **Then** 고유 식별자(ID)가 부여된 신규 PromptCategory 정보가 반환된다.
-2. **Given** 기존에 등록된 카테고리가 존재할 때, **When** 카테고리 목록 조회를 요청하면, **Then** 전체 도메인 카테고리 목록이 표시 순서 및 생성일시 기준 정렬되어 반환된다.
+2. **Given** 기존에 등록된 카테고리가 존재할 때, **When** 카테고리 목록 조회를 요청하면, **Then** 전체 도메인 카테고리 목록이 이름 및 생성일시 기준 정렬되어 반환된다.
 3. **Given** 기존 카테고리의 정보(이름 또는 설명)를 변경하려 할 때, **When** 카테고리 수정 요청을 전송하면, **Then** 업데이트된 카테고리 메타데이터가 응답으로 반환된다.
 4. **Given** 프롬프트에 연결되지 않은 카테고리가 존재할 때, **When** 해당 카테고리 삭제를 요청하면, **Then** 성공적으로 삭제 처리되어 이후 조회되지 않는다.
 
@@ -89,7 +90,7 @@
 
 - **PromptCategory (도메인 카테고리)**:
   - 프롬프트가 속한 업무 도메인 및 범주를 표현하는 정규화된 독립 엔티티.
-  - 주요 속성: 고유 식별자(ID), 카테고리 이름(Name), 식별용 영문 슬러그(Slug), 상세 설명(Description), 표시 순서(Display Order), 활성화 여부(Is Active), 생성일시, 수정일시.
+  - 주요 속성: 고유 식별자(ID), 카테고리 이름(Name), 식별용 영문 슬러그(Slug), 상세 설명(Description), 활성화 여부(Is Active), 생성일시, 수정일시.
   - 관계: 여러 Prompt에 참조될 수 있음 (1:N 관계).
 
 - **Prompt (프롬프트 - 개정)**:
