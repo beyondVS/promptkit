@@ -18,8 +18,8 @@
 
 **Purpose**: Project initialization and basic structure verification
 
-- [ ] T001 Verify project structure and spec documents in `specs/006-prompt-version-api/`
-- [ ] T002 [P] Verify `uv` environment and Django dependencies in `pyproject.toml`
+- [X] T001 Verify project structure and spec documents in `specs/006-prompt-version-api/`
+- [X] T002 [P] Verify `uv` environment and Django dependencies in `pyproject.toml`
 
 ---
 
@@ -29,8 +29,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Verify `Version` ORM model constraints (`UniqueConstraint(fields=["prompt", "version_number"])` and ordering `["prompt", "-version_number"]`) in `apps/server/prompts/models.py`
-- [ ] T004 Verify Django Schema Migrations for `Version` model in `apps/server/prompts/migrations/`
+- [X] T003 Verify `Version` ORM model constraints (`UniqueConstraint(fields=["prompt", "version_number"])` and ordering `["prompt", "-version_number"]`) in `apps/server/prompts/models.py`
+- [X] T004 Verify Django Schema Migrations for `Version` model in `apps/server/prompts/migrations/`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -44,11 +44,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Create `VersionSerializer` in `apps/server/prompts/serializers.py`
-- [ ] T006 [US1] Implement Prompt creation/update hook to auto-create `Version` snapshot (with Skip Creation logic for unchanged template_text) in `apps/server/prompts/serializers.py` and `apps/server/prompts/views.py`
-- [ ] T007 [US1] Implement `VersionViewSet` (list and retrieve actions, 405 Method Not Allowed for PUT/PATCH/DELETE) in `apps/server/prompts/views.py`
-- [ ] T008 [US1] Register `/api/v1/prompts/{prompt_id}/versions/` router endpoints in `apps/server/prompts/urls.py`
-- [ ] T009 [US1] Write unit tests for Version auto-creation, list, and detail retrieval in `apps/server/prompts/tests/test_version_api.py`
+- [X] T005 [P] [US1] Create `VersionSerializer` in `apps/server/prompts/serializers.py`
+- [X] T006 [US1] Implement Prompt creation/update hook to auto-create `Version` snapshot (with Skip Creation logic for unchanged template_text) in `apps/server/prompts/serializers.py` and `apps/server/prompts/views.py`
+- [X] T007 [US1] Implement `VersionViewSet` (list and retrieve actions, 405 Method Not Allowed for PUT/PATCH/DELETE) in `apps/server/prompts/views.py`
+- [X] T008 [US1] Register `/api/v1/prompts/{prompt_id}/versions/` router endpoints in `apps/server/prompts/urls.py`
+- [X] T009 [US1] Write unit tests for Version auto-creation, list, and detail retrieval in `apps/server/prompts/tests/test_version_api.py`
 
 **Checkpoint**: At this point, User Story 1 is fully functional and testable independently (MVP ready!)
 
@@ -62,10 +62,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Create `RollbackRequestSerializer` in `apps/server/prompts/serializers.py`
-- [ ] T011 [US2] Implement `rollback` action on `VersionViewSet` (copying target version template_text and issuing new version with optional/auto changelog) in `apps/server/prompts/views.py`
-- [ ] T012 [US2] Register `/api/v1/prompts/{prompt_id}/versions/rollback/` endpoint in `apps/server/prompts/urls.py`
-- [ ] T013 [US2] Write unit tests for Rollback action (verifying Append-Only creation and 404 for invalid target_version) in `apps/server/prompts/tests/test_version_api.py`
+- [X] T010 [P] [US2] Create `RollbackRequestSerializer` in `apps/server/prompts/serializers.py`
+- [X] T011 [US2] Implement `rollback` action on `VersionViewSet` (copying target version template_text and issuing new version with optional/auto changelog) in `apps/server/prompts/views.py`
+- [X] T012 [US2] Register `/api/v1/prompts/{prompt_id}/versions/rollback/` endpoint in `apps/server/prompts/urls.py`
+- [X] T013 [US2] Write unit tests for Rollback action (verifying Append-Only creation and 404 for invalid target_version) in `apps/server/prompts/tests/test_version_api.py`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 work independently and in integration
 
@@ -79,9 +79,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T014 [P] [US3] Create `VersionDiffResponseSerializer` and `difflib` line parsing helper function in `apps/server/prompts/serializers.py`
-- [ ] T015 [US3] Implement `diff` action on `VersionViewSet` (parsing `from_version` & `to_version` and returning Structured Line Diff) in `apps/server/prompts/views.py`
-- [ ] T016 [US3] Add unit test cases for Version Diff comparison in `apps/server/prompts/tests/test_version_api.py`
+- [X] T014 [P] [US3] Create `VersionDiffResponseSerializer` and `difflib` line parsing helper function in `apps/server/prompts/serializers.py`
+- [X] T015 [US3] Implement `diff` action on `VersionViewSet` (parsing `from_version` & `to_version` and returning Structured Line Diff) in `apps/server/prompts/views.py`
+- [X] T016 [US3] Add unit test cases for Version Diff comparison in `apps/server/prompts/tests/test_version_api.py`
 
 **Checkpoint**: All user stories are independently functional and fully tested
 
@@ -91,9 +91,9 @@
 
 **Purpose**: Mechanical linter, static type check, and quickstart end-to-end validation
 
-- [ ] T017 [P] Run code formatting, linting, and static type checks (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
-- [ ] T018 Run full automated test suite (`uv run pytest apps/server/prompts/tests/`)
-- [ ] T019 Validate scenario execution using `specs/006-prompt-version-api/quickstart.md`
+- [X] T017 [P] Run code formatting, linting, and static type checks (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
+- [X] T018 Run full automated test suite (`uv run pytest apps/server/prompts/tests/`)
+- [X] T019 Validate scenario execution using `specs/006-prompt-version-api/quickstart.md`
 
 ---
 
