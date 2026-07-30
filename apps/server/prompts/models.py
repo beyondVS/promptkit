@@ -9,6 +9,42 @@ from django.db import models
 from django.utils import timezone
 
 
+class PromptCategory(models.Model):
+    """
+    Normalized domain/task category entity for Prompt assets.
+    """
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Human-readable category name",
+    )
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text="URL-friendly unique slug for API filtering",
+    )
+    description = models.TextField(
+        blank=True,
+        default="",
+        help_text="Detailed category description",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text="Active status of the category",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering: ClassVar[list[str]] = ["name"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.slug})"
+
+
 class Prompt(models.Model):
     """
     Top-level container for a prompt asset in the registry.
@@ -29,12 +65,11 @@ class Prompt(models.Model):
         blank=True,
         help_text="Detailed description of prompt purpose",
     )
-    task = models.CharField(
-        max_length=100,
-        db_index=True,
-        blank=True,
-        default="",
-        help_text="Task/Domain category (e.g. customer-support)",
+    category = models.ForeignKey(
+        PromptCategory,
+        on_delete=models.RESTRICT,
+        related_name="prompts",
+        help_text="Mandatory domain category for the prompt asset",
     )
     tags = models.JSONField(
         default=list,

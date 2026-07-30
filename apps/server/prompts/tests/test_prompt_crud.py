@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.server.prompts.models import Prompt, Section
+from apps.server.prompts.models import Prompt, PromptCategory, Section
 
 
 class PromptCRUDTestCase(TestCase):
@@ -17,8 +17,11 @@ class PromptCRUDTestCase(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        # Authenticate with standard PROMPTKIT_API_KEY
-        self.client.credentials(HTTP_X_API_KEY="dev-secret-key")
+        self.client.defaults["HTTP_X_API_KEY"] = "dev-secret-key"
+        self.category = PromptCategory.objects.create(
+            name="기본 카테고리",
+            slug="default-cat",
+        )
 
     def test_create_prompt_success(self) -> None:
         """Test creating a valid Prompt."""
@@ -26,13 +29,13 @@ class PromptCRUDTestCase(TestCase):
             "slug": "customer-support-v1",
             "name": "고객 상담 프롬프트",
             "description": "고객 문의 응답용 프롬프트",
-            "task": "customer-support",
+            "category": self.category.id,
             "tags": ["v1", "support"],
         }
         response = self.client.post("/api/v1/prompts/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "고객 상담 프롬프트")
-        self.assertEqual(response.data["task"], "customer-support")
+        self.assertEqual(response.data["category"], self.category.id)
         self.assertEqual(response.data["tags"], ["v1", "support"])
         self.assertTrue(Prompt.objects.filter(slug="customer-support-v1").exists())
 
@@ -42,11 +45,13 @@ class PromptCRUDTestCase(TestCase):
             slug="existing-prompt",
             name="동일한 이름",
             description="기존 프롬프트",
+            category=self.category,
         )
         payload = {
             "slug": "new-prompt-slug",
             "name": "동일한 이름",
             "description": "중복 이름 시도",
+            "category": self.category.id,
         }
         response = self.client.post("/api/v1/prompts/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -58,6 +63,7 @@ class PromptCRUDTestCase(TestCase):
             slug="test-prompt",
             name="테스트 프롬프트",
             description="설명",
+            category=self.category,
         )
         version = prompt.get_or_create_default_version()
         Section.objects.create(
@@ -84,12 +90,14 @@ class PromptCRUDTestCase(TestCase):
         prompt = Prompt.objects.create(
             slug="update-prompt",
             name="수정 전 이름",
+            category=self.category,
         )
         # Update
         update_payload = {
             "slug": "update-prompt",
             "name": "수정 후 이름",
             "description": "업데이트된 설명",
+            "category": self.category.id,
         }
         response = self.client.put(f"/api/v1/prompts/{prompt.id}/", update_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -105,6 +113,7 @@ class PromptCRUDTestCase(TestCase):
         prompt = Prompt.objects.create(
             slug="section-test-prompt",
             name="섹션 테스트 프롬프트",
+            category=self.category,
         )
         # Create section
         section_payload = {
@@ -143,8 +152,8 @@ class PromptCRUDTestCase(TestCase):
         """
         Test nested section list endpoint filters by prompt_id and returns 404.
         """
-        p1 = Prompt.objects.create(slug="p1-sections", name="프롬프트 1")
-        p2 = Prompt.objects.create(slug="p2-sections", name="프롬프트 2")
+        p1 = Prompt.objects.create(slug="p1-sections", name="프롬프트 1", category=self.category)
+        p2 = Prompt.objects.create(slug="p2-sections", name="프롬프트 2", category=self.category)
 
         v1 = p1.get_or_create_default_version()
         v2 = p2.get_or_create_default_version()

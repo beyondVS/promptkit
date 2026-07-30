@@ -18,8 +18,8 @@
 
 **Purpose**: Project initialization and basic structure verification
 
-- [ ] T001 Verify project structure and spec documents in `specs/005-prompt-category-api/`
-- [ ] T002 [P] Verify `uv` environment and Django dependencies in `pyproject.toml`
+- [x] T001 Verify project structure and spec documents in `specs/005-prompt-category-api/`
+- [x] T002 [P] Verify `uv` environment and Django dependencies in `pyproject.toml`
 
 ---
 
@@ -29,9 +29,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create `PromptCategory` ORM model in `apps/server/prompts/models.py`
-- [ ] T004 Update `Prompt` ORM model to replace string `task` with `category` ForeignKey (`on_delete=models.RESTRICT`, `related_name='prompts'`) in `apps/server/prompts/models.py`
-- [ ] T005 Create Django Schema and Data Migrations for `PromptCategory` table creation and existing `task` string data migration in `apps/server/prompts/migrations/`
+- [x] T003 Create `PromptCategory` ORM model in `apps/server/prompts/models.py`
+- [x] T004 Update `Prompt` ORM model to replace string `task` with `category` ForeignKey (`on_delete=models.RESTRICT`, `related_name='prompts'`) in `apps/server/prompts/models.py`
+- [x] T005 Create Django Schema and Data Migrations for `PromptCategory` table creation and existing `task` string data migration in `apps/server/prompts/migrations/`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -45,10 +45,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create `PromptCategorySerializer` and `PromptCategoryCreateSerializer` in `apps/server/prompts/serializers.py`
-- [ ] T007 [US1] Implement `PromptCategoryViewSet` with ProtectedError (409 Conflict) handling on deletion in `apps/server/prompts/views.py`
-- [ ] T008 [US1] Register `/api/categories/` router endpoints in `apps/server/prompts/urls.py`
-- [ ] T009 [US1] Write unit tests for PromptCategory CRUD and ON DELETE Restrict validation in `apps/server/prompts/tests/test_category_crud.py`
+- [x] T006 [P] [US1] Create `PromptCategorySerializer` and `PromptCategoryCreateSerializer` in `apps/server/prompts/serializers.py`
+- [x] T007 [US1] Implement `PromptCategoryViewSet` with ProtectedError (409 Conflict) handling on deletion in `apps/server/prompts/views.py`
+- [x] T008 [US1] Register `/api/categories/` router endpoints in `apps/server/prompts/urls.py`
+- [x] T009 [US1] Write unit tests for PromptCategory CRUD and ON DELETE Restrict validation in `apps/server/prompts/tests/test_category_crud.py`
 
 **Checkpoint**: At this point, User Story 1 is fully functional and testable independently (MVP ready!)
 
@@ -62,10 +62,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [P] [US2] Update `PromptSerializer` and `PromptDetailSerializer` to serialize `category` in `apps/server/prompts/serializers.py`
-- [ ] T011 [P] [US2] Update `PromptFilterSet` to filter by `category`, `category_slug`, and legacy `task` query parameters in `apps/server/prompts/filters.py`
-- [ ] T012 [US2] Update `PromptViewSet` to validate mandatory category and handle category filters in `apps/server/prompts/views.py`
-- [ ] T013 [US2] Write unit tests for Prompt-Category relationship mapping and filtering search in `apps/server/prompts/tests/test_category_prompt_relation.py`
+- [x] T010 [P] [US2] Update `PromptSerializer` and `PromptDetailSerializer` to serialize `category` in `apps/server/prompts/serializers.py`
+- [x] T011 [P] [US2] Update `PromptFilterSet` to filter by `category`, `category_slug`, and legacy `task` query parameters in `apps/server/prompts/filters.py`
+- [x] T012 [US2] Update `PromptViewSet` to validate mandatory category and handle category filters in `apps/server/prompts/views.py`
+- [x] T013 [US2] Write unit tests for Prompt-Category relationship mapping and filtering search in `apps/server/prompts/tests/test_category_prompt_relation.py`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 work independently and in integration
 
@@ -79,9 +79,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Update `PromptCategoryViewSet.get_queryset()` to annotate `prompt_count=Count('prompts')` in `apps/server/prompts/views.py`
-- [ ] T015 [US3] Update `PromptCategorySerializer` to include `prompt_count` field in `apps/server/prompts/serializers.py`
-- [ ] T016 [US3] Add unit test cases for `prompt_count` aggregation in `apps/server/prompts/tests/test_category_crud.py`
+- [x] T014 [US3] Update `PromptCategoryViewSet.get_queryset()` to annotate `prompt_count=Count('prompts')` in `apps/server/prompts/views.py`
+- [x] T015 [US3] Update `PromptCategorySerializer` to include `prompt_count` field in `apps/server/prompts/serializers.py`
+- [x] T016 [US3] Add unit test cases for `prompt_count` aggregation in `apps/server/prompts/tests/test_category_crud.py`
 
 **Checkpoint**: All user stories are independently functional and fully tested
 
@@ -91,9 +91,9 @@
 
 **Purpose**: Mechanical linter, static type check, and quickstart end-to-end validation
 
-- [ ] T017 [P] Run code formatting, linting, and static type checks (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
-- [ ] T018 Run full automated test suite (`uv run pytest apps/server/prompts/tests/`)
-- [ ] T019 Validate scenario execution using `specs/005-prompt-category-api/quickstart.md`
+- [x] T017 [P] Run code formatting, linting, and static type checks (`uv run ruff check ; uv run ruff format ; uv run mypy .`)
+- [x] T018 Run full automated test suite (`uv run pytest apps/server/prompts/tests/`)
+- [x] T019 Validate scenario execution using `specs/005-prompt-category-api/quickstart.md`
 
 ---
 

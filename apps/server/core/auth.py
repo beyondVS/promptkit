@@ -39,7 +39,11 @@ class APIKeyAuthentication(BaseAuthentication):
         """
         Authenticate incoming request using X-API-Key header.
         """
-        api_key: str | None = request.META.get("HTTP_X_API_KEY")
+        api_key: str | None = (
+            request.headers.get("x-api-key")
+            or request.headers.get("X-API-Key")
+            or request.META.get("HTTP_X_API_KEY")
+        )
         expected_key: str = getattr(
             settings,
             "PROMPTKIT_API_KEY",

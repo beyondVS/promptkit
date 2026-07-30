@@ -4,20 +4,53 @@ Django REST Framework ViewSets for Prompt & Section Registry CRUD and Search.
 
 from typing import Any
 
-from django.db.models import QuerySet
+from django.db.models import Count, ProtectedError, QuerySet, RestrictedError
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.server.prompts.filters import PromptFilter
-from apps.server.prompts.models import Prompt, Section
+from apps.server.prompts.models import Prompt, PromptCategory, Section
 from apps.server.prompts.serializers import (
+    PromptCategoryCreateSerializer,
+    PromptCategorySerializer,
     PromptDetailSerializer,
     PromptSerializer,
     SectionCreateSerializer,
     SectionSerializer,
 )
+
+
+class PromptCategoryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for PromptCategory CRUD operations with prompt_count metadata.
+    """
+
+    queryset = PromptCategory.objects.annotate(prompt_count=Count("prompts"))
+
+    def get_serializer_class(self) -> type:
+        if self.action in ["create", "update", "partial_update"]:
+            return PromptCategoryCreateSerializer
+        return PromptCategorySerializer
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """
+        Delete a category, protecting against deletion when linked prompts exist.
+        """
+        instance = self.get_object()
+        if instance.prompts.exists():
+            return Response(
+                {"detail": "Cannot delete category with linked prompts."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except (ProtectedError, RestrictedError):
+            return Response(
+                {"detail": "Cannot delete category with linked prompts."},
+                status=status.HTTP_409_CONFLICT,
+            )
 
 
 class PromptViewSet(viewsets.ModelViewSet):
