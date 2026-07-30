@@ -1,0 +1,258 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PromptKit Version Management API",
+    "version": "1.0.0",
+    "description": "API contract for Prompt versioning, rollback, and diff comparison."
+  },
+  "paths": {
+    "/api/v1/prompts/{prompt_id}/versions/": {
+      "get": {
+        "summary": "List all versions of a prompt",
+        "description": "Returns all historical version snapshots for a specific prompt ordered by version_number descending.",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID of the target prompt"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of versions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Version"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Prompt not found"
+          }
+        }
+      }
+    },
+    "/api/v1/prompts/{prompt_id}/versions/{version_number}/": {
+      "get": {
+        "summary": "Retrieve specific prompt version details",
+        "description": "Returns detailed snapshot data of a specific version number.",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "version_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version snapshot details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Prompt or Version number not found"
+          }
+        }
+      }
+    },
+    "/api/v1/prompts/{prompt_id}/versions/rollback/": {
+      "post": {
+        "summary": "Rollback prompt to a past version",
+        "description": "Copies template text from target_version and creates a new latest version record (Append-Only).",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RollbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New rollback version created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid target version or missing parameters"
+          },
+          "404": {
+            "description": "Prompt or target version not found"
+          }
+        }
+      }
+    },
+    "/api/v1/prompts/{prompt_id}/versions/diff/": {
+      "get": {
+        "summary": "Compare template text between two versions",
+        "description": "Returns structured line-by-line diff between from_version and to_version.",
+        "parameters": [
+          {
+            "name": "prompt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "from_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Source version number for comparison"
+          },
+          {
+            "name": "to_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Target version number for comparison"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Structured line diff result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionDiffResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid version numbers provided"
+          },
+          "404": {
+            "description": "Prompt or specified version numbers not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Version": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "prompt": {
+            "type": "integer"
+          },
+          "version_number": {
+            "type": "integer"
+          },
+          "template_text": {
+            "type": "string"
+          },
+          "changelog": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "prompt", "version_number", "template_text", "created_at"]
+      },
+      "RollbackRequest": {
+        "type": "object",
+        "properties": {
+          "target_version": {
+            "type": "integer"
+          },
+          "changelog": {
+            "type": "string"
+          }
+        },
+        "required": ["target_version"]
+      },
+      "DiffLineItem": {
+        "type": "object",
+        "properties": {
+          "line": {
+            "type": "integer"
+          },
+          "op": {
+            "type": "string",
+            "enum": ["equal", "added", "deleted"]
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["line", "op", "text"]
+      },
+      "VersionDiffResponse": {
+        "type": "object",
+        "properties": {
+          "prompt_id": {
+            "type": "integer"
+          },
+          "from_version": {
+            "type": "integer"
+          },
+          "to_version": {
+            "type": "integer"
+          },
+          "diff": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiffLineItem"
+            }
+          }
+        },
+        "required": ["prompt_id", "from_version", "to_version", "diff"]
+      }
+    }
+  }
+}

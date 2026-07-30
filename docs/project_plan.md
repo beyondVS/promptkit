@@ -29,10 +29,10 @@
 * [x] **Day 04 (1h): Prompt & Section CRUD 및 다차원 검색 API 개발**
     *   프롬프트 및 섹션(Section) 등록, 수정, 삭제, 상세 조회 API 엔드포인트 구현.
     *   이름(Name), 태그(Tag), 업무(Task) 기반의 다차원 프롬프트 검색 API 구현 및 유닛 테스트 작성.
-* [ ] **Day 05 (1h): PromptCategory(도메인 범주) 독립 모델링 및 관리 API 개발**
+* [x] **Day 05 (1h): PromptCategory(도메인 범주) 독립 모델링 및 관리 API 개발**
     *   기존 단순 문자열 `task` 필드를 오해 없는 명확한 독립 엔티티인 `PromptCategory`(도메인 카테고리) 모델로 분리 및 정규화.
     *   카테고리 CRUD API 구축 및 `Prompt` ↔ `PromptCategory` 관계 매핑/검색 API 개선.
-* [ ] **Day 06 (1h): Version API 개발**
+* [x] **Day 06 (1h): Version API 개발**
     *   프롬프트 변경 시 자동으로 신규 버전을 생성하고 추적하는 이력 관리 API 및 롤백 기능 개발.
 * [ ] **Day 07 (1h): 1주차 주간 정렬 및 하네스 검증**
     *   작성된 API 서버 코드에 대해 Ruff 정렬, MyPy 타입 검사, DRF 유닛 테스트 구동 및 오류 제로 달성.
