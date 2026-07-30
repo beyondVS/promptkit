@@ -1,0 +1,219 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PromptCategory & Prompt Integration API Specification",
+    "description": "API contract for PromptCategory CRUD management and Category-based Prompt filtering in PromptKit Server",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/categories/": {
+      "get": {
+        "summary": "List all domain categories",
+        "description": "Retrieve all PromptCategory entries with prompt count metadata",
+        "responses": {
+          "200": {
+            "description": "Category list with prompt count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PromptCategory"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new domain category",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptCategoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptCategory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or Duplicate name/slug"
+          }
+        }
+      }
+    },
+    "/api/categories/{id}/": {
+      "get": {
+        "summary": "Retrieve category details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptCategory"
+                }
+              }
+            }
+          },
+          "404": { "description": "Category not found" }
+        }
+      },
+      "put": {
+        "summary": "Update category details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptCategoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptCategory"
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "404": { "description": "Category not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "240": { "description": "Deleted successfully (204 No Content)" },
+          "409": { "description": "Conflict: Cannot delete category with linked prompts (ON DELETE Restrict)" },
+          "404": { "description": "Category not found" }
+        }
+      }
+    },
+    "/api/prompts/": {
+      "get": {
+        "summary": "List & search prompts with category filter",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Category ID filter",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "category_slug",
+            "in": "query",
+            "description": "Category Slug filter",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "task",
+            "in": "query",
+            "description": "Legacy category/task search parameter (mapped to category)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered list of prompts"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create prompt with mandatory category",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "category"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "category": { "type": "integer", "description": "PromptCategory ID (Mandatory)" },
+                  "tags": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Prompt created successfully" },
+          "400": { "description": "Validation error or missing category" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PromptCategory": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "description": { "type": "string" },
+          "display_order": { "type": "integer" },
+          "is_active": { "type": "boolean" },
+          "prompt_count": { "type": "integer", "description": "Number of prompts linked to this category" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PromptCategoryCreate": {
+        "type": "object",
+        "required": ["name", "slug"],
+        "properties": {
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "description": { "type": "string" },
+          "display_order": { "type": "integer" },
+          "is_active": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
