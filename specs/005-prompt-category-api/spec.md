@@ -95,7 +95,7 @@
 
 - **Prompt (프롬프트 - 개정)**:
   - 기존 단순 문자열 `task` 필드가 `PromptCategory` 외래키 참조(category)로 정규화 교체/확장됨.
-  - 주요 속성: 고유 식별자, 이름(Name), 설명(Description), 카테고리 참조(Category FK, Mandatory), 태그 목록(Tags), 생성일시, 수정일시.
+  - 주요 속성: 고유 식별자, 영문 고유 슬러그(Slug), 이름(Name), 설명(Description), 카테고리 참조(Category FK, Mandatory), 태그 목록(Tags), 생성일시, 수정일시.
   - 관계: 필수적으로 하나의 PromptCategory에 속함 (1:N 관계의 필수 참조).
 
 ## Success Criteria *(mandatory)*

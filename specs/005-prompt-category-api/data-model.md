@@ -21,6 +21,7 @@ erDiagram
 
     Prompt {
         bigint id PK
+        string slug "Unique canonical slug"
         string name "Unique prompt name"
         text description "Prompt description"
         bigint category_id FK "Mandatory FK to PromptCategory (ON DELETE RESTRICT)"
@@ -61,6 +62,7 @@ erDiagram
 | Attribute | Type | Constraints | Description |
 |-----------|------|-------------|-------------|
 | `id` | `BigAutoField` | Primary Key, Auto Increment | 고유 식별자 |
+| `slug` | `CharField(max_length=100)` | Unique, Non-null, db_index | 프롬프트 정형 식별 슬러그 (예: "customer-support-prompt") |
 | `name` | `CharField(max_length=255)` | Unique, Non-null | 프롬프트 이름 |
 | `description` | `TextField` | Blank=True, Default="" | 프롬프트 설명 |
 | `category` | `ForeignKey(PromptCategory)` | Non-null (Mandatory), `on_delete=models.RESTRICT`, `related_name='prompts'` | 도메인 카테고리 참조 외래키 |
