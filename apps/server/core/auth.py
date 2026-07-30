@@ -2,7 +2,6 @@
 API Key authentication backend for Django REST Framework.
 """
 
-import os
 from typing import Any
 
 from django.conf import settings
@@ -39,12 +38,12 @@ class APIKeyAuthentication(BaseAuthentication):
         """
         Authenticate incoming request using X-API-Key header.
         """
-        api_key: str | None = request.META.get("HTTP_X_API_KEY")
-        expected_key: str = getattr(
-            settings,
-            "PROMPTKIT_API_KEY",
-            os.getenv("PROMPTKIT_API_KEY", "dev-secret-key"),
+        api_key: str | None = (
+            request.headers.get("x-api-key")
+            or request.headers.get("X-API-Key")
+            or request.META.get("HTTP_X_API_KEY")
         )
+        expected_key: str = settings.PROMPTKIT_API_KEY
 
         if not api_key:
             raise exceptions.AuthenticationFailed("Invalid or missing API Key.")

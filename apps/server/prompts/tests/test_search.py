@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.server.prompts.models import Prompt
+from apps.server.prompts.models import Prompt, PromptCategory
 
 
 class MultidimensionalSearchTestCase(TestCase):
@@ -17,25 +17,34 @@ class MultidimensionalSearchTestCase(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.client.credentials(HTTP_X_API_KEY="dev-secret-key")
+        self.client.defaults["HTTP_X_API_KEY"] = "dev-secret-key"
+
+        self.cat_support = PromptCategory.objects.create(
+            name="customer-support",
+            slug="customer-support",
+        )
+        self.cat_codegen = PromptCategory.objects.create(
+            name="code-gen",
+            slug="code-gen",
+        )
 
         # Create sample prompt data
         self.p1 = Prompt.objects.create(
             slug="p1",
             name="고객 상담 가이드라인",
-            task="customer-support",
+            category=self.cat_support,
             tags=["v1", "support", "kr"],
         )
         self.p2 = Prompt.objects.create(
             slug="p2",
             name="코드 생성 도우미",
-            task="code-gen",
+            category=self.cat_codegen,
             tags=["v1", "dev"],
         )
         self.p3 = Prompt.objects.create(
             slug="p3",
             name="고객 환불 처리 안내",
-            task="customer-support",
+            category=self.cat_support,
             tags=["v2", "support", "refund"],
         )
 

@@ -5,6 +5,7 @@ Django settings for promptkit server project.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import find_dotenv, load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'sub_dir'.
@@ -132,13 +133,12 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field/
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # API Key & REST Framework configuration
-PROMPTKIT_API_KEY = os.getenv("PROMPTKIT_API_KEY", "dev-secret-key")
+PROMPTKIT_API_KEY = os.getenv("PROMPTKIT_API_KEY")
+if not PROMPTKIT_API_KEY:
+    raise ImproperlyConfigured("PROMPTKIT_API_KEY environment variable is required.")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

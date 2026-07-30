@@ -6,7 +6,68 @@ from typing import Any
 
 from rest_framework import serializers
 
-from apps.server.prompts.models import Prompt, Section
+from apps.server.prompts.models import Prompt, PromptCategory, Section
+
+
+class PromptCategorySerializer(serializers.ModelSerializer):
+    """
+    Serializer for PromptCategory entity (includes prompt_count metadata).
+    """
+
+    prompt_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = PromptCategory
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "is_active",
+            "prompt_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class PromptCategoryCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and updating PromptCategory.
+    """
+
+    class Meta:
+        model = PromptCategory
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_name(self, value: str) -> str:
+        """Validate category name uniqueness."""
+        instance = getattr(self, "instance", None)
+        query = PromptCategory.objects.filter(name=value)
+        if instance is not None:
+            query = query.exclude(pk=instance.pk)
+        if query.exists():
+            raise serializers.ValidationError("A category with this name already exists.")
+        return value
+
+    def validate_slug(self, value: str) -> str:
+        """Validate category slug uniqueness."""
+        instance = getattr(self, "instance", None)
+        query = PromptCategory.objects.filter(slug=value)
+        if instance is not None:
+            query = query.exclude(pk=instance.pk)
+        if query.exists():
+            raise serializers.ValidationError("A category with this slug already exists.")
+        return value
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -51,6 +112,8 @@ class PromptSerializer(serializers.ModelSerializer):
     Serializer for Prompt summary list and creation.
     """
 
+    category_detail = PromptCategorySerializer(source="category", read_only=True)
+
     class Meta:
         model = Prompt
         fields = [
@@ -58,12 +121,13 @@ class PromptSerializer(serializers.ModelSerializer):
             "slug",
             "name",
             "description",
-            "task",
+            "category",
+            "category_detail",
             "tags",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "category_detail", "created_at", "updated_at"]
 
     def validate_name(self, value: str) -> str:
         """

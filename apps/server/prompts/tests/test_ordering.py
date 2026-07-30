@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.server.prompts.models import Prompt
+from apps.server.prompts.models import Prompt, PromptCategory
 
 
 class PromptOrderingTestCase(TestCase):
@@ -17,23 +17,24 @@ class PromptOrderingTestCase(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.client.credentials(HTTP_X_API_KEY="dev-secret-key")
+        self.client.defaults["HTTP_X_API_KEY"] = "dev-secret-key"
+        self.category = PromptCategory.objects.create(name="support", slug="support")
 
         # Create test prompts
         self.p1 = Prompt.objects.create(
             slug="alpha",
             name="Alpha Prompt",
-            task="support",
+            category=self.category,
         )
         self.p2 = Prompt.objects.create(
             slug="beta",
             name="Beta Prompt",
-            task="support",
+            category=self.category,
         )
         self.p3 = Prompt.objects.create(
             slug="gamma",
             name="Gamma Prompt",
-            task="support",
+            category=self.category,
         )
 
     def test_ordering_by_name_asc(self) -> None:
