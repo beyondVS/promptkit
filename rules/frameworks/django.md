@@ -60,6 +60,5 @@ Django 및 Django REST Framework (DRF) / Django Ninja 기반 프로젝트에 적
 
 ## 📚 6. 외부 생태계 & 레퍼런스 (Ecosystem & References)
 
-- **[awesome-django](https://github.com/wsvincent/awesome-django)**: 검증된 Django 서드파티 패키지(Auth, REST, Celery, Monitoring 등) 탐색을 위한 표준 큐레이션 레퍼런스.
-- **[위키독스 Django 지식 베이스](https://wikidocs.net/book/14021)**: Django 실무 아키텍처 및 튜토리얼 구현 시 참조하는 표준 지식 베이스 레퍼런스.
+- **`python-ecosystem-kb` 스킬**: Django 서드파티 패키지(Auth, REST, Celery 등) 및 파이썬 생태계 큐레이션 탐색 필요 시 `python-ecosystem-kb` 스킬을 활성화하여 온디맨드로 실시간 조회하십시오.
 - **[django-ai-plugins 카탈로그](../architecture/recommended-external-skills.md)**: Django ORM, DRF, Celery 비동기, DB 마이그레이션 안전 수칙 및 코드 리뷰어 외부 스킬 상세 지침 및 설치 가이드는 [recommended-external-skills.md](../architecture/recommended-external-skills.md) 모듈을 참조하십시오.

@@ -36,13 +36,14 @@ Python 생태계(PyPI, uv, pyproject.toml)의 라이브러리 및 패키지 개�
 
 ---
 
-## 🧪 4. 패키지 검증 (twine & build)
+## 🧪 4. 패키지 검증 및 보안 감사 (twine, audit & testing)
 
+- **의존성 취약점 보안 스캔 (Security Audit)**: CI/CD 및 배포 검증 시 `uv audit` 또는 `pip-audit` 명령을 실행하여 CVE 보안 취약점이 있는 의존성 유입 여부를 정기 감사하십시오.
 - **배포 검증**: PyPI 업로드 전 `build` 툴로 파이프라인 산출물(wheel, sdist)을 생성하고 `twine check`를 통해 메타데이터 및 README 렌더링 정상 여부를 확인하십시오.
+- **Hypothesis 기반 속성 기반 테스트 (Property-based Testing)**: 복잡한 데이터 조작 또는 라이브러리 검증 시 단순 픽스처를 넘어 경계값(Edge Cases) 및 불변식(Invariant) 탐색을 위한 Hypothesis 테스트 도입을 적극 권장합니다.
 
 ---
 
 ## 📚 5. 외부 생태계 & 레퍼런스 (Ecosystem & References)
 
-- **[awesome-python](https://github.com/vinta/awesome-python)**: 검증된 파이썬 서드파티 라이브러리 및 툴링 생태계 큐레이션 레퍼런스.
-- **[위키독스 파이썬/패키징 지식 베이스](https://wikidocs.net/book/14021)**: 파이썬 가상환경, 툴체인 및 패키지 개발 지식 베이스 레퍼런스.
+- **`python-ecosystem-kb` 스킬**: 파이썬 모던 툴체인, 서드파티 라이브러리 추천 및 생태계 조회가 필요한 경우 `python-ecosystem-kb` 스킬을 활성화하여 온디맨드로 실시간 조회하십시오.
