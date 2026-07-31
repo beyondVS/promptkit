@@ -24,10 +24,7 @@
 
 ### 2.1 기술 스택 및 패키지 관리
 - **Package Manager**: `uv` (반드시 uv 패키지 매니저의 명령어만 사용할 것)
-  - **선언적 의존성 통제**: 모든 파이썬 의존성은 반드시 `pyproject.toml` 및 `uv.lock`에 선언적으로 명세 및 잠금 관리되어야 하며, 임의의 ad-hoc `pip install`은 엄격히 금지됩니다. 환경 동기화 시에는 오직 `uv sync` 또는 `uv run`을 사용하십시오.
-  - **의존성 그룹 분류 표준 (Dependency Grouping)**:
-    - **프로덕션 런타임 의존성 (`[project.dependencies]`)**: 서비스 구동, API 서빙 및 SDK 실행 시 필수적인 런타임 패키지만 포함시킵니다 (예: `django`, `djangorestframework`, `psycopg`, `python-dotenv`).
-    - **개발 및 테스트 전용 의존성 (`[dependency-groups.dev]`)**: 테스트 러너, 린터, 정적 타입 검사기 등 개발 단계 전용 도구는 프로덕션 이미지 및 라이브러리 경량화를 위해 반드시 `[dependency-groups.dev]` 그룹으로 격리 선언해야 합니다 (예: `pytest`, `pytest-django`, `ruff`, `mypy`, `django-stubs`).
+  - **선언적 의존성 통제 & 그룹 분류**: 모든 파이썬 의존성은 `pyproject.toml` 및 `uv.lock`에 선언 관리되며, 프로덕션 런타임(`[project.dependencies]`)과 개발/테스트 전용(`[dependency-groups.dev]`)을 격리하는 표준은 [constitution.md](.specify/memory/constitution.md) 규정을 준수합니다.
 - **Language / Framework**: `Python 3.13+ / Django, Django REST Framework`
 - **Database / ORM**: `PostgreSQL / Django ORM`
 
@@ -64,6 +61,7 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 ### 3.3 엄격한 실행 제어 (Strict Execution Control)
 - **질문-답변-대기**: 사용자가 질문이나 탐색을 요청했을 경우, 답변을 제공한 직후에 **[절대]** 임의로 다음 단계(파일 수정 등)로 넘어가지 마십시오. 답변과 제안을 먼저 하고 사용자의 추가 지시를 철저히 대기합니다.
+- **Prompt Fatigue 방지 & 일괄 질의 (Batched Questions)**: 요구사항이나 사양이 모호하여 사용자에게 질문할 때 단순히 묻지 말고 **합리적인 기본값(Default Option)을 함께 제안**하며, 복수의 모호점이 존재할 경우 매번 핑퐁 대화를 하지 말고 **1회의 일괄 질문(Batched Questions)**으로 묶어서 질의하십시오.
 - **사전 승인 강제**: 3개 이상의 파일이 변경되거나 아키텍처 수준의 결정이 필요한 고위험 작업은, 코드를 작성하기 전에 **[반드시]** 계획을 수립하고 사용자에게 요약하여 승인을 얻으십시오.
 - **정직과 투명성 (Honesty & Simplicity)**: 구현 시 여러 해석이나 경로가 존재할 경우 독단적으로 하나를 고르지 말고 대안을 제시하며, 더 단순한 해결책이 존재한다면 적극 제안(Push back)하십시오.
 
@@ -90,10 +88,12 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 1. **지시 해석 및 위험도 평가 (Directive vs. Inquiry)**
    - 명시적 지시 (Directive): "수정해", "커밋해"와 같이 결과가 명확한 명령은 즉시 '실행' 단계로 진입. (Low Risk 작업 포함)
    - 탐색적 질문 (Inquiry) / High Risk: 명확한 명령이 없거나 3개 이상 파일 수정이 수반되는 경우, 설계 전략 문서화 및 사전 승인 대기 필수.
+   - **Git Worktree & 격리 작업 공간**: 고위험 파괴적 실험이나 복잡한 리팩토링 수행 시 메인 작업 디렉터리를 오염시키지 않도록 `git worktree` 또는 격리 디렉터를 할당하여 수행하십시오.
 2. **실행 (Execution)**
    - 프로젝트 헌법의 출력 무결성 및 개발 표준을 준수하여 정밀하게 수정하십시오.
+   - **Ask Before Create**: 프로젝트에 기존 존재하지 않는 신규 핵심 문서를 생성해야 할 경우 사전 필요성을 설명하고 승인을 받아 생성하십시오.
 3. **기계적 검증 (Mechanical Validation)**
-   - 수정을 마친 후 터미널을 통해 프로젝트의 빌드/린트/테스트 명령어를 실행하여 변경 사항을 기계적으로 증명하십시오.
+   - 수정을 마친 후 터미널을 통해 프로젝트의 빌드/린트/테스트 명령어를 실행하여 변경 사항을 기계적으로 증명하십시오. 백그라운드 구동 명령(`manage_task`) 및 `git bisect`를 조합한 자율 에러 추적 패턴을 적극 활용하십시오.
 4. **조건부 자가 치유 루프 (Conditional Self-healing)**
    - **기계적 에러** (Linter/포맷팅): 로그를 분석하여 스스로 코드를 수정하고 재검증.
    - **논리적 에러** (테스트 실패/런타임 에러): 즉시 재수정하지 말고, 원인 가설을 설정하여 사용자에게 보고한 뒤 승인 대기.
@@ -111,10 +111,46 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 
 ## 📏 6. 코딩 및 문서화 표준 (Standards Reference)
 
-새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다. 에이전트는 코드 작성 전 해당 문서의 표준을 먼저 정렬한 후 작업을 시작하십시오.
+새로운 코드를 작성하거나 리팩토링 시 적용되는 코딩 표준(기계적 린팅 위임, Why 중심 주석 작성, 커밋 메시지 규약 등)은 **프로젝트 헌법**([constitution.md](.specify/memory/constitution.md))의 품질 및 품질 제어 룰을 온전히 적용받습니다.
+
+필요 시 아래의 온디맨드 특화 규칙 모듈(Read-on-Demand)을 참고하십시오:
+
+### 🏛️ 도메인 및 아키텍처 규칙
+- [backend-api.md](rules/architecture/backend-api.md): Backend & API Architecture Rules (백엔드 및 API 특화 규칙)
+- [database-orm.md](rules/architecture/database-orm.md): Database & ORM General Rules (범용 DB & ORM 설계 및 마이그레이션 규칙)
+- [library-package.md](rules/architecture/library-package.md): General Library & Module Rules (범용 라이브러리 및 패키지 아키텍처 규칙)
+- [monorepo.md](rules/architecture/monorepo.md): Monorepo Architecture Rules (모노레포 아키텍처 특화 규칙)
+- [recommended-external-skills.md](rules/architecture/recommended-external-skills.md): Recommended External Agent Skills (추천 외부 에이전트 스킬 카탈로그)
+- [web-frontend.md](rules/architecture/web-frontend.md): Web Frontend Architecture Rules (웹 프론트엔드 특화 규칙)
+
+### 🛠️ 프레임워크 특화 규칙
+- [django.md](rules/frameworks/django.md): Django Architecture & Development Rules (Django 특화 개발 규칙)
+- [fastapi.md](rules/frameworks/fastapi.md): FastAPI Architecture & Development Rules (FastAPI 특화 개발 규칙)
+- [litestar.md](rules/frameworks/litestar.md): Litestar Architecture & Development Rules (Litestar 특화 개발 규칙)
+- [next.md](rules/frameworks/next.md): Next.js Architecture & Development Rules (Next.js 특화 개발 규칙)
+- [nuxt.md](rules/frameworks/nuxt.md): Nuxt 3 Architecture & Development Rules (Nuxt 3 특화 개발 규칙)
+- [react.md](rules/frameworks/react.md): React.js Architecture & Development Rules (React.js 특화 개발 규칙)
+- [vue.md](rules/frameworks/vue.md): Vue.js 3 Architecture & Development Rules (Vue 3 특화 개발 규칙)
+
+### 📦 패키징 및 배포 생태계 규칙
+- [deployment-nginx.md](rules/packaging/deployment-nginx.md): Nginx Deployment & Proxy Rules (Nginx 리버스 프록시 및 서버 수칙)
+- [deployment-python-server.md](rules/packaging/deployment-python-server.md): Python Application Server Rules (Gunicorn + Uvicorn 배포 규칙)
+- [docker.md](rules/packaging/docker.md): Docker Architecture & Packaging Rules (Docker 컨테이너화 수칙)
+- [package-npm.md](rules/packaging/package-npm.md): NPM Packaging Rules (NPM & Node.js 생태계 패키징 규칙)
+- [package-python.md](rules/packaging/package-python.md): Python Packaging Rules (Python & PyPI 생태계 패키징 규칙)
+
+### 🎨 언어별 코딩 스타일 가이드 (Google Style Guides)
+- [cpp.md](rules/styles/cpp.md): C++ Coding Style Guide (C++ 스타일 및 컨벤션 지침)
+- [csharp.md](rules/styles/csharp.md): C# Coding Style Guide (C# 스타일 및 컨벤션 지침)
+- [dart.md](rules/styles/dart.md): Dart / Flutter Coding Style Guide (Dart 스타일 및 컨벤션 지침)
+- [go.md](rules/styles/go.md): Go Coding Style Guide (Go 스타일 및 컨벤션 지침)
+- [html-css.md](rules/styles/html-css.md): HTML/CSS Style Guide (HTML/CSS 스타일 및 컨벤션 지침)
+- [javascript.md](rules/styles/javascript.md): JavaScript Coding Style Guide (JavaScript 스타일 및 컨벤션 지침)
+- [python.md](rules/styles/python.md): Python Coding Style Guide (Python 스타일 및 컨벤션 지침)
+- [typescript.md](rules/styles/typescript.md): TypeScript Coding Style Guide (TypeScript 스타일 및 컨벤션 지침)
 
 ---
 
 ## 🤖 7. 검증용 서브에이전트 정의 (Auditor Subagent Specification)
 
-메인 에이전트는 구현 단계 완료 후 독립적인 코드 감사를 수행하기 위해 [.agents/agents/auditor/AGENT.md](.agents/agents/auditor/AGENT.md)에 정의된 명세를 파싱 및 연동하여 `auditor` 서브에이전트를 동적으로 기동해야 합니다.
+메인 에이전트는 구현 단계 완료 후 요구사항 대조, 오버엔지니어링 진단, 엣지 케이스 및 헌법 준수 검증을 위해 [.agents/agents/auditor/AGENT.md](.agents/agents/auditor/AGENT.md)에 정의된 명세를 파싱 및 연동하여 `auditor` 서브에이전트를 동적으로 기동해야 합니다.
