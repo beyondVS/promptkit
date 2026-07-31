@@ -23,8 +23,8 @@
 
 **Purpose**: Project environment validation and test harness configuration
 
-- [ ] T001 Verify project dependencies and environment setup using `uv sync`
-- [ ] T002 [P] Create test directory structure for dashboard and API tests in `apps/server/prompts/tests/`
+- [x] T001 Verify project dependencies and environment setup using `uv sync`
+- [x] T002 [P] Create test directory structure for dashboard and API tests in `apps/server/prompts/tests/`
 
 ---
 
@@ -32,9 +32,9 @@
 
 **Purpose**: Core infrastructure that MUST be complete before user stories can be implemented
 
-- [ ] T003 Configure Django Session Authentication and Login redirect URL settings in `apps/server/config/settings.py`
-- [ ] T004 [P] Implement `PROMPTKIT_API_KEY` environment variable reader and authentication helper in `apps/server/prompts/auth.py`
-- [ ] T005 [P] Setup base URL routing for dashboard (`/dashboard/`) and API (`/api/v1/`) in `apps/server/config/urls.py`
+- [x] T003 Configure Django Session Authentication and Login redirect URL settings in `apps/server/config/settings.py`
+- [x] T004 [P] Implement `PROMPTKIT_API_KEY` environment variable reader and authentication helper in `apps/server/prompts/auth.py`
+- [x] T005 [P] Setup base URL routing for dashboard (`/dashboard/`) and API (`/api/v1/`) in `apps/server/config/urls.py`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -48,12 +48,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create Django Session Auth Login and Logout view handling in `apps/server/prompts/views/dashboard.py`
-- [ ] T007 [P] [US1] Create Django HTML Templates for dashboard login and prompt list in `apps/server/prompts/templates/prompts/login.html` and `apps/server/prompts/templates/prompts/prompt_list.html`
-- [ ] T008 [P] [US1] Create Django HTML Templates for prompt create/update/delete forms in `apps/server/prompts/templates/prompts/prompt_form.html` and `apps/server/prompts/templates/prompts/prompt_confirm_delete.html`
-- [ ] T009 [US1] Implement Prompt & Category CUD View logic in `apps/server/prompts/views/dashboard.py` (depends on T006, T007, T008)
-- [ ] T010 [US1] Register dashboard URL routing in `apps/server/prompts/urls.py`
-- [ ] T011 [US1] Add unit & integration tests for Dashboard CUD and Session Auth isolation in `apps/server/prompts/tests/test_dashboard.py`
+- [x] T006 [P] [US1] Create Django Session Auth Login and Logout view handling in `apps/server/prompts/views/dashboard.py`
+- [x] T007 [P] [US1] Create Django HTML Templates for dashboard login and prompt list in `apps/server/prompts/templates/prompts/login.html` and `apps/server/prompts/templates/prompts/prompt_list.html`
+- [x] T008 [P] [US1] Create Django HTML Templates for prompt create/update/delete forms in `apps/server/prompts/templates/prompts/prompt_form.html` and `apps/server/prompts/templates/prompts/prompt_confirm_delete.html`
+- [x] T009 [US1] Implement Prompt & Category CUD View logic in `apps/server/prompts/views/dashboard.py` (depends on T006, T007, T008)
+- [x] T010 [US1] Register dashboard URL routing in `apps/server/prompts/urls.py`
+- [x] T011 [US1] Add unit & integration tests for Dashboard CUD and Session Auth isolation in `apps/server/prompts/tests/test_dashboard.py`
 
 **Checkpoint**: At this point, User Story 1 is fully functional and testable independently (MVP Complete)
 
@@ -67,10 +67,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Create DRF Serializer for Read-only prompt details response in `apps/server/prompts/serializers.py`
-- [ ] T013 [P] [US2] Implement Read-only Fetch API View with `X-PromptKit-Api-Key` Header authentication check in `apps/server/prompts/views/api.py`
-- [ ] T014 [US2] Register Read-only API URL routing (`/api/v1/prompts/<slug>/`) in `apps/server/prompts/urls.py`
-- [ ] T015 [US2] Add unit & integration tests for Read-only API and API Key header validation in `apps/server/prompts/tests/test_read_only_api.py`
+- [x] T012 [P] [US2] Create DRF Serializer for Read-only prompt details response in `apps/server/prompts/serializers.py`
+- [x] T013 [P] [US2] Implement Read-only Fetch API View with `X-PromptKit-Api-Key` Header authentication check in `apps/server/prompts/views/api.py`
+- [x] T014 [US2] Register Read-only API URL routing (`/api/v1/prompts/<slug>/`) in `apps/server/prompts/urls.py`
+- [x] T015 [US2] Add unit & integration tests for Read-only API and API Key header validation in `apps/server/prompts/tests/test_read_only_api.py`
 
 **Checkpoint**: User Story 1 and 2 are both functional and testable independently
 
@@ -84,11 +84,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Update project governance principles in `.specify/memory/constitution.md`
-- [ ] T017 [P] [US3] Update AI agent guidelines and architecture constraints in `AGENTS.md`
-- [ ] T018 [P] [US3] Update project overview, architecture diagram, and SDK usage in `README.md`
-- [ ] T019 [P] [US3] Update remaining documentation files under `docs/` to reflect new architecture boundaries in `docs/`
-- [ ] T020 [US3] Reorganize milestones and update uncompleted schedule tasks in `docs/project_plan.md`
+- [x] T016 [P] [US3] Update project governance principles in `.specify/memory/constitution.md`
+- [x] T017 [P] [US3] Update AI agent guidelines and architecture constraints in `AGENTS.md`
+- [x] T018 [P] [US3] Update project overview, architecture diagram, and SDK usage in `README.md`
+- [x] T019 [P] [US3] Update remaining documentation files under `docs/` to reflect new architecture boundaries in `docs/`
+- [x] T020 [US3] Reorganize milestones and update uncompleted schedule tasks in `docs/project_plan.md`
 
 **Checkpoint**: All user stories and documentation updates are completed
 
@@ -98,9 +98,9 @@
 
 **Purpose**: Quality checks, linter verification, and end-to-end validation
 
-- [ ] T021 [P] Run code formatting and static type analysis using `uv run ruff check ; uv run ruff format ; uv run mypy .`
-- [ ] T022 Run full test suite using `uv run pytest`
-- [ ] T023 Execute quickstart validation guide scenarios per `specs/007-redefine-concept-docs/quickstart.md`
+- [x] T021 [P] Run code formatting and static type analysis using `uv run ruff check ; uv run ruff format ; uv run mypy .`
+- [x] T022 Run full test suite using `uv run pytest`
+- [x] T023 Execute quickstart validation guide scenarios per `specs/007-redefine-concept-docs/quickstart.md`
 
 ---
 

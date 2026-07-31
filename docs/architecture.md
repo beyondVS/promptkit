@@ -134,13 +134,11 @@ response = gemini.models.generate_content(
 - **동작**: 사용자가 프롬프트를 요청할 때 라벨을 명시하지 않은 경우, 무조건 `production` 라벨이 지정된 최신 버전을 매칭하여 반환해야 합니다.
 
 ### 4.2 API 요구사항
-서버가 외부에 노출해야 하는 핵심 API 엔드포인트 목록입니다.
-- 프롬프트 CRUD
-- 버전(Version) CRUD
-- 라벨(Label) CRUD
-- 플레이그라운드 인터페이스
-- API 인증 모듈
-- **⚠️ 절대 원칙**: 서버는 LLM을 호출하거나 실행을 대행하는 어떠한 API도 가지지 않습니다.
+서버가 외부에 노출해야 하는 핵심 API 및 대시보드 엔드포인트 목록입니다.
+- **Django Template 대시보드 (`/dashboard/`)**: 프롬프트/카테고리 CUD, 버전 및 라벨 관리, Django Session Auth 기반 접근 제어
+- **SDK Read-Only API (`/api/v1/prompts/<slug>/`)**: Read-only 프롬프트 조회, `X-PromptKit-Api-Key` HTTP Header 인증 (서버 `.env` 기반 검증)
+- **⚠️ 절대 원칙**: 서버는 외부 SDK에 프롬프트 CUD API를 노출하지 않으며, LLM을 호출하거나 실행을 대행하는 어떠한 API도 가지지 않습니다.
+
 
 ### 4.3 MVP 구성 정의
 초기 가동(MVP)에 필수적으로 보장되어야 하는 범위입니다.

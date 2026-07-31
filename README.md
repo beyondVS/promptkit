@@ -10,8 +10,11 @@ PromptKit은 LLM 기반 애플리케이션에서 사용되는 프롬프트(Promp
 
 ## 💡 Key Principles & Architecture
 
-* **LLM Gateway 배제 (Prompt Registry Focus)**: Prompt Server는 LLM 호출을 대행하지 않으며, 프롬프트 저장, 버전 관리, 라벨 조회 역할에만 집중합니다.
+* **LLM Gateway 배제 (Prompt Registry Focus)**: Prompt Server는 LLM 호출을 대행하지 않으며, 프롬프트 저장, 대시보드 기반 버전 관리(CUD), 및 SDK 전용 Read-only 라벨 조회 역할에만 집중합니다.
+* **Django Template 대시보드 CUD**: 프롬프트 생성, 수정, 삭제(CUD) 및 관리자 인증(Django Session Auth)은 백엔드 대시보드에서 전담합니다.
+* **SDK Read-Only Fetch**: `promptkit-sdk`는 `X-PromptKit-Api-Key` HTTP Header 인증을 거쳐 레지스트리로부터 프롬프트를 안전하게 조회(Read-only)합니다.
 * **SDK-First & Client-Side Compilation**: 동적 변수 파싱 및 컴파일(`compile()`)은 SDK에서 처리하여 서버 부하 및 API 지연(Latency)을 최소화합니다.
+
 * **Framework Agnostic Core SDK**: 코어 SDK (`packages/promptkit`)는 순수 Python 3.13+ 기반으로 유지되며, Django 전용 통합 기능은 독립 패키지(`packages/promptkit-django`)로 확장됩니다.
 * **Label-Driven Fallback**: 라벨 생략 시 기본적으로 `production` 라벨 버전을 자동 반환하며, `draft`, `dev`, `experiment` 라벨 조회를 지원합니다.
 * **Subdirectory 독립 설치**: 모노레포 구조이지만 각 패키지를 외부 비즈니스 프로젝트에서 Git 서브디렉토리로 격리 설치할 수 있습니다.
