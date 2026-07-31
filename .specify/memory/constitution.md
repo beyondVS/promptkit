@@ -21,7 +21,8 @@
 ## Core Principles
 
 ### I. Prompt Registry Focus (프롬프트 레지스트리 역할에 집중)
-Prompt Server는 LLM Gateway가 아닙니다. Prompt의 저장, 제공, 버전 관리, 검색 역할(Prompt Registry)에만 철저히 집중하며, 실제 LLM 호출, 모델 선택, 토큰 및 비용 관리 등은 Business Server 또는 사용자 코드 영역이 담당합니다. SDK는 절대로 LLM을 직접 호출하지 않습니다.
+Prompt Server는 LLM Gateway가 아닙니다. Prompt의 저장, 대시보드 기반 버전 관리(CUD), 및 SDK 전용 Read-only 조회 역할(Prompt Registry)에만 철저히 집중하며, 실제 LLM 호출, 모델 선택, 토큰 및 비용 관리 등은 Business Server 또는 사용자 코드 영역이 담당합니다. SDK는 CUD 기능을 포함하지 않으며 절대로 LLM을 직접 호출하지 않습니다.
+
 
 ### II. SDK-First & Framework Agnostic SDK Core (SDK 우선 및 프레임워크 독립 코어)
 핵심 SDK인 `packages/promptkit`은 특정 웹 프레임워크에 종속되지 않는 범용 라이브러리로 개발합니다. Django와의 연동 및 편의 기능은 완전히 독립된 어플리케이션 패키지인 `packages/promptkit-django`를 통해 확장합니다.

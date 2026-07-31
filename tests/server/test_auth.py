@@ -14,13 +14,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.server.core.auth import APIKeyAuthentication
 from apps.server.core.views import HealthCheckView
+from apps.server.prompts.auth import PromptKitAPIKeyAuthentication
 
 
 # Private Test-Only View for validating API Key Protected routes
 class _TestProtectedView(APIView):
-    authentication_classes: list[Any] = [APIKeyAuthentication]
+    authentication_classes: list[Any] = [PromptKitAPIKeyAuthentication]
     permission_classes: list[Any] = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
@@ -55,7 +55,9 @@ class APIKeyAuthenticationTests(TestCase):
     def test_protected_endpoint_without_api_key_returns_401(self) -> None:
         response = self.client.get("/api/v1/protected/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.json(), {"detail": "Invalid or missing API Key."})
+        self.assertEqual(
+            response.json(), {"detail": "Invalid or missing X-PromptKit-Api-Key header."}
+        )
 
     def test_protected_endpoint_with_invalid_api_key_returns_401(self) -> None:
         response = self.client.get(
@@ -63,7 +65,9 @@ class APIKeyAuthenticationTests(TestCase):
             HTTP_X_API_KEY="wrong-secret-key",
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.json(), {"detail": "Invalid or missing API Key."})
+        self.assertEqual(
+            response.json(), {"detail": "Invalid or missing X-PromptKit-Api-Key header."}
+        )
 
     def test_protected_endpoint_with_valid_api_key_returns_200(self) -> None:
         response = self.client.get(

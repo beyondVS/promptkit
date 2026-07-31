@@ -74,8 +74,8 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 코드베이스 검색만으로는 파악할 수 없는 아키텍처 결정의 "이유(Why)", 비직관적 도메인 로직, 해결되지 않은 기술 부채 등은 이 섹션에 명시하여 AI가 치명적인 실수를 하지 않도록 방어합니다.
 
 - **아키텍처 결정의 이유**:
-  - **Prompt Registry Focus (LLM Gateway 배제)**: Prompt Server는 LLM 호출을 대행하지 않으며, 오직 프롬프트의 저장, 버전 관리, 검색 역할에만 집중합니다. 애플리케이션 코드 수정 및 재배포 없이 프롬프트를 중앙에서 안전하게 관리/릴리즈하기 위한 목적입니다.
-  - **SDK-First & Framework Agnostic**: 코어 SDK인 `packages/promptkit`은 특정 프레임워크에 종속되지 않는 Pure Python 표준으로 가볍게 유지하고, Django 연동 및 최적화 기능은 완전히 독립된 `packages/promptkit-django` 패키지로 확장 설계합니다.
+  - **Prompt Registry Focus (LLM Gateway 배제 & 대시보드 CUD)**: Prompt Server는 LLM 호출을 대행하지 않으며, 오직 프롬프트의 저장, 버전 관리, 검색 역할에만 집중합니다. 프롬프트 생성, 수정, 삭제(CUD)는 Django Session Auth 기반의 Django Template 대시보드에서 전담하며, SDK에는 `X-PromptKit-Api-Key` Header 인증 기반의 Read-only Fetch API만 외부에 노출합니다.
+  - **SDK-First & Framework Agnostic**: 코어 SDK인 `packages/promptkit`은 특정 프레임워크에 종속되지 않는 Pure Python 표준으로 가볍게 유지하고, Read-only 조회(Fetch) 기능만 포함합니다. Django 연동 및 최적화 기능은 완전히 독립된 `packages/promptkit-django` 패키지로 확장 설계합니다.
   - **Client-Side `compile()` 렌더링**: 동적 변수 주입 렌더링 연산 오버헤드를 Prompt Server에 전가하지 않고 SDK단에서 처리하여 서버 부하 및 지연(Latency)을 최소화합니다.
   - **Subdirectory 독립 배포 스펙**: 외부 비즈니스 서비스에서 모노레포를 격리하여 독립 설치(`pip install "git+https://...#subdirectory=packages/promptkit"`)할 수 있도록 모노레포 각 패키지 간의 강결합을 엄격히 차단합니다.
 - **엄격한 접근 제약**: `.specify/memory/constitution.md` 및 프로젝트 규칙을 정의하는 파일은 거버넌스 확인 없이 독단적으로 변경하지 않음.

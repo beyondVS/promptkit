@@ -9,13 +9,13 @@
 ## 📅 주차별 개발 마일스톤
 
 ```text
-[1주차: Core Server 기초] ──> [2주차: SDK Core 및 어댑터] ──> [3주차: Django 연동 및 최종 QA]
+[1주차: Core Server & Dashboard CUD] ──> [2주차: SDK Core 및 어댑터] ──> [3주차: Django 연동 및 최종 QA]
 ```
 
 ---
 
-## 🛠️ 1주차: 개발 환경 구축 및 Core Server 개발 (약 6시간)
-**목표**: 모노레포 구조를 정의하고, Django 기반의 프롬프트 저장소 API 서버의 기본 기능을 확보합니다.
+## 🛠️ 1주차: 개발 환경 구축, Core Server 및 대시보드 CUD 개발 (약 9시간)
+**목표**: 모노레포 구조를 정의하고, Django 기반의 프롬프트 저장소 API 서버, Session Auth 대시보드 CUD, Read-only API를 확보합니다.
 
 * [x] **Day 01 (1h): 프로젝트 초기화 및 모노레포 셋업**
     *   uv 패키지 매니저를 통한 모노레포 가상환경 정의 (`uv sync`).
@@ -34,8 +34,10 @@
     *   카테고리 CRUD API 구축 및 `Prompt` ↔ `PromptCategory` 관계 매핑/검색 API 개선.
 * [x] **Day 06 (1h): Version API 개발**
     *   프롬프트 변경 시 자동으로 신규 버전을 생성하고 추적하는 이력 관리 API 및 롤백 기능 개발.
-* [ ] **Day 07 (1h): 1주차 주간 정렬 및 하네스 검증**
-    *   작성된 API 서버 코드에 대해 Ruff 정렬, MyPy 타입 검사, DRF 유닛 테스트 구동 및 오류 제로 달성.
+* [x] **Day 07 (3h): Feature 007 - promptkit 컨셉 재정의, 대시보드 CUD, Read-Only API & 문서 최신화**
+    *   `apps/server` 내 Django Session Auth 기반의 관리자 대시보드 CUD 화면(`/dashboard/`) 구축 및 프롬프트/카테고리 관리 기능 완성.
+    *   SDK 전용 Read-only 프롬프트 조회 API(`GET /api/v1/prompts/<slug>/`) 구현 및 `.env` 시크릿 기반 `X-PromptKit-Api-Key` 헤더 인증 분리.
+    *   `constitution.md`, `AGENTS.md`, `README.md`, `docs/*.md` 및 `docs/project_plan.md` 최신 아키텍처 사양 동기화 완료.
 
 ---
 

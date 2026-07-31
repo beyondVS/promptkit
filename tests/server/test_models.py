@@ -9,6 +9,7 @@ from django.test import TestCase
 from apps.server.prompts.models import (
     Label,
     Prompt,
+    PromptCategory,
     Section,
     VariableDefinition,
     Version,
@@ -20,15 +21,21 @@ class PromptRegistryModelTests(TestCase):
     Comprehensive tests for Prompt, Version, Label, VariableDefinition, and Section models.
     """
 
+    category: PromptCategory
     prompt: Prompt
     version1: Version
     version2: Version
 
     @classmethod
     def setUpTestData(cls) -> None:
+        cls.category, _ = PromptCategory.objects.get_or_create(
+            slug="general",
+            defaults={"name": "General", "description": "General category"},
+        )
         cls.prompt = Prompt.objects.create(
             slug="welcome-email",
             name="Welcome Email Prompt",
+            category=cls.category,
             description="Email sent to new users",
         )
         cls.version1 = Version.objects.create(
@@ -69,6 +76,7 @@ class PromptRegistryModelTests(TestCase):
         temp_prompt = Prompt.objects.create(
             slug="temp-prompt",
             name="Temp Prompt",
+            category=self.category,
         )
         temp_prompt_id = temp_prompt.id
         Version.objects.create(
