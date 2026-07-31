@@ -140,9 +140,14 @@ PROMPTKIT_API_KEY = os.getenv("PROMPTKIT_API_KEY")
 if not PROMPTKIT_API_KEY:
     raise ImproperlyConfigured("PROMPTKIT_API_KEY environment variable is required.")
 
+# Dashboard Session Auth URLs
+LOGIN_URL = "/dashboard/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/dashboard/login/"
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "apps.server.core.auth.APIKeyAuthentication",
+        "apps.server.prompts.auth.PromptKitAPIKeyAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",

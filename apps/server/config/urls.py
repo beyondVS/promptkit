@@ -11,4 +11,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/health/", HealthCheckView.as_view(), name="api-v1-health"),
     path("api/v1/", include("apps.server.prompts.urls")),
+    path("dashboard/", include("apps.server.prompts.urls")),
 ]

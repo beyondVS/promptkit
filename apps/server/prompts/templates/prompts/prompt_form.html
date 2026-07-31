@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_create %}Create New Prompt{% else %}Edit Prompt - {{ prompt.slug }}{% endif %}</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-group textarea {
+            font-family: monospace;
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PromptKit Dashboard</h1>
+    </header>
+
+    <main>
+        <div class="card">
+            <div class="card-header">
+                <h2>{% if is_create %}Create New Prompt Asset{% else %}Edit Prompt: {{ prompt.slug }}{% endif %}</h2>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Human Readable Name</label>
+                    <input type="text" name="name" id="name" value="{{ prompt.name|default:'' }}" required placeholder="e.g. Customer Support Greeting">
+                </div>
+
+                {% if is_create %}
+                <div class="form-group">
+                    <label for="slug">Slug (Unique Identifier)</label>
+                    <input type="text" name="slug" id="slug" value="" required placeholder="e.g. customer-support">
+                </div>
+                {% else %}
+                <div class="form-group">
+                    <label>Slug (Canonical Key)</label>
+                    <input type="text" value="{{ prompt.slug }}" disabled style="opacity: 0.6;">
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="category_id">Category</label>
+                    <select name="category_id" id="category_id" required>
+                        <option value="">-- Select Category --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if prompt and prompt.category.id == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input type="text" name="description" id="description" value="{{ prompt.description|default:'' }}" placeholder="Short purpose description">
+                </div>
+
+                <div class="form-group">
+                    <label for="template_text">Prompt Template Text ({variable_name} placeholder syntax)</label>
+                    <textarea name="template_text" id="template_text" placeholder="Hello {user_name}, welcome to {service_name}!">{{ latest_version.template_text|default:'' }}</textarea>
+                </div>
+
+                {% if not is_create %}
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="create_new_version" id="create_new_version" value="true">
+                    <label for="create_new_version" style="margin: 0; cursor: pointer; color: var(--text-main);">
+                        Save as a NEW Version (bumps version number & sets as 'production' label)
+                    </label>
+                </div>
+                {% endif %}
+
+                <div class="form-actions">
+                    <a href="{% url 'dashboard-prompt-list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">{% if is_create %}Create Prompt{% else %}Save Changes{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

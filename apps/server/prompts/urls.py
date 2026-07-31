@@ -1,54 +1,45 @@
 """
-URL routing configuration for Prompt Registry API endpoints.
+URL routing configuration for Prompt Registry API endpoints and Dashboard.
 """
 
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
 
-from apps.server.prompts.views import (
-    PromptCategoryViewSet,
-    PromptViewSet,
-    SectionViewSet,
-    VersionViewSet,
+from apps.server.prompts.views.api import SDKPromptFetchAPIView
+from apps.server.prompts.views.dashboard import (
+    DashboardLoginView,
+    DashboardLogoutView,
+    DashboardPromptCreateView,
+    DashboardPromptDeleteView,
+    DashboardPromptListView,
+    DashboardPromptUpdateView,
 )
 
-router = DefaultRouter()
-router.register(r"categories", PromptCategoryViewSet, basename="category")
-router.register(r"prompts", PromptViewSet, basename="prompt")
-router.register(r"sections", SectionViewSet, basename="section")
+# SDK Read-Only API URLs
+api_urlpatterns = [
+    path("prompts/<str:slug>/", SDKPromptFetchAPIView.as_view(), name="sdk-prompt-fetch"),
+]
+
+# Dashboard URLs
+dashboard_urlpatterns = [
+    path("login/", DashboardLoginView.as_view(), name="dashboard-login"),
+    path("logout/", DashboardLogoutView.as_view(), name="dashboard-logout"),
+    path("", DashboardPromptListView.as_view(), name="dashboard-prompt-list"),
+    path("prompts/create/", DashboardPromptCreateView.as_view(), name="dashboard-prompt-create"),
+    path(
+        "prompts/<int:pk>/edit/",
+        DashboardPromptUpdateView.as_view(),
+        name="dashboard-prompt-update",
+    ),
+    path(
+        "prompts/<int:pk>/delete/",
+        DashboardPromptDeleteView.as_view(),
+        name="dashboard-prompt-delete",
+    ),
+]
 
 urlpatterns = [
-    path("", include(router.urls)),
-    path(
-        "prompts/<int:prompt_id>/sections/",
-        SectionViewSet.as_view({"get": "list", "post": "create"}),
-        name="prompt-sections-list",
-    ),
-    path(
-        "prompts/<int:prompt_id>/versions/",
-        VersionViewSet.as_view({"get": "list", "post": "create"}),
-        name="prompt-versions-list",
-    ),
-    path(
-        "prompts/<int:prompt_id>/versions/<int:version_number>/",
-        VersionViewSet.as_view(
-            {
-                "get": "retrieve",
-                "put": "update",
-                "patch": "partial_update",
-                "delete": "destroy",
-            }
-        ),
-        name="prompt-versions-detail",
-    ),
-    path(
-        "prompts/<int:prompt_id>/versions/rollback/",
-        VersionViewSet.as_view({"post": "rollback"}),
-        name="prompt-versions-rollback",
-    ),
-    path(
-        "prompts/<int:prompt_id>/versions/diff/",
-        VersionViewSet.as_view({"get": "diff"}),
-        name="prompt-versions-diff",
-    ),
+    # Dashboard routes
+    path("", include(dashboard_urlpatterns)),
+    # API routes
+    path("v1/", include(api_urlpatterns)),
 ]
