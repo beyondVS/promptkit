@@ -80,7 +80,7 @@ class DashboardLogoutView(View):
         return self.post(request)
 
 
-class DashboardPromptListView(LoginRequiredMixin, DashboardStaffRequiredMixin, ListView[Prompt]):
+class DashboardPromptListView(LoginRequiredMixin, DashboardStaffRequiredMixin, ListView):  # type: ignore[type-arg]
     """
     List all prompts in the registry for dashboard management.
     """
