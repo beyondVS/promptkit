@@ -119,6 +119,7 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
 필요 시 아래의 온디맨드 특화 규칙 모듈(Read-on-Demand)을 참고하십시오:
 
 ### 🏛️ 도메인 및 아키텍처 규칙
+- [ai-llm-rag.md](rules/architecture/ai-llm-rag.md): AI / LLM Application & RAG Architecture Rules (AI & RAG 시스템 아키텍처 지침)
 - [backend-api.md](rules/architecture/backend-api.md): Backend & API Architecture Rules (백엔드 및 API 특화 규칙)
 - [database-orm.md](rules/architecture/database-orm.md): Database & ORM General Rules (범용 DB & ORM 설계 및 마이그레이션 규칙)
 - [library-package.md](rules/architecture/library-package.md): General Library & Module Rules (범용 라이브러리 및 패키지 아키텍처 규칙)
