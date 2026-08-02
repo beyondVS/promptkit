@@ -1,13 +1,13 @@
 # Nginx Deployment & Proxy Rules (Nginx 리버스 프록시 및 서버 수칙)
 
-Nginx를 Reverse Proxy, Web Server, SSL Termination 용도로 배포할 때 적용되는 아키텍처 및 보안 설정 지침입니다.
+Nginx를 Reverse Proxy, Web Server, TLS Termination 또는 ingress 계층으로 운영할 때 적용되는 아키텍처 및 보안 설정 지침입니다. CDN, API Gateway, 관리형 ingress 또는 PaaS가 이 책임을 제공하는 경우에는 해당 플랫폼의 공식 보안·운영 가이드를 우선합니다.
 
 ---
 
 ## 🌐 1. 프록시 헤더 필수 설정 (Proxy Headers)
 
-- **클라이언트 식별 헤더 누락 금지**:
-  - 백엔드(FastAPI, Node.js, Django 등)로 요청을 전파할 때, 클라이언트의 실제 IP와 프로토콜이 유지되도록 아래 헤더를 `proxy_pass`와 함께 필수로 선언하십시오:
+- **신뢰 경계 내 클라이언트 식별 헤더**:
+  - Nginx가 신뢰하는 상위 프록시 또는 직접 연결된 클라이언트의 요청을 백엔드로 전달할 때, 애플리케이션의 proxy trust 설정과 일치하도록 아래 헤더를 구성하십시오. 공개 인터넷에서 전달된 임의의 `X-Forwarded-*` 헤더를 무조건 신뢰하지 마십시오:
     ```nginx
     proxy_set_header Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -24,7 +24,7 @@ Nginx를 Reverse Proxy, Web Server, SSL Termination 용도로 배포할 때 적�
 - **클라이언트 바디 용량 제한 (`client_max_body_size`)**:
   - 무제한 업로드로 인한 DoS 공격을 방지하기 위해 서비스에 알맞은 용량(예: `client_max_body_size 10M;`)을 지정하십시오.
 - **보안 헤더 주입**:
-  - 기본 HTTP 응답 헤더에 `X-Frame-Options SAMEORIGIN`, `X-Content-Type-Options nosniff`, `X-XSS-Protection "1; mode=block"`을 추가하십시오.
+  - 애플리케이션·CDN·Nginx 중 한 계층에서 일관된 보안 헤더 정책을 적용하십시오. `X-Frame-Options`와 `X-Content-Type-Options`는 검토하되, 폐기된 `X-XSS-Protection`은 새 설정의 기본값으로 추가하지 마십시오. CSP, HSTS 등은 서비스의 TLS·콘텐츠 정책과 호환성을 검증한 뒤 적용하십시오.
 
 ---
 

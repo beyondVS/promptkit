@@ -1,6 +1,6 @@
 # C# Coding Style Guide (C# 스타일 및 컨벤션 지침)
 
-Google C# Style Guide 기반의 관용적 .NET 코딩 규격입니다.
+Google C# Style Guide 기반의 관용적 .NET 코딩 규격입니다. 기존 프로젝트에서는 `.editorconfig`와 팀 관례를 우선하며, 신규 프로젝트에서는 이 문서를 기본 프로필로 사용하고 `dotnet format` 또는 동등한 formatter로 기계적으로 확정하십시오.
 
 ---
 
@@ -16,7 +16,7 @@ Google C# Style Guide 기반의 관용적 .NET 코딩 규격입니다.
 
 ## 📐 2. 포맷팅 및 구조 (Formatting & Structure)
 
-- **들여쓰기**: 2공백 들여쓰기 (탭 사용 금지)
+- **들여쓰기**: 탭을 사용하지 않고 프로젝트 `.editorconfig`를 따르십시오. 신규 프로젝트의 기본값은 .NET 관례에 맞는 4공백입니다.
 - **한 줄 길이**: 100자 제한
 - **선언 순서**:
   1. Static, Const, Readonly 필드
