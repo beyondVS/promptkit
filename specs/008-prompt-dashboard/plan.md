@@ -67,7 +67,7 @@ specs/008-prompt-dashboard/
 .specify/memory/constitution.md       # Governance policy amendment
 AGENTS.md                             # Branch/documentation workflow alignment
 docs/
-├── prompt-server-requirements.md     # PRD-level lifecycle and API boundary
+├── promptkit-server-requirements.md    # PRD-level lifecycle and API boundary
 ├── project-spec.md                   # Product-level label and SDK policy
 ├── architecture.md                   # Lifecycle, routing, data, API architecture
 ├── project-plan.md                   # Day 08+ schedule only

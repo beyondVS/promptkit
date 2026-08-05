@@ -188,4 +188,4 @@
 - 사용자 정의 라벨은 영문·숫자·하이픈 식별자로 제한하며 예약 라벨 이름은 사용할 수 없다.
 - 콘텐츠 안의 변수 참조는 `{{ variable_name }}` 형식으로 제한한다.
 - 랜딩 페이지는 공개 정보와 로그인 진입만 제공하며 회원 가입·비밀번호 재설정·외부 인증 연동은 이번 범위에 포함하지 않는다.
-- 문서 반영 시 `docs/prompt-server-requirements.md`에는 대시보드·상태·라벨 정책을, `docs/project-spec.md`와 `docs/architecture.md`에는 on-live/`latest` 정합성을 반영한다. `docs/project-plan.md`에는 Day 08 이후 대시보드 고도화 일정을 우선 배치하고 이후 SDK 및 통합 일정을 순연한다.
+- 문서 반영 시 `docs/promptkit-server-requirements.md`에는 대시보드·상태·라벨 정책을, `docs/project-spec.md`와 `docs/architecture.md`에는 on-live/`latest` 정합성을 반영한다. `docs/project-plan.md`에는 Day 08 이후 대시보드 고도화 일정을 우선 배치하고 이후 SDK 및 통합 일정을 순연한다.

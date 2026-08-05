@@ -122,10 +122,10 @@ uv run pytest
 
 ## 📄 Documentation
 
-* 📌 [Prompt Server Requirements](docs/prompt-server-requirements.md)
+* 📌 [Prompt Server Requirements](docs/promptkit-server-requirements.md)
 * 📐 [Project Specification](docs/project-spec.md)
 * 🗺️ [Architecture Diagram](docs/architecture.md)
-* 📅 [Implementation Plan (18-Day MVP)](docs/project-plan.md)
+* 📅 [Implementation Plan (19-Day MVP)](docs/project-plan.md)
 * 📜 [Project Constitution](.specify/memory/constitution.md)
 
 ---

@@ -1,209 +1,64 @@
 # PromptKit Project Specification
 
-## 1. Project Overview
-
-PromptKit is a lightweight self-hosted Prompt Management Server.
-
-Scope:
-- Prompt management
-- Version management
-- Label management
-- Prompt compilation
-- Python SDK
-- Django integration
-
-Out of Scope:
-- Tracing
-- Evaluation
-- Workflow Engine
-- Agent Framework
-- Analytics
-- Cost Dashboard
+본 문서는 PromptKit 프로젝트의 종합 기술 사양서이자 핵심 가이드라인(Single Source of Truth)입니다.
 
 ---
 
-# 2. Monorepo
+## 1. Project Overview & Scope
 
-```text
-promptkit/
-├── apps/
-│   └── server/
-├── packages/
-│   ├── promptkit/
-│   └── promptkit-django/
-├── docs/
-├── examples/
-└── tests/
-```
+PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트리(Prompt Registry) 및 클라이언트 측 컴파일 SDK입니다.
 
----
+### In Scope
+- 프롬프트 CRUD 및 대시보드 기반 이력/버전 관리
+- On-live 및 발행 라벨 기반 배포 관리
+- SDK 측 로컬 동적 변수 컴파일 및 validation
+- Framework-agnostic Python Core SDK (`packages/promptkit`)
+- Django 애플리케이션용 통합 패키지 (`packages/promptkit-django`)
+- 웹 대시보드 내 템플릿 테스트용 Playground
 
-# 3. Packages
-
-## apps/server
-
-Responsibilities
-
-- Prompt CRUD
-- Version
-- Label
-- Variable
-- Section
-- Playground
-- REST API
-- Authentication
-
-Technology
-
-- Django
-- Django REST Framework
-- PostgreSQL
+### Out of Scope (코어 복잡성 제외)
+- LLM 호출 트레이싱(Tracing) 및 실시간 로깅
+- 프롬프트 품질 평가(Evaluation)
+- 멀티스텝 워크플로우 엔진(Workflow Engine)
+- 에이전트 프레임워크(Agent Framework)
+- 비용/사용량 통계 대시보드(Analytics & Cost Dashboard)
 
 ---
 
-## packages/promptkit
+## 2. Technical Stack & Development Rules
 
-Responsibilities
+### Technology Stack
+- **Language / Runtime**: Python 3.13+
+- **Package Manager**: `uv` (선언적 의존성 통제)
+- **Server Framework**: Django 5.x, Django REST Framework, PostgreSQL (Production) / SQLite (Local Development)
+- **Static Analysis & Linting**: Ruff, MyPy (`strict` / type hints mandatory)
+- **Test Framework**: `pytest` (Django ORM 테스트는 `TestCase` 활용)
+- **Schema Validation**: Pydantic v2
 
-- REST Client
-- Prompt Retrieval
-- compile()
-- Validation
-- CompiledPrompt
-- JSON Schema
-- Adapters
-
-Adapters
-
-- Gemini
-- OpenAI
-- LiteLLM
-
-SDK NEVER calls an LLM directly.
-
-Adapters only convert CompiledPrompt into provider-specific request arguments.
+### Core Rules
+- **No Secrets**: API Key, DB 비밀번호 등 민감 정보 하드코딩 금지 (`.env` 전용).
+- **SDK Boundaries**: SDK는 절대로 LLM API를 직접 호출하지 않음 (Adapters는 렌더링된 인자 포맷팅만 전담).
+- **Git Subdirectory Installation**: 모노레포 내 각 패키지(`packages/promptkit` 등)는 독립적으로 설치 가능해야 함:
+  ```bash
+  pip install "git+https://github.com/<org>/promptkit.git#subdirectory=packages/promptkit"
+  ```
 
 ---
 
-## packages/promptkit-django
+## 3. Package Specification
 
-Responsibilities
-
-- Django Settings
-- Cache
-- Helper APIs
-
-Depends on promptkit only.
+| 패키지 | 주요 역할 및 책임 | 주요 의존성 |
+| :--- | :--- | :--- |
+| `apps/server` | 프롬프트 저장소, 대시보드 CUD, Read-Only API Serving | Django, DRF, PostgreSQL |
+| `packages/promptkit` | 원격 프롬프트 fetch, 로컬 `compile()`, Pydantic 변수 검증, LLM Adapters | Pydantic v2, httpx |
+| `packages/promptkit-django` | Django Settings 연동, Cache 기반 프롬프트 조회 최적화, Helper APIs | `promptkit`, Django |
 
 ---
 
-# 4. Compile Flow
+## 4. MVP Definition
 
-```
-Prompt
-    ↓
-Version
-    ↓
-Label
-    ↓
-Variables
-    ↓
-Compile
-    ↓
-CompiledPrompt
-    ↓
-Adapter
-    ↓
-LLM SDK
-```
-
-Example
-
-```python
-prompt = client.prompts.get("summary")
-
-compiled = prompt.compile(
-    params={
-        "title": "...",
-        "content": "...",
-    }
-)
-
-compiled = GeminiAdapter().prepare(compiled)
-
-response = gemini.models.generate_content(
-    model="gemini-2.5-pro",
-    **compiled,
-)
-```
-
----
-
-# 5. Labels and deployment
-
-- Omitted SDK labels resolve only to the prompt's on-live published version.
-- No on-live version returns no-deployable-version without fallback.
-- `latest` is the only system-reserved label and points to the last published version.
-- Custom labels target published versions only; `production` is forbidden.
-
----
-
-# 6. API Requirements
-
-- Dashboard CUD is session-authenticated and CSRF-protected.
-- SDK exposes only API-key-authenticated `GET /api/v1/prompts/<slug>/`.
-- Omitted labels resolve only to on-live; explicit labels resolve only to published targets.
-- No SDK CUD or LLM execution API is exposed.
-
----
-
-# 7. Git Installation
-
-Every package must be installable independently.
-
-```bash
-pip install "git+https://github.com/<org>/promptkit.git#subdirectory=packages/promptkit"
-```
-
----
-
-# 8. Design Principles
-
-- Keep the project lightweight.
-- Self-hosted first.
-- SDK first.
-- Framework agnostic core.
-- Django only for server and integration.
-- Prompts are application assets.
-- Server stores prompts only.
-- SDK compiles prompts.
-- Adapter converts requests.
-- LLM execution belongs to user code.
-
----
-
-# 9. Coding Rules
-
-- Python 3.13+
-- uv
-- Ruff
-- MyPy
-- pytest
-- Type hints required
-- Pydantic v2
-- No hardcoded secrets
-- Full unit tests for public APIs
-
----
-
-# 10. Definition of MVP
-
-- Prompt CRUD
-- Version
-- Label
-- Compile
-- Python SDK
-- Gemini Adapter
-- LiteLLM Adapter
-- Django Integration
-- Playground
+1. **Prompt Server**: 대시보드 CUD (`/dashboard/`), Read-Only API (`GET /api/v1/prompts/<slug>/`)
+2. **Version & Deployment**: 초안/발행/복제(Clone) 라이프사이클, On-live 지정 (자동 Fallback 금지, `production` 라벨 금지)
+3. **Core SDK & Adapters**: `PromptKitClient`, `compile()`, Gemini / LiteLLM Adapters
+4. **Django Integration**: `promptkit-django` 캐싱 및 설정 자동화
+5. **Playground**: 대시보드 내 템플릿 컴파일 프리뷰 인터페이스

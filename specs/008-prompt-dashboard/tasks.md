@@ -14,7 +14,7 @@
 
 - [X] T001 Amend on-live default lookup, published-only labels, `latest`, and `production` prohibition in `.specify/memory/constitution.md`
 - [X] T002 Align branch workflow, documentation scope, and post-implementation audit guidance in `AGENTS.md`
-- [X] T003 [P] Replace rollback/environment/production assumptions with draft-publish-on-live policy in `docs/prompt-server-requirements.md`
+- [X] T003 [P] Replace rollback/environment/production assumptions with draft-publish-on-live policy in `docs/promptkit-server-requirements.md`
 - [X] T004 [P] Replace label, compile-flow, and SDK default-lookup policy in `docs/project-spec.md`
 - [X] T005 [P] Update lifecycle, routing, API boundary, and MVP architecture in `docs/architecture.md`
 - [X] T006 Update only incomplete Day 08+ milestones for lifecycle, labels, SDK lookup, and validation in `docs/project-plan.md`
