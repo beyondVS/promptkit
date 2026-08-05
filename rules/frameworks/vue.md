@@ -10,9 +10,9 @@ Vue 3 (Single Page Application, Composition API, Vite) 기반 프로젝트에 �
   - 언어(JavaScript vs TypeScript) 및 API 스타일(Composition API 대 Options API)은 **프로젝트의 기존 컨벤션 및 규모**를 최우선으로 따르십시오.
   - 신규 프로젝트나 가독성/타입 안전성이 요구되는 경우, Composition API와 `<script setup>` 문법(필요 시 TypeScript `lang="ts"`)을 우선적으로 권장합니다.
 - **SFC 태그 순서 정합성**:
-  - 모든 `.vue` 파일은 `<script setup>` ➔ `<template>` ➔ `<style scoped>` 순서로 정리하십시오.
+  - 모든 `.vue` 파일은 `<script setup>` ➔ `<template>` ➔ `<style>` 순서로 정리하십시오.
 - **`scoped` 스타일 가이드**:
-  - CSS 스타일링은 컴포넌트 간 오염을 막기 위해 반드시 `<style scoped>`를 명시하십시오.
+  - 컴포넌트 전용 스타일에는 `<style scoped>`를 기본으로 사용합니다. 전역 디자인 토큰, reset, 테마 또는 프로젝트가 채택한 CSS Modules·유틸리티 CSS는 기존 스타일 아키텍처를 따릅니다.
 
 ---
 

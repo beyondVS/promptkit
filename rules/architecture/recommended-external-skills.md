@@ -17,6 +17,7 @@ npx skills add <repository-url>
 # 2) 특정 단독 스킬 선택 설치 예시
 npx skills add <repository-url> --skill "<skill-name>"
 ```
+
 ---
 
 ## 🎨 1. 프론트엔드 & UI 디자인 스킬
