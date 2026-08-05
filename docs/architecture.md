@@ -1,33 +1,12 @@
 # PromptKit Architecture & Implementation Specification
 
-본 문서는 PromptKit 프로젝트의 아키텍처와 구현 사양을 기술합니다. 이 문서는 헌법(`constitution.md`) 및 에이전트 규칙(`AGENTS.md`)의 구체적인 구현 지침서 역할을 수행합니다.
+본 문서는 PromptKit 프로젝트의 시스템 아키텍처, 컴포넌트 간 상호작용 및 데이터 컴파일 흐름을 기술합니다. 이 문서는 헌법(`constitution.md`) 및 에이전트 규칙(`AGENTS.md`)의 시스템 아키텍처 가이드라인 역할을 수행합니다.
 
 ---
 
-## 1. Project Overview & Scope
+## 1. Monorepo Architecture
 
-PromptKit은 경량 자가호스팅 프롬프트 관리 서버 및 개발자 친화적인 SDK 세트입니다.
-
-### In Scope
-- 프롬프트 CRUD 및 변경 이력(Version) 관리
-- 활성 라벨(Label) 관리
-- SDK 수준의 동적 변수 컴파일(Compile)
-- Framework-agnostic Python SDK 패키지 제공
-- Django 어플리케이션용 통합 패키지 제공
-- 프롬프트 테스트용 플레이그라운드(Playground)
-
-### Out of Scope (코어 복잡성 제외 항목)
-- LLM 호출 트레이싱(Tracing) 및 실시간 로깅
-- 프롬프트 품질 평가(Evaluation)
-- 멀티스텝 프롬프트 워크플로우 엔진(Workflow Engine)
-- 에이전트 프레임워크(Agent Framework)
-- 사용량 및 비용 대시보드(Analytics & Cost Dashboard)
-
----
-
-## 2. Monorepo Architecture
-
-PromptKit은 다음과 같은 구조의 단일 저장소(Monorepo)로 개발됩니다.
+PromptKit은 다음과 같이 분리된 역할과 책임을 가진 단일 저장소(Monorepo)로 구성됩니다. 상세 사양은 [project-spec.md](project-spec.md)를 참조하십시오.
 
 ```text
 promptkit/
@@ -41,37 +20,27 @@ promptkit/
 └── tests/                    # 유닛 및 통합 테스트
 ```
 
-### 2.1 apps/server (Prompt Server)
-- **역할**: 프롬프트 데이터의 물리적 영속성 및 원격 API 관리
-- **스택**: Python 3.13+, Django, Django REST Framework, PostgreSQL
-- **기능**:
-  - 프롬프트 CRUD API
-  - 버전(Version) 관리 API
-  - 라벨(Label) 관리 API
-  - 변수(Variable) 명세 및 섹션(Section) 메타데이터 관리
-  - 관리자용 플레이그라운드 인터페이스 제공
-  - API 호출 인증(Authentication)
+### 1.1 apps/server (Prompt Server)
+- **역할**: 프롬프트 데이터의 영속성 관리, 스태프 대시보드 CUD 및 Read-only API 서빙
+- **접근 제어**:
+  - **대시보드 CUD (`/dashboard/`)**: Django Session Auth 및 CSRF 보장 (스태프 전용)
+  - **SDK Read-Only API (`/api/v1/prompts/<slug>/`)**: `X-PromptKit-Api-Key` Header 인증
+- **원칙**: 외부 SDK에 프롬프트 CUD API를 노출하지 않으며, LLM을 직접 호출하지 않음.
 
-### 2.2 packages/promptkit (Python SDK)
-- **역할**: 프롬프트의 동적 컴파일 및 공급자별 Adapter 연동을 제공하는 핵심 코어 SDK
-- **기능**:
-  - REST API Client 제공 (Server와 연동하여 원격 프롬프트 조회)
-  - 로컬 컴파일(`compile()`) 엔진 구현
-  - 변수 검증(Validation) 및 JSON Schema 호환
-  - LLM 공급자 어댑터(Gemini, OpenAI, LiteLLM) 구현
-- **⚠️ 절대 원칙**: SDK는 절대로 LLM Provider의 API를 직접 호출하지 않습니다. Adapters는 컴파일된 결과물(`CompiledPrompt`)을 공급자 라이브러리 형식에 알맞은 파라미터(Arguments)로 전환하는 포맷팅 역할만 담당합니다.
+### 1.2 packages/promptkit (Python SDK Core)
+- **역할**: 서버로부터 원격 프롬프트를 조회하고, 클라이언트 측에서 동적 변수를 파싱/컴파일하여 LLM 인자로 변환
+- **컴포넌트**:
+  - `PromptKitClient`: Read-Only REST API Client
+  - `compile()` 엔진: Pydantic v2 기반 변수 유효성 검증 및 로컬 Jinja2-style 렌더링
+  - `Adapters`: 컴파일 결과를 공급자 규격(Gemini, OpenAI, LiteLLM 등)으로 전환
 
-### 2.3 packages/promptkit-django (Django Integration)
-- **역할**: Django 환경에서 PromptKit을 플러그인 형태로 손쉽게 적용할 수 있도록 돕는 라이브러리
-- **의존성**: Python SDK(`packages/promptkit`)에만 의존
-- **기능**:
-  - Django Settings.py 기반 자동 초기화 설정
-  - 캐시(Django Cache) 기반 프롬프트 조회 최적화
-  - 편의용 Helper APIs 제공
+### 1.3 packages/promptkit-django (Django Integration)
+- **역할**: Django 웹 애플리케이션에서 PromptKit SDK를 플러그인 형태로 손쉽게 적용할 수 있도록 돕는 라이브러리
+- **기능**: Django Settings 연동, Django Cache 기반 프롬프트 Caching & ETag 무효화 헬퍼
 
 ---
 
-## 3. Prompt Compile Flow
+## 2. Prompt Compile Flow
 
 프롬프트가 서버에 저장된 이후, 사용자의 코드 내에서 LLM API로 도달하기까지의 데이터 컴파일 흐름은 다음과 같습니다.
 
@@ -80,7 +49,7 @@ Prompt (서버 저장 원본)
     ↓
 Version (특정 버전 선택)
     ↓
-Label (라벨 매핑 예: production)
+Deployment Selector (On-live 또는 명시한 발행 라벨)
     ↓
 Variables (동적 주입 변수 매핑)
     ↓
@@ -101,9 +70,9 @@ from promptkit.adapters import GeminiAdapter
 import google.genai as gemini
 
 # 1. 클라이언트 초기화
-client = PromptKitClient(base_url="http://localhost:8000", api_key="...")
+client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
 
-# 2. 프롬프트 조회 (라벨 생략 시 'production' 기본 적용)
+# 2. 프롬프트 조회 (라벨 생략 시 on-live 발행 버전만 반환)
 prompt = client.prompts.get("summary")
 
 # 3. SDK 수준에서의 로컬 컴파일 실행
@@ -126,26 +95,15 @@ response = gemini.models.generate_content(
 
 ---
 
-## 4. Operational Rules
+## 3. Deployment & Operational Rules
 
-### 4.1 Labels 정책
-- **기본값 (Default Label)**: `production`
-- **지원 선택 라벨 (Optional Labels)**: `draft`, `dev`, `experiment`
-- **동작**: 사용자가 프롬프트를 요청할 때 라벨을 명시하지 않은 경우, 무조건 `production` 라벨이 지정된 최신 버전을 매칭하여 반환해야 합니다.
+### 3.1 On-Live & Label 배포 정책
+- 라벨이 생략되면 해당 프롬프트의 **`on-live`로 지정된 발행 버전**만 반환한다.
+- `on-live` 버전이 지정되어 있지 않으면 `latest`, 사용자 정의 라벨, 초안으로 대체하지 않고 `404 no_deployable_version` 오류를 반환한다.
+- `latest`는 마지막 발행 버전을 가리키는 유일한 시스템 예약 라벨이며, 사용자 정의 라벨은 발행 버전만 가리킬 수 있다.
+- `production` 라벨은 사용할 수 없다.
 
-### 4.2 API 요구사항
-서버가 외부에 노출해야 하는 핵심 API 및 대시보드 엔드포인트 목록입니다.
-- **Django Template 대시보드 (`/dashboard/`)**: 프롬프트/카테고리 CUD, 버전 및 라벨 관리, Django Session Auth 기반 접근 제어
-- **SDK Read-Only API (`/api/v1/prompts/<slug>/`)**: Read-only 프롬프트 조회, `X-PromptKit-Api-Key` HTTP Header 인증 (서버 `.env` 기반 검증)
-- **⚠️ 절대 원칙**: 서버는 외부 SDK에 프롬프트 CUD API를 노출하지 않으며, LLM을 호출하거나 실행을 대행하는 어떠한 API도 가지지 않습니다.
-
-
-### 4.3 MVP 구성 정의
-초기 가동(MVP)에 필수적으로 보장되어야 하는 범위입니다.
-1. 프롬프트 CRUD 및 관리 화면
-2. 버전 관리 및 롤백 기능
-3. 라벨 관리 및Fallback 메커니즘
-4. Python SDK 코어 및 compile() 메서드
-5. Gemini 및 LiteLLM 어댑터(Adapter) 구현
-6. Django Integration 패키지 (`promptkit-django`)
-7. 웹 관리자 콘솔 플레이그라운드
+### 3.2 버전 라이프사이클 및 동시성
+- **초안 (Draft)**: 자유로운 편집, 변수/섹션 CUD 가능. 삭제 가능.
+- **발행 (Published)**: 변경 불가능한(Immutable) 릴리즈 버전. 편집/삭제 불가. 복제(Clone)를 통해 새 초안으로 파생 가능.
+- **낙관적 동시성 (Optimistic Locking)**: `Version.revision` 카운터를 통해 대시보드 동시 수정 충돌을 방지한다 (`StaleRevisionError`).

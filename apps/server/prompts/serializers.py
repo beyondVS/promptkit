@@ -1,6 +1,6 @@
 """
 DRF Serializer for SDK Read-only Prompt Fetch API responses.
-Strictly follows contract specification (contracts/sdk-server-api.md).
+Strictly follows contract specification (contracts/sdk-read-api.md).
 """
 
 from typing import Any
@@ -15,9 +15,12 @@ class SDKPromptFetchResponseSerializer(serializers.Serializer):
 
     slug = serializers.CharField()
     name = serializers.CharField()
+    description = serializers.CharField()
     category = serializers.SerializerMethodField()
     version = serializers.IntegerField(source="version_number")
-    label = serializers.CharField()
+    version_status = serializers.CharField(source="status")
+    is_on_live = serializers.BooleanField()
+    label = serializers.CharField(allow_null=True, required=False)
     template_text = serializers.CharField()
     variables = serializers.SerializerMethodField()
     sections = serializers.SerializerMethodField()
@@ -37,7 +40,7 @@ class SDKPromptFetchResponseSerializer(serializers.Serializer):
                 "default_value": v.default_value,
                 "description": v.description,
             }
-            for v in version.variables.all()
+            for v in version.variables.all().order_by("name")
         ]
 
     def get_sections(self, obj: dict[str, Any]) -> list[dict[str, Any]]:
@@ -48,5 +51,5 @@ class SDKPromptFetchResponseSerializer(serializers.Serializer):
                 "order": s.order,
                 "content": s.content,
             }
-            for s in version.sections.all()
+            for s in version.sections.all().order_by("order")
         ]

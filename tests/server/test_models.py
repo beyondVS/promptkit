@@ -91,34 +91,34 @@ class PromptRegistryModelTests(TestCase):
     # --- User Story 2: Label-Based Tagging & Resolution (T007) ---
 
     def test_label_creation_and_tagging(self) -> None:
-        label_prod = Label.objects.create(
+        label_staging = Label.objects.create(
             prompt=self.prompt,
             version=self.version2,
-            name="production",
+            name="staging",
         )
-        label_draft = Label.objects.create(
+        label_dev = Label.objects.create(
             prompt=self.prompt,
             version=self.version1,
-            name="draft",
+            name="dev",
         )
 
         self.assertEqual(self.prompt.labels.count(), 2)
-        self.assertEqual(str(label_prod), "welcome-email:production -> v2")
-        self.assertEqual(str(label_draft), "welcome-email:draft -> v1")
-        self.assertEqual(self.prompt.labels.get(name="production").version, self.version2)
-        self.assertEqual(self.prompt.labels.get(name="draft").version, self.version1)
+        self.assertEqual(str(label_staging), "welcome-email:staging -> v2")
+        self.assertEqual(str(label_dev), "welcome-email:dev -> v1")
+        self.assertEqual(self.prompt.labels.get(name="staging").version, self.version2)
+        self.assertEqual(self.prompt.labels.get(name="dev").version, self.version1)
 
     def test_unique_label_per_prompt_constraint(self) -> None:
         Label.objects.create(
             prompt=self.prompt,
             version=self.version1,
-            name="production",
+            name="staging",
         )
         with self.assertRaises(IntegrityError):
             Label.objects.create(
                 prompt=self.prompt,
                 version=self.version2,
-                name="production",  # Second production label for same prompt
+                name="staging",  # Second staging label for same prompt
             )
 
     # --- User Story 3: Variable Definitions & Prompt Sections (T009) ---
@@ -154,7 +154,7 @@ class PromptRegistryModelTests(TestCase):
             VariableDefinition.objects.create(
                 version=self.version1,
                 name="user_name",  # Duplicate variable name for same version
-                var_type=VariableDefinition.VarType.INTEGER,
+                var_type=VariableDefinition.VarType.NUMBER,
             )
 
     def test_section_creation_ordering_and_role_choices(self) -> None:

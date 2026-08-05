@@ -5,7 +5,7 @@
   - I. Prompt Registry Focus: Refined to state SDK never calls LLMs and server stores prompts only.
   - II. SDK-First & Framework Agnostic SDK Core: Added to segregate core SDK from Django integrations.
   - III. Prompt Compilation & Adapters: Added to clarify compile() execution on SDK side and convert-only role of adapters.
-  - IV. Label-Driven Resolution: Added default production label fallback rule.
+  - IV. Label-Driven Resolution: Replaced the production fallback rule with on-live default resolution and published-only labels.
   - V. Lightweight & Self-Hosted First: Restructured to define strict project scope boundaries (Out of Scope items).
 - Added Sections: None
 - Removed Sections: None
@@ -31,7 +31,8 @@ Prompt Server는 LLM Gateway가 아닙니다. Prompt의 저장, 대시보드 기
 프롬프트의 동적 변수 렌더링 및 컴파일(`compile()`)은 서버가 아닌 SDK단에서 수행합니다. 각 LLM 공급자(Gemini, OpenAI, LiteLLM 등)에 맞춘 Adapters는 컴파일된 결과물(`CompiledPrompt`)을 해당 API 규격에 맞는 호출 인자(Arguments)로 포맷 변환하는 역할만 담당합니다.
 
 ### IV. Label-Driven Resolution (라벨 기반 버전 제공)
-프롬프트 조회 시 기본 활성 라벨은 `production`이며, `draft`, `dev`, `experiment` 등을 선택적으로 지원합니다. 프롬프트 요청 시 라벨이 생략된 경우, 기본적으로 `production` 라벨을 반환하도록 설계해야 합니다.
+라벨이 생략된 SDK 조회는 on-live로 지정된 발행 버전만 반환해야 합니다. on-live가 없으면 `latest`, 사용자 정의 라벨 또는 초안으로 대체하지 않고 배포 가능한 버전이 없음을 반환합니다.
+`latest`는 마지막 발행 버전만 가리키는 유일한 시스템 예약 라벨이며, 사용자 정의 라벨은 발행 버전만 가리킬 수 있습니다. `production`은 시스템 또는 사용자 정의 라벨로 정의·생성·조회할 수 없습니다.
 
 ### V. Lightweight & Self-Hosted First (경량화 및 자체 호스팅 우선)
 프로젝트는 가볍고(lightweight) 자체 호스팅(self-hosted)이 용이하도록 설계합니다. 따라서 Tracing, Evaluation, Workflow Engine, Agent Framework, Analytics, Cost Dashboard 등은 범위 외(Out of Scope)로 규정하여 코어 복잡성을 최소화합니다.
@@ -70,4 +71,4 @@ API Key, 비밀번호, 토큰 등의 민감 정보는 절대로 코드 내에 �
 
 본 헌법(Constitution)은 프로젝트 내의 모든 개별 개발 실천법 및 에이전트 지침서(`AGENTS.md` 등)에 우선하는 최상위 규격입니다. 아키텍처 변경이나 핵심 설계 원칙의 예외 사항은 복잡성에 대한 구체적인 사유를 명시하고 거버넌스 승인을 얻어야 합니다. 본 문서의 개정은 버전 정보의 세부 규칙(SemVer)에 의거하여 이력을 갱신합니다.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-07-22
+**Version**: 1.2.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-08-05

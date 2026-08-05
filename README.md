@@ -16,7 +16,7 @@ PromptKit은 LLM 기반 애플리케이션에서 사용되는 프롬프트(Promp
 * **SDK-First & Client-Side Compilation**: 동적 변수 파싱 및 컴파일(`compile()`)은 SDK에서 처리하여 서버 부하 및 API 지연(Latency)을 최소화합니다.
 
 * **Framework Agnostic Core SDK**: 코어 SDK (`packages/promptkit`)는 순수 Python 3.13+ 기반으로 유지되며, Django 전용 통합 기능은 독립 패키지(`packages/promptkit-django`)로 확장됩니다.
-* **Label-Driven Fallback**: 라벨 생략 시 기본적으로 `production` 라벨 버전을 자동 반환하며, `draft`, `dev`, `experiment` 라벨 조회를 지원합니다.
+* **Label-Driven On-Live Resolution**: 라벨 생략 시 해당 프롬프트의 `on-live`로 지정된 발행 버전만 반환하며, `on-live`가 없으면 자동 fallback 없이 404(`no_deployable_version`)를 응답합니다. (`production` 라벨 사용은 금지됩니다.)
 * **Subdirectory 독립 설치**: 모노레포 구조이지만 각 패키지를 외부 비즈니스 프로젝트에서 Git 서브디렉토리로 격리 설치할 수 있습니다.
 
 ---
@@ -73,7 +73,7 @@ import google.genai as gemini
 # 1. REST Client 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
 
-# 2. 원격 프롬프트 조회 (기본 production 라벨 탐색)
+# 2. 원격 프롬프트 조회 (라벨 생략 시 on-live 발행 버전 반환)
 prompt = client.prompts.get("customer_summary")
 
 # 3. SDK 로컬 컴파일 (Pydantic v2 기반 변수 유효성 검증)
@@ -122,10 +122,10 @@ uv run pytest
 
 ## 📄 Documentation
 
-* 📌 [Prompt Server Requirements](docs/prompt-server-requirements.md)
+* 📌 [Prompt Server Requirements](docs/promptkit-server-requirements.md)
 * 📐 [Project Specification](docs/project-spec.md)
 * 🗺️ [Architecture Diagram](docs/architecture.md)
-* 📅 [Implementation Plan (18-Day MVP)](docs/project_plan.md)
+* 📅 [Implementation Plan (19-Day MVP)](docs/project-plan.md)
 * 📜 [Project Constitution](.specify/memory/constitution.md)
 
 ---
