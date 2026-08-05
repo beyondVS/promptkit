@@ -80,7 +80,7 @@ Prompt (서버 저장 원본)
     ↓
 Version (특정 버전 선택)
     ↓
-Label (라벨 매핑 예: production)
+Deployment selector (on-live 또는 명시한 발행 라벨)
     ↓
 Variables (동적 주입 변수 매핑)
     ↓
@@ -103,7 +103,7 @@ import google.genai as gemini
 # 1. 클라이언트 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="...")
 
-# 2. 프롬프트 조회 (라벨 생략 시 'production' 기본 적용)
+# 2. 프롬프트 조회 (라벨 생략 시 on-live 발행 버전만 반환)
 prompt = client.prompts.get("summary")
 
 # 3. SDK 수준에서의 로컬 컴파일 실행
@@ -128,10 +128,11 @@ response = gemini.models.generate_content(
 
 ## 4. Operational Rules
 
-### 4.1 Labels 정책
-- **기본값 (Default Label)**: `production`
-- **지원 선택 라벨 (Optional Labels)**: `draft`, `dev`, `experiment`
-- **동작**: 사용자가 프롬프트를 요청할 때 라벨을 명시하지 않은 경우, 무조건 `production` 라벨이 지정된 최신 버전을 매칭하여 반환해야 합니다.
+### 4.1 Labels 및 배포 정책
+- 라벨이 생략되면 on-live 발행 버전만 반환한다.
+- on-live가 없으면 `latest`, 사용자 정의 라벨, 초안으로 대체하지 않고 no-deployable-version 오류를 반환한다.
+- `latest`만 마지막 발행 버전을 가리키는 시스템 예약 라벨이며, 사용자 정의 라벨은 발행 버전만 가리킨다.
+- `production`은 사용할 수 없다.
 
 ### 4.2 API 요구사항
 서버가 외부에 노출해야 하는 핵심 API 및 대시보드 엔드포인트 목록입니다.

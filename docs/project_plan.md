@@ -44,9 +44,10 @@
 ## 📦 2주차: 서버 기능 고도화 및 Python SDK Core 개발 (약 6시간)
 **목표**: 서버의 메타데이터 비즈니스 로직을 정교화하고, 프롬프트 변수 검증 및 변환을 제공하는 Python SDK 핵심 라이브러리를 개발합니다.
 
-* [ ] **Day 08 (1h): Label API 및 Fallback 로직 구현**
-    *   프롬프트 라벨 지정(dev, draft 등) 기능 API 개발.
-    *   조회 시 라벨이 생략된 경우 `production` 라벨 버전을 자동으로 탐색 및 반환하는 Fallback 로직 서버 구현.
+* [ ] **Day 08 (1h): Lifecycle, on-live 및 Label 정책 구현**
+    * 초안·발행·복제·삭제 lifecycle과 발행 버전 전용 라벨 규칙을 구현.
+    * `latest`를 마지막 발행 버전에만 유지하고 `production`을 금지.
+    * 라벨 생략 SDK 조회는 on-live 발행 버전만 반환하며 fallback을 사용하지 않음.
 * [ ] **Day 09 (1h): Web Playground 기초 UI 및 변수 입력 폼 API 설계**
     *   실제 컴파일 연동은 제외하고, 관리자가 프롬프트의 동적 변수를 입력받을 수 있는 Playground 기초 UI 레이아웃 및 변수 스키마 조회 API 개발.
 * [ ] **Day 10 (1h): Python SDK (`packages/promptkit`) 환경 셋업 및 REST Client 개발**
@@ -95,7 +96,7 @@
 ## ⚠️ 핵심 기술 리스크 및 대책
 1.  **원격 Prompt Server 장애 및 SDK ↔ Server 통신 지연 리스크**
     *   *부작용*: 비즈니스 애플리케이션(SDK 사용자 코드)이 실행 중에 Prompt Server로부터 프롬프트를 실시간 조회할 때, 서버 네트워크 장애나 성능 저하로 인해 비즈니스 서비스 전체가 지연되거나 마비될 수 있습니다.
-    *   *대책*: SDK 내부 REST Client에 엄격한 Connection/Read Timeout(예: 1~2초)을 설정하고, 조회 실패 시 개발자가 코드상에 지정한 로컬 Fallback 프롬프트(기본 템플릿)가 반환되는 예외 복구(Graceful Degradation) 로직을 구현합니다. 또한 `packages/promptkit-django` 연동 라이브러리의 캐시 레이어를 활성화하여 실시간 API 호출 빈도를 낮춥니다.
+    *   *대책*: SDK 내부 REST Client에 엄격한 Connection/Read Timeout(예: 1~2초)을 설정하고, 조회 실패 또는 on-live 부재 시 명시적 오류를 반환합니다. 응답은 `latest`, 사용자 정의 라벨, 초안 또는 로컬 프롬프트로 대체하지 않습니다. `packages/promptkit-django`의 캐시 레이어는 on-live 변경과 정합성을 유지해야 합니다.
 2.  **프롬프트 템플릿 변수 Injection 공격 리스크**
     *   *부작용*: 사용자가 입력하는 프롬프트 변수 내에 LLM 지시사항을 무력화하는 시스템 프롬프트 주입(Injection) 공격이 침투할 수 있습니다.
     *   *대책*: SDK `compile()` 메서드 내에서 Pydantic v2 스키마를 사용하여 특수 문자를 이스케이프하거나 허용된 타입 및 문자열 길이 규격을 엄격히 검증합니다.

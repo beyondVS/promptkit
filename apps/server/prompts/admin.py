@@ -7,23 +7,32 @@ from django.contrib import admin
 from apps.server.prompts.models import (
     Label,
     Prompt,
+    PromptCategory,
     Section,
     VariableDefinition,
     Version,
 )
 
 
+@admin.register(PromptCategory)
+class PromptCategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug", "is_active", "created_at")
+    search_fields = ("name", "slug", "description")
+    prepopulated_fields = {"slug": ("name",)}
+
+
 @admin.register(Prompt)
 class PromptAdmin(admin.ModelAdmin):
-    list_display = ("slug", "name", "created_at", "updated_at")
+    list_display = ("slug", "name", "category", "created_at", "updated_at")
+    list_filter = ("category",)
     search_fields = ("slug", "name", "description")
     ordering = ("-updated_at",)
 
 
 @admin.register(Version)
 class VersionAdmin(admin.ModelAdmin):
-    list_display = ("prompt", "version_number", "created_at")
-    list_filter = ("prompt",)
+    list_display = ("prompt", "version_number", "status", "is_on_live", "revision", "created_at")
+    list_filter = ("status", "is_on_live", "prompt")
     search_fields = ("prompt__slug", "prompt__name", "template_text", "changelog")
     ordering = ("prompt", "-version_number")
 

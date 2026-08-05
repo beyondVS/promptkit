@@ -1,6 +1,6 @@
 """
 Django ORM Models for Prompt Registry.
-Includes Prompt, Version, Label, VariableDefinition, and Section entities.
+Includes PromptCategory, Prompt, Version, Label, VariableDefinition, and Section entities.
 """
 
 from typing import ClassVar
@@ -58,7 +58,6 @@ class Prompt(models.Model):
     )
     name = models.CharField(
         max_length=255,
-        unique=True,
         help_text="Human-readable name for the prompt",
     )
     description = models.TextField(
@@ -81,10 +80,19 @@ class Prompt(models.Model):
 
     class Meta:
         ordering: ClassVar[list[str]] = ["-updated_at"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["category", "name"],
+                name="unique_prompt_name_per_category",
+            ),
+        ]
 
     def get_or_create_default_version(self) -> "Version":
-        """Get or create default version (v1) for this prompt."""
-        version, _ = self.versions.get_or_create(version_number=1)
+        """Get or create default version (v1) for this prompt as a draft."""
+        version, _ = self.versions.get_or_create(
+            version_number=1,
+            defaults={"status": Version.Status.DRAFT, "is_on_live": False},
+        )
         return version
 
     def __str__(self) -> str:
@@ -93,8 +101,12 @@ class Prompt(models.Model):
 
 class Version(models.Model):
     """
-    Immutable snapshot of a prompt template and configuration.
+    Snapshot of a prompt template and configuration with draft/published lifecycle.
     """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PUBLISHED = "published", "Published"
 
     prompt = models.ForeignKey(
         Prompt,
@@ -102,9 +114,25 @@ class Version(models.Model):
         related_name="versions",
     )
     version_number = models.PositiveIntegerField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        db_index=True,
+    )
+    is_on_live = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Single active deployment target per prompt",
+    )
+    revision = models.PositiveIntegerField(
+        default=1,
+        help_text="Monotonically increasing revision counter for optimistic concurrency",
+    )
     template_text = models.TextField(blank=True)
     changelog = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering: ClassVar[list[str]] = ["prompt", "-version_number"]
@@ -112,6 +140,15 @@ class Version(models.Model):
             models.UniqueConstraint(
                 fields=["prompt", "version_number"],
                 name="unique_prompt_version_number",
+            ),
+            models.UniqueConstraint(
+                fields=["prompt"],
+                condition=models.Q(is_on_live=True),
+                name="unique_on_live_version_per_prompt",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(is_on_live=True, status="draft"),
+                name="on_live_must_be_published",
             ),
         ]
 
@@ -136,7 +173,7 @@ class Label(models.Model):
     )
     name = models.CharField(
         max_length=50,
-        help_text="Tag identifier (e.g. production, draft, dev)",
+        help_text="Tag identifier (e.g. latest, dev, v1-hotfix)",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -147,6 +184,10 @@ class Label(models.Model):
             models.UniqueConstraint(
                 fields=["prompt", "name"],
                 name="unique_label_per_prompt",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(name="production"),
+                name="prohibit_production_label",
             ),
         ]
 
@@ -161,8 +202,7 @@ class VariableDefinition(models.Model):
 
     class VarType(models.TextChoices):
         STRING = "string", "String"
-        INTEGER = "integer", "Integer"
-        FLOAT = "float", "Float"
+        NUMBER = "number", "Number"
         BOOLEAN = "boolean", "Boolean"
         JSON = "json", "JSON"
 
@@ -203,7 +243,6 @@ class Section(models.Model):
         SYSTEM = "system", "System"
         USER = "user", "User"
         ASSISTANT = "assistant", "Assistant"
-        TOOL = "tool", "Tool"
 
     version = models.ForeignKey(
         Version,

@@ -55,17 +55,16 @@ Prompt Server는 Prompt만 제공하며, 실제 LLM 호출은 Business Server가
 
 ### Version Management
 
-* Prompt 버전 관리
-* 변경 이력 관리
-* Rollback 지원
+* 초안 작성·복제·삭제 및 발행 관리
+* 발행 후 콘텐츠와 lifecycle 상태의 불변성 보장
+* 발행 버전에서만 on-live 지정 또는 해제
 
-### Environment
+### Label 및 배포 대상
 
-* Development
-* Staging
-* Production
-
-환경별 Prompt 관리
+* 라벨이 생략된 SDK 조회는 on-live 발행 버전만 반환
+* `latest`는 마지막 발행 버전만 가리키는 시스템 예약 라벨
+* 사용자 정의 라벨은 발행 버전만 가리키며 프롬프트 안에서 고유
+* `production` 라벨 및 자동 fallback 금지
 
 ### Metadata
 
@@ -104,21 +103,9 @@ Prompt 조회 시
 
 ---
 
-## 5. API 예시
+## 5. 접근 경계와 API
 
-```
-GET /prompts/{name}
-
-GET /prompts/{name}/versions
-
-POST /prompts
-
-PUT /prompts/{name}
-
-DELETE /prompts/{name}
-```
-
-Business Server는 Prompt 이름과 버전을 이용하여 Prompt를 조회한다.
+`GET /api/v1/prompts/{slug}/`와 명시적 발행 라벨 조회만 SDK에 제공한다. 라벨 생략 시 on-live 발행 버전을 반환하며, 없으면 배포 가능한 버전이 없음을 응답한다. 대시보드 CUD는 `/dashboard/`의 Django Session Auth 및 CSRF 보호로만 제공한다.
 
 ---
 

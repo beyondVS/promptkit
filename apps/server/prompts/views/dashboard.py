@@ -1,6 +1,6 @@
 """
 Django Template Dashboard Views for Prompt Registry CUD operations.
-Requires Django Session Authentication.
+Requires Django Session Authentication and Staff Permissions.
 """
 
 from typing import Any
@@ -9,18 +9,42 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db import transaction
+from django.db import IntegrityError, models, transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
 
-from apps.server.prompts.models import Label, Prompt, PromptCategory, Version
+from apps.server.prompts.models import (
+    Prompt,
+    PromptCategory,
+    Section,
+    VariableDefinition,
+    Version,
+)
+from apps.server.prompts.services.lifecycle import (
+    StaleRevisionError,
+    clear_on_live_version,
+    clone_version,
+    create_prompt_with_initial_draft,
+    delete_draft_version,
+    delete_prompt,
+    publish_version,
+    remove_custom_label,
+    set_custom_label,
+    set_on_live_version,
+)
+from apps.server.prompts.services.templates import (
+    is_variable_referenced,
+    rename_variable_in_content,
+    validate_variable_default_value,
+)
 
 
 class DashboardStaffRequiredMixin(UserPassesTestMixin):
     """
-    Mixin to ensure only staff/admin users can access the dashboard.
+    Mixin to ensure only authenticated staff users can access dashboard features.
     """
 
     request: HttpRequest
@@ -32,13 +56,16 @@ class DashboardStaffRequiredMixin(UserPassesTestMixin):
     def handle_no_permission(self) -> HttpResponseRedirect:
         if not self.request.user.is_authenticated:
             return redirect("dashboard-login")
-        messages.error(self.request, "Access denied. Dashboard requires staff permissions.")
+        messages.error(self.request, "Access denied. Staff permission is required.")
         return redirect("dashboard-login")
+
+
+# --- Auth Views ---
 
 
 class DashboardLoginView(View):
     """
-    Session Auth Login View for Dashboard Admins.
+    Session Auth Login View for Dashboard.
     """
 
     template_name = "prompts/login.html"
@@ -55,12 +82,10 @@ class DashboardLoginView(View):
             user = form.get_user()
             if user and (user.is_staff or user.is_superuser):
                 login(request, user)
-                messages.success(request, f"Welcome, {user.username}!")
+                messages.success(request, f"Welcome back, {user.username}!")
                 return redirect("dashboard-prompt-list")
             else:
-                messages.error(
-                    request, "Access denied. Only staff members can access the dashboard."
-                )
+                messages.error(request, "Access denied. Staff permission is required.")
         else:
             messages.error(request, "Invalid username or password.")
         return render(request, self.template_name, {"form": form})
@@ -80,50 +105,117 @@ class DashboardLogoutView(View):
         return self.post(request)
 
 
-class DashboardPromptListView(LoginRequiredMixin, DashboardStaffRequiredMixin, ListView):  # type: ignore[type-arg]
-    """
-    List all prompts in the registry for dashboard management.
-    """
+# --- Category Dashboard Views (US4) ---
 
+
+class DashboardCategoryListView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    template_name = "prompts/category_list.html"
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        categories = PromptCategory.objects.all().order_by("name")
+        return render(request, self.template_name, {"categories": categories})
+
+    def post(self, request: HttpRequest) -> HttpResponse:
+        name = request.POST.get("name", "").strip()
+        slug_val = request.POST.get("slug", "").strip() or slugify(name)
+        description = request.POST.get("description", "").strip()
+
+        if not name:
+            messages.error(request, "Category name is required.")
+            return redirect("dashboard-category-list")
+
+        try:
+            PromptCategory.objects.create(name=name, slug=slug_val, description=description)
+            messages.success(request, f"Category '{name}' created successfully.")
+        except IntegrityError:
+            messages.error(
+                request, f"Category with name '{name}' or slug '{slug_val}' already exists."
+            )
+        except Exception as e:
+            messages.error(request, f"Failed to create category: {e}")
+
+        return redirect("dashboard-category-list")
+
+
+class DashboardCategoryUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        category = get_object_or_404(PromptCategory, pk=pk)
+        name = request.POST.get("name", "").strip()
+        slug_val = request.POST.get("slug", "").strip() or slugify(name)
+        description = request.POST.get("description", "").strip()
+
+        if not name:
+            messages.error(request, "Category name is required.")
+            return redirect("dashboard-category-list")
+
+        try:
+            category.name = name
+            category.slug = slug_val
+            category.description = description
+            category.save()
+            messages.success(request, f"Category '{name}' updated successfully.")
+        except IntegrityError:
+            messages.error(request, "Category name or slug already in use.")
+        except Exception as e:
+            messages.error(request, f"Failed to update category: {e}")
+
+        return redirect("dashboard-category-list")
+
+
+class DashboardCategoryDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        category = get_object_or_404(PromptCategory, pk=pk)
+        if category.prompts.exists():
+            messages.error(
+                request,
+                f"Cannot delete category '{category.name}' while prompts are attached to it.",
+            )
+            return redirect("dashboard-category-list")
+        cat_name = category.name
+        category.delete()
+        messages.success(request, f"Category '{cat_name}' deleted successfully.")
+        return redirect("dashboard-category-list")
+
+
+# --- Prompt Dashboard Views ---
+
+
+class DashboardPromptListView(LoginRequiredMixin, DashboardStaffRequiredMixin, ListView):  # type: ignore[type-arg]
     model = Prompt
     template_name = "prompts/prompt_list.html"
     context_object_name = "prompts"
     paginate_by = 20
 
     def get_queryset(self) -> Any:
-        return (
-            Prompt.objects.select_related("category")
-            .prefetch_related("versions", "labels")
-            .order_by("-updated_at")
-        )
+        qs = Prompt.objects.select_related("category").prefetch_related("versions", "labels")
+        category_slug = self.request.GET.get("category")
+        if category_slug:
+            qs = qs.filter(category__slug=category_slug)
+        return qs.order_by("-updated_at")
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["categories"] = PromptCategory.objects.all()
+        context["categories"] = PromptCategory.objects.filter(is_active=True).order_by("name")
+        context["selected_category"] = self.request.GET.get("category", "")
         return context
 
 
 class DashboardPromptCreateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
-    """
-    Create a new prompt asset and initial version.
-    """
-
     template_name = "prompts/prompt_form.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        categories = PromptCategory.objects.filter(is_active=True)
+        categories = PromptCategory.objects.filter(is_active=True).order_by("name")
         return render(request, self.template_name, {"categories": categories, "is_create": True})
 
     def post(self, request: HttpRequest) -> HttpResponse:
         name = request.POST.get("name", "").strip()
-        slug = request.POST.get("slug", "").strip()
+        slug_val = request.POST.get("slug", "").strip() or slugify(name)
         description = request.POST.get("description", "").strip()
         category_id = request.POST.get("category_id")
-        template_text = request.POST.get("template_text", "").strip()
 
-        if not name or not slug or not category_id:
-            messages.error(request, "Name, slug, and category are required.")
-            categories = PromptCategory.objects.filter(is_active=True)
+        if not name or not category_id:
+            messages.error(request, "Prompt name and category are required.")
+            categories = PromptCategory.objects.filter(is_active=True).order_by("name")
             return render(
                 request, self.template_name, {"categories": categories, "is_create": True}
             )
@@ -131,54 +223,46 @@ class DashboardPromptCreateView(LoginRequiredMixin, DashboardStaffRequiredMixin,
         category = get_object_or_404(PromptCategory, id=category_id)
 
         try:
-            with transaction.atomic():
-                prompt = Prompt.objects.create(
-                    name=name,
-                    slug=slug,
-                    description=description,
-                    category=category,
-                )
-                version = Version.objects.create(
-                    prompt=prompt,
-                    version_number=1,
-                    template_text=template_text,
-                    changelog="Initial version created via dashboard",
-                )
-                Label.objects.create(
-                    prompt=prompt,
-                    version=version,
-                    name="production",
-                )
-            messages.success(
-                request, f"Prompt '{prompt.name}' created successfully with production version v1."
+            prompt, draft = create_prompt_with_initial_draft(
+                category=category,
+                name=name,
+                slug=slug_val,
+                description=description,
             )
-            return redirect("dashboard-prompt-list")
+            messages.success(
+                request,
+                f"Prompt '{prompt.name}' created successfully with initial empty draft v1.",
+            )
+            return redirect("dashboard-prompt-detail", pk=prompt.pk)
+        except IntegrityError:
+            messages.error(
+                request,
+                f"Prompt with slug '{slug_val}' or name '{name}' in this category already exists.",
+            )
+            categories = PromptCategory.objects.filter(is_active=True).order_by("name")
+            return render(
+                request, self.template_name, {"categories": categories, "is_create": True}
+            )
         except Exception as e:
             messages.error(request, f"Failed to create prompt: {e}")
-            categories = PromptCategory.objects.filter(is_active=True)
+            categories = PromptCategory.objects.filter(is_active=True).order_by("name")
             return render(
                 request, self.template_name, {"categories": categories, "is_create": True}
             )
 
 
 class DashboardPromptUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
-    """
-    Update prompt details or add a new version.
-    """
-
     template_name = "prompts/prompt_form.html"
 
     def get(self, request: HttpRequest, pk: int) -> HttpResponse:
         prompt = get_object_or_404(Prompt, pk=pk)
-        categories = PromptCategory.objects.filter(is_active=True)
-        latest_version = prompt.versions.order_by("-version_number").first()
+        categories = PromptCategory.objects.filter(is_active=True).order_by("name")
         return render(
             request,
             self.template_name,
             {
                 "prompt": prompt,
                 "categories": categories,
-                "latest_version": latest_version,
                 "is_create": False,
             },
         )
@@ -188,8 +272,6 @@ class DashboardPromptUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin,
         name = request.POST.get("name", "").strip()
         description = request.POST.get("description", "").strip()
         category_id = request.POST.get("category_id")
-        template_text = request.POST.get("template_text", "").strip()
-        create_new_version = request.POST.get("create_new_version") == "true"
 
         if not name or not category_id:
             messages.error(request, "Name and category are required.")
@@ -198,48 +280,23 @@ class DashboardPromptUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin,
         category = get_object_or_404(PromptCategory, id=category_id)
 
         try:
-            with transaction.atomic():
-                prompt.name = name
-                prompt.description = description
-                prompt.category = category
-                prompt.save()
-
-                if create_new_version:
-                    latest_v = prompt.versions.order_by("-version_number").first()
-                    next_ver = (latest_v.version_number + 1) if latest_v else 1
-                    new_version = Version.objects.create(
-                        prompt=prompt,
-                        version_number=next_ver,
-                        template_text=template_text,
-                        changelog=f"Dashboard update to v{next_ver}",
-                    )
-                    # Update production label to point to latest version
-                    Label.objects.update_or_create(
-                        prompt=prompt,
-                        name="production",
-                        defaults={"version": new_version},
-                    )
-                    messages.success(
-                        request, f"Prompt '{prompt.name}' updated with new version v{next_ver}."
-                    )
-                else:
-                    latest_v = prompt.versions.order_by("-version_number").first()
-                    if latest_v:
-                        latest_v.template_text = template_text
-                        latest_v.save()
-                    messages.success(request, f"Prompt '{prompt.name}' updated successfully.")
-
-            return redirect("dashboard-prompt-list")
+            prompt.name = name
+            prompt.description = description
+            prompt.category = category
+            prompt.save()
+            messages.success(request, f"Prompt metadata for '{prompt.name}' updated successfully.")
+            return redirect("dashboard-prompt-detail", pk=prompt.pk)
+        except IntegrityError:
+            messages.error(
+                request, f"A prompt named '{name}' already exists in category '{category.name}'."
+            )
+            return redirect("dashboard-prompt-update", pk=pk)
         except Exception as e:
             messages.error(request, f"Failed to update prompt: {e}")
             return redirect("dashboard-prompt-update", pk=pk)
 
 
 class DashboardPromptDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
-    """
-    Delete a prompt asset.
-    """
-
     template_name = "prompts/prompt_confirm_delete.html"
 
     def get(self, request: HttpRequest, pk: int) -> HttpResponse:
@@ -249,6 +306,414 @@ class DashboardPromptDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin,
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         prompt = get_object_or_404(Prompt, pk=pk)
         prompt_name = prompt.name
-        prompt.delete()
-        messages.success(request, f"Prompt '{prompt_name}' deleted successfully.")
-        return redirect("dashboard-prompt-list")
+        try:
+            delete_prompt(prompt)
+            messages.success(request, f"Prompt '{prompt_name}' deleted successfully.")
+            return redirect("dashboard-prompt-list")
+        except ValueError as ve:
+            messages.error(request, str(ve))
+            return render(request, self.template_name, {"prompt": prompt})
+
+
+# --- Prompt Detail & Version Editor Views (US1, US2, US3) ---
+
+
+class DashboardPromptDetailView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    template_name = "prompts/prompt_detail.html"
+
+    def get(self, request: HttpRequest, pk: int) -> HttpResponse:
+        prompt = get_object_or_404(
+            Prompt.objects.select_related("category").prefetch_related("versions", "labels"),
+            pk=pk,
+        )
+        versions = prompt.versions.all().order_by("-version_number")
+
+        v_param = request.GET.get("version")
+        if v_param and v_param.isdigit():
+            selected_version = versions.filter(version_number=int(v_param)).first()
+        else:
+            selected_version = versions.first()
+
+        if not selected_version and prompt.versions.exists():
+            selected_version = versions.first()
+
+        sections = []
+        variables = []
+        labels = []
+        if selected_version:
+            sections = list(selected_version.sections.all().order_by("order"))
+            variables = list(selected_version.variables.all().order_by("name"))
+
+        labels = list(prompt.labels.select_related("version").all().order_by("name"))
+        on_live_version = versions.filter(is_on_live=True).first()
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "prompt": prompt,
+                "versions": versions,
+                "selected_version": selected_version,
+                "sections": sections,
+                "variables": variables,
+                "labels": labels,
+                "on_live_version": on_live_version,
+                "role_choices": Section.Role.choices,
+                "type_choices": VariableDefinition.VarType.choices,
+            },
+        )
+
+
+# --- Section CUD Views (US1) ---
+
+
+class DashboardSectionCreateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(Version, id=version_id)
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify sections of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        role = request.POST.get("role", Section.Role.USER)
+        content = request.POST.get("content", "").strip()
+        order_val = request.POST.get("order")
+
+        if not content:
+            messages.error(request, "Section content cannot be empty.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        if order_val and order_val.isdigit():
+            order = int(order_val)
+        else:
+            max_order = version.sections.aggregate(m=models.Max("order"))["m"]
+            order = (max_order + 1) if max_order is not None else 0
+
+        try:
+            Section.objects.create(version=version, role=role, order=order, content=content)
+            version.revision += 1
+            version.save(update_fields=["revision"])
+            messages.success(request, "Section added successfully.")
+        except IntegrityError:
+            messages.error(request, f"Section order {order} already exists.")
+        except Exception as e:
+            messages.error(request, f"Failed to add section: {e}")
+
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+class DashboardSectionUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        section = get_object_or_404(Section.objects.select_related("version"), pk=pk)
+        version = section.version
+
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify sections of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        role = request.POST.get("role", section.role)
+        content = request.POST.get("content", "").strip()
+
+        if not content:
+            messages.error(request, "Section content cannot be empty.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        section.role = role
+        section.content = content
+        section.save()
+
+        version.revision += 1
+        version.save(update_fields=["revision"])
+        messages.success(request, "Section updated successfully.")
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+class DashboardSectionDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        section = get_object_or_404(Section.objects.select_related("version"), pk=pk)
+        version = section.version
+
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify sections of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        section.delete()
+        version.revision += 1
+        version.save(update_fields=["revision"])
+        messages.success(request, "Section deleted successfully.")
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+# --- Variable CUD Views (US1) ---
+
+
+class DashboardVariableCreateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(Version, id=version_id)
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify variables of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        name = request.POST.get("name", "").strip()
+        var_type = request.POST.get("var_type", VariableDefinition.VarType.STRING)
+        required = request.POST.get("required") == "on" or request.POST.get("required") == "true"
+        default_value = request.POST.get("default_value", "").strip() or None
+        description = request.POST.get("description", "").strip()
+
+        if not name:
+            messages.error(request, "Variable name is required.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        val_ok, val_err = validate_variable_default_value(var_type, default_value)
+        if not val_ok:
+            messages.error(request, val_err or "Invalid default value.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        try:
+            VariableDefinition.objects.create(
+                version=version,
+                name=name,
+                var_type=var_type,
+                required=required,
+                default_value=default_value,
+                description=description,
+            )
+            version.revision += 1
+            version.save(update_fields=["revision"])
+            messages.success(request, f"Variable '${name}' added successfully.")
+        except IntegrityError:
+            messages.error(request, f"Variable '${name}' already exists in this version.")
+        except Exception as e:
+            messages.error(request, f"Failed to add variable: {e}")
+
+        return redirect(
+            f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+        )
+
+
+class DashboardVariableUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        var_def = get_object_or_404(VariableDefinition.objects.select_related("version"), pk=pk)
+        version = var_def.version
+
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify variables of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        new_name = request.POST.get("name", "").strip()
+        var_type = request.POST.get("var_type", var_def.var_type)
+        required = request.POST.get("required") == "on" or request.POST.get("required") == "true"
+        default_value = request.POST.get("default_value", "").strip() or None
+        description = request.POST.get("description", "").strip()
+
+        if not new_name:
+            messages.error(request, "Variable name is required.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        val_ok, val_err = validate_variable_default_value(var_type, default_value)
+        if not val_ok:
+            messages.error(request, val_err or "Invalid default value.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        old_name = var_def.name
+        try:
+            with transaction.atomic():
+                var_def.name = new_name
+                var_def.var_type = var_type
+                var_def.required = required
+                var_def.default_value = default_value
+                var_def.description = description
+                var_def.save()
+
+                # Atomically propagate variable rename to section references
+                if old_name != new_name:
+                    for sec in version.sections.all():
+                        if old_name in sec.content:
+                            sec.content = rename_variable_in_content(
+                                sec.content, old_name, new_name
+                            )
+                            sec.save(update_fields=["content"])
+
+                version.revision += 1
+                version.save(update_fields=["revision"])
+
+            messages.success(request, "Variable updated successfully.")
+        except IntegrityError:
+            messages.error(request, f"Variable name '${new_name}' already exists.")
+        except Exception as e:
+            messages.error(request, f"Failed to update variable: {e}")
+
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+class DashboardVariableDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        var_def = get_object_or_404(VariableDefinition.objects.select_related("version"), pk=pk)
+        version = var_def.version
+
+        if version.status != Version.Status.DRAFT:
+            messages.error(request, "Cannot modify variables of a published version.")
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        section_contents = list(version.sections.values_list("content", flat=True))
+        if is_variable_referenced(section_contents, var_def.name):
+            messages.error(
+                request,
+                f"Cannot delete variable '${var_def.name}': referenced in sections.",
+            )
+            return redirect(
+                f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
+            )
+
+        var_name = var_def.name
+        var_def.delete()
+        version.revision += 1
+        version.save(update_fields=["revision"])
+        messages.success(request, f"Variable '${var_name}' deleted successfully.")
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+# --- Lifecycle Actions (Publish, Clone, Delete Draft, On-Live, Labels) ---
+
+
+class DashboardVersionPublishView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(Version.objects.select_related("prompt"), id=version_id)
+        expected_revision_str = request.POST.get("expected_revision")
+        expected_revision = (
+            int(expected_revision_str)
+            if expected_revision_str and expected_revision_str.isdigit()
+            else None
+        )
+
+        try:
+            pub = publish_version(version.id, expected_revision=expected_revision)
+            messages.success(request, f"Version v{pub.version_number} published successfully!")
+        except StaleRevisionError:
+            messages.error(
+                request,
+                "Conflict detected: This version was modified by another request.",
+            )
+        except ValueError as ve:
+            messages.error(request, f"Publication failed: {ve}")
+        except Exception as e:
+            messages.error(request, f"Unexpected error publishing version: {e}")
+
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
+
+
+class DashboardVersionCloneView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        source_version = get_object_or_404(Version.objects.select_related("prompt"), id=version_id)
+        try:
+            cloned = clone_version(source_version.id)
+            messages.success(
+                request,
+                f"Cloned v{source_version.version_number} into new draft v{cloned.version_number}.",
+            )
+            return redirect(
+                f"/dashboard/prompts/{source_version.prompt.pk}/?version={cloned.version_number}"
+            )
+        except Exception as e:
+            messages.error(request, f"Failed to clone version: {e}")
+            return redirect(
+                f"/dashboard/prompts/{source_version.prompt.pk}/?version={source_version.version_number}"
+            )
+
+
+class DashboardVersionDeleteView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(Version.objects.select_related("prompt"), id=version_id)
+        prompt_pk = version.prompt.pk
+        ver_num = version.version_number
+        try:
+            delete_draft_version(version.id)
+            messages.success(request, f"Draft version v{ver_num} deleted successfully.")
+        except ValueError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Failed to delete draft version: {e}")
+
+        return redirect("dashboard-prompt-detail", pk=prompt_pk)
+
+
+class DashboardOnLiveSetView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        prompt = get_object_or_404(Prompt, pk=pk)
+        ver_num = int(request.POST.get("version_number", 0))
+        try:
+            set_on_live_version(prompt, ver_num)
+            messages.success(request, f"Version v{ver_num} is now on-live!")
+        except ValueError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Failed to set on-live version: {e}")
+
+        return redirect(f"/dashboard/prompts/{prompt.pk}/?version={ver_num}")
+
+
+class DashboardOnLiveClearView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        prompt = get_object_or_404(Prompt, pk=pk)
+        clear_on_live_version(prompt)
+        messages.info(request, f"On-live deployment target cleared for '{prompt.name}'.")
+        return redirect("dashboard-prompt-detail", pk=prompt.pk)
+
+
+class DashboardLabelSetView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        prompt = get_object_or_404(Prompt, pk=pk)
+        label_name = request.POST.get("name", "").strip()
+        ver_num = int(request.POST.get("version_number", 0))
+
+        if not label_name:
+            messages.error(request, "Label name is required.")
+            return redirect(f"/dashboard/prompts/{prompt.pk}/?version={ver_num}")
+
+        try:
+            lbl = set_custom_label(prompt, label_name, ver_num)
+            messages.success(request, f"Label '{lbl.name}' set to v{ver_num}.")
+        except ValueError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Failed to set label: {e}")
+
+        return redirect(f"/dashboard/prompts/{prompt.pk}/?version={ver_num}")
+
+
+class DashboardLabelRemoveView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
+        prompt = get_object_or_404(Prompt, pk=pk)
+        label_name = request.POST.get("name", "").strip()
+        try:
+            remove_custom_label(prompt, label_name)
+            messages.info(request, f"Label '{label_name}' removed.")
+        except ValueError as ve:
+            messages.error(request, str(ve))
+        except Exception as e:
+            messages.error(request, f"Failed to remove label: {e}")
+
+        return redirect("dashboard-prompt-detail", pk=prompt.pk)

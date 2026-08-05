@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - PromptKit Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; }
+        header { background-color: var(--card-bg); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo-title { display: flex; align-items: center; gap: 1.5rem; }
+        .logo-title h1 { font-size: 1.25rem; font-weight: 700; }
+        .nav-links { display: flex; gap: 1rem; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-links a.active, .nav-links a:hover { color: var(--accent); }
+        .user-nav { display: flex; align-items: center; gap: 1rem; }
+        .user-nav span { color: var(--text-muted); font-size: 0.875rem; }
+        .btn-logout { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+        
+        main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+        h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+        
+        .messages { grid-column: 1 / -1; }
+        .alert { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .alert-success { background-color: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #6ee7b7; }
+        .alert-error { background-color: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        th { background-color: #0f172a; color: var(--text-muted); font-weight: 600; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        input[type="text"], textarea { width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background-color: #0f172a; color: var(--text-main); font-size: 0.875rem; }
+        .btn-submit { width: 100%; background-color: var(--accent); color: #0f172a; font-weight: 600; border: none; padding: 0.65rem; border-radius: 6px; cursor: pointer; }
+        .btn-submit:hover { background-color: var(--accent-hover); }
+        .btn-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-title">
+            <h1>PromptKit Dashboard</h1>
+            <nav class="nav-links">
+                <a href="{% url 'dashboard-prompt-list' %}">Prompts</a>
+                <a href="{% url 'dashboard-category-list' %}" class="active">Categories</a>
+            </nav>
+        </div>
+        <div class="user-nav">
+            <span>Admin: <strong>{{ user.username }}</strong></span>
+            <form method="post" action="{% url 'dashboard-logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h2>Category List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Slug</th>
+                        <th>Attached Prompts</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td><strong>{{ cat.name }}</strong></td>
+                        <td><code>{{ cat.slug }}</code></td>
+                        <td>{{ cat.prompts.count }}</td>
+                        <td>
+                            <form method="post" action="{% url 'dashboard-category-delete' cat.pk %}" style="display:inline;" onsubmit="return confirm('Delete category {{ cat.name }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:var(--text-muted); padding: 2rem;">No categories defined.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>New Category</h2>
+            <form method="post" action="{% url 'dashboard-category-list' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Category Name</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g. Customer Support">
+                </div>
+                <div class="form-group">
+                    <label for="slug">Slug (Optional)</label>
+                    <input type="text" id="slug" name="slug" placeholder="customer-support">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Create Category</button>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

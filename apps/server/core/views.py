@@ -1,9 +1,10 @@
 """
-Core API Views for server health check endpoints.
+Core API and Landing Views for promptkit server.
 """
 
 from typing import Any
 
+from django.views.generic import TemplateView
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -26,3 +27,11 @@ class HealthCheckView(APIView):
             {"status": "ok", "service": "promptkit-server"},
             status=status.HTTP_200_OK,
         )
+
+
+class LandingView(TemplateView):
+    """
+    Public landing page view.
+    """
+
+    template_name = "core/landing.html"

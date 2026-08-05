@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prompt.name }} - Prompt Detail</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; }
+        header { background-color: var(--card-bg); border-bottom: 1px solid var(--border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo-title { display: flex; align-items: center; gap: 1.5rem; }
+        .logo-title h1 { font-size: 1.25rem; font-weight: 700; }
+        .nav-links { display: flex; gap: 1rem; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-links a.active, .nav-links a:hover { color: var(--accent); }
+        .user-nav { display: flex; align-items: center; gap: 1rem; }
+        .user-nav span { color: var(--text-muted); font-size: 0.875rem; }
+        .btn-logout { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+
+        main { max-width: 1300px; margin: 2rem auto; padding: 0 1rem; display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        
+        .messages { grid-column: 1 / -1; }
+        .alert { padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .alert-success { background-color: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: #6ee7b7; }
+        .alert-error { background-color: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger); color: #fca5a5; }
+
+        .version-list { list-style: none; }
+        .version-item { display: block; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid var(--border); text-decoration: none; color: var(--text-main); transition: background-color 0.2s; }
+        .version-item:hover, .version-item.active { background-color: #334155; border-color: var(--accent); }
+
+        .badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background-color: #334155; color: #cbd5e1; }
+        .badge-draft { background-color: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid var(--warning); }
+        .badge-pub { background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid var(--success); }
+        .badge-onlive { background-color: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid var(--accent); }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .btn-btn { padding: 0.5rem 1rem; border-radius: 6px; border: none; font-weight: 600; font-size: 0.875rem; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background-color: var(--accent); color: #0f172a; }
+        .btn-success { background-color: var(--success); color: #0f172a; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-secondary { background-color: #334155; color: var(--text-main); }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; margin-bottom: 1rem; }
+        th { background-color: #0f172a; color: var(--text-muted); padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background-color: #0f172a; color: var(--text-main); font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-title">
+            <h1>PromptKit Dashboard</h1>
+            <nav class="nav-links">
+                <a href="{% url 'dashboard-prompt-list' %}" class="active">Prompts</a>
+                <a href="{% url 'dashboard-category-list' %}">Categories</a>
+            </nav>
+        </div>
+        <div class="user-nav">
+            <span>Admin: <strong>{{ user.username }}</strong></span>
+            <form method="post" action="{% url 'dashboard-logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Sidebar: Versions List -->
+        <aside>
+            <div class="card">
+                <h3>Prompt Details</h3>
+                <p style="margin-top: 0.5rem;"><strong>{{ prompt.name }}</strong></p>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Slug: <code>{{ prompt.slug }}</code></p>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Category: {{ prompt.category.name }}</p>
+                <a href="{% url 'dashboard-prompt-update' prompt.pk %}" style="display:inline-block; margin-top:0.75rem; font-size:0.85rem; color: var(--accent);">Edit Settings</a>
+            </div>
+
+            <div class="card">
+                <h3>Versions</h3>
+                <ul class="version-list" style="margin-top: 0.75rem;">
+                    {% for v in versions %}
+                    <li>
+                        <a href="?version={{ v.version_number }}" class="version-item {% if selected_version and selected_version.id == v.id %}active{% endif %}">
+                            <strong>v{{ v.version_number }}</strong>
+                            <span class="badge {% if v.status == 'draft' %}badge-draft{% else %}badge-pub{% endif %}">{{ v.status }}</span>
+                            {% if v.is_on_live %}<span class="badge badge-onlive">On-Live</span>{% endif %}
+                        </a>
+                    </li>
+                    {% empty %}
+                    <li style="color: var(--text-muted);">No versions.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Custom Labels</h3>
+                <ul style="list-style: none; margin-top: 0.5rem;">
+                    {% for lbl in labels %}
+                    <li style="font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <span><strong>{{ lbl.name }}</strong> &rarr; v{{ lbl.version.version_number }}</span>
+                        {% if lbl.name != 'latest' %}
+                        <form method="post" action="{% url 'dashboard-label-remove' prompt.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="name" value="{{ lbl.name }}">
+                            <button type="submit" class="btn-btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">Remove</button>
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li style="font-size: 0.85rem; color: var(--text-muted);">No labels set.</li>
+                    {% endfor %}
+                </ul>
+
+                {% if selected_version and selected_version.status == 'published' %}
+                <form method="post" action="{% url 'dashboard-label-set' prompt.pk %}" style="margin-top: 1rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="version_number" value="{{ selected_version.version_number }}">
+                    <div class="form-row">
+                        <input type="text" name="name" placeholder="New label name" required>
+                    </div>
+                    <button type="submit" class="btn-btn btn-secondary" style="width: 100%; font-size: 0.8rem;">Attach Label to v{{ selected_version.version_number }}</button>
+                </form>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- Main Panel: Selected Version Detail -->
+        <section>
+            {% if selected_version %}
+            <div class="card">
+                <div class="toolbar">
+                    <div>
+                        <h2>Version {{ selected_version.version_number }}
+                            <span class="badge {% if selected_version.status == 'draft' %}badge-draft{% else %}badge-pub{% endif %}">{{ selected_version.status|upper }}</span>
+                            {% if selected_version.is_on_live %}<span class="badge badge-onlive">ON-LIVE</span>{% endif %}
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            Revision: {{ selected_version.revision }} | Created: {{ selected_version.created_at|date:"Y-m-d H:i" }}
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        {% if selected_version.status == 'draft' %}
+                            <form method="post" action="{% url 'dashboard-version-publish' selected_version.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="expected_revision" value="{{ selected_version.revision }}">
+                                <button type="submit" class="btn-btn btn-success">Publish Immutably</button>
+                            </form>
+                            <form method="post" action="{% url 'dashboard-version-delete' selected_version.id %}" onsubmit="return confirm('Delete draft v{{ selected_version.version_number }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-btn btn-danger">Delete Draft</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'dashboard-version-clone' selected_version.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-btn btn-primary">Clone to New Draft</button>
+                            </form>
+                            {% if not selected_version.is_on_live %}
+                            <form method="post" action="{% url 'dashboard-on-live-set' prompt.pk %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="version_number" value="{{ selected_version.version_number }}">
+                                <button type="submit" class="btn-btn btn-secondary">Set as On-Live</button>
+                            </form>
+                            {% else %}
+                            <form method="post" action="{% url 'dashboard-on-live-clear' prompt.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-btn btn-danger">Clear On-Live</button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sections Management -->
+            <div class="card">
+                <h3>Sections</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Order</th>
+                            <th style="width: 120px;">Role</th>
+                            <th>Content Template</th>
+                            {% if selected_version.status == 'draft' %}<th style="width: 100px;">Actions</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sec in sections %}
+                        <tr>
+                            <td>{{ sec.order }}</td>
+                            <td><span class="badge">{{ sec.role }}</span></td>
+                            <td><pre style="font-family: monospace; white-space: pre-wrap; color: var(--text-main);">{{ sec.content }}</pre></td>
+                            {% if selected_version.status == 'draft' %}
+                            <td>
+                                <form method="post" action="{% url 'dashboard-section-delete' sec.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" style="color: var(--text-muted); text-align: center;">No sections defined for this version.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if selected_version.status == 'draft' %}
+                <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Add Section</h4>
+                <form method="post" action="{% url 'dashboard-section-create' selected_version.id %}">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div>
+                            <label>Role</label>
+                            <select name="role">
+                                {% for r_val, r_label in role_choices %}
+                                <option value="{{ r_val }}">{{ r_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Order Index</label>
+                            <input type="number" name="order" placeholder="Auto">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0.75rem;">
+                        <label>Content (Use {{ variable_name }} for variables)</label>
+                        <textarea name="content" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-btn btn-secondary">Add Section</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Variable Definitions Management -->
+            <div class="card">
+                <h3>Variable Definitions</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Default Value</th>
+                            <th>Description</th>
+                            {% if selected_version.status == 'draft' %}<th>Actions</th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for var in variables %}
+                        <tr>
+                            <td><code>${{ var.name }}</code></td>
+                            <td><span class="badge">{{ var.var_type }}</span></td>
+                            <td>{% if var.required %}&check;{% else %}&cross;{% endif %}</td>
+                            <td><code>{{ var.default_value|default:"-" }}</code></td>
+                            <td>{{ var.description }}</td>
+                            {% if selected_version.status == 'draft' %}
+                            <td>
+                                <form method="post" action="{% url 'dashboard-variable-delete' var.pk %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-btn btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Delete</button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" style="color: var(--text-muted); text-align: center;">No variables declared.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if selected_version.status == 'draft' %}
+                <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Declare Variable</h4>
+                <form method="post" action="{% url 'dashboard-variable-create' selected_version.id %}">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div>
+                            <label>Variable Name</label>
+                            <input type="text" name="name" required placeholder="user_name">
+                        </div>
+                        <div>
+                            <label>Type</label>
+                            <select name="var_type">
+                                {% for t_val, t_label in type_choices %}
+                                <option value="{{ t_val }}">{{ t_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Default Value</label>
+                            <input type="text" name="default_value" placeholder="Optional default">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label>Description</label>
+                            <input type="text" name="description" placeholder="Description">
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem;">
+                            <input type="checkbox" id="req" name="required" checked>
+                            <label for="req" style="margin-bottom: 0;">Required</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-btn btn-secondary">Declare Variable</button>
+                </form>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="card">
+                <p style="color: var(--text-muted);">No version selected.</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

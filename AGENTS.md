@@ -78,6 +78,7 @@ AI 에이전트는 주관적인 판단(Hallucination)을 배제하고 아래의 
   - **SDK-First & Framework Agnostic**: 코어 SDK인 `packages/promptkit`은 특정 프레임워크에 종속되지 않는 Pure Python 표준으로 가볍게 유지하고, Read-only 조회(Fetch) 기능만 포함합니다. Django 연동 및 최적화 기능은 완전히 독립된 `packages/promptkit-django` 패키지로 확장 설계합니다.
   - **Client-Side `compile()` 렌더링**: 동적 변수 주입 렌더링 연산 오버헤드를 Prompt Server에 전가하지 않고 SDK단에서 처리하여 서버 부하 및 지연(Latency)을 최소화합니다.
   - **Subdirectory 독립 배포 스펙**: 외부 비즈니스 서비스에서 모노레포를 격리하여 독립 설치(`pip install "git+https://...#subdirectory=packages/promptkit"`)할 수 있도록 모노레포 각 패키지 간의 강결합을 엄격히 차단합니다.
+  - **대시보드 배포 정책**: 대시보드 CUD는 Django Session Auth와 CSRF 보호를 사용하며, SDK는 API key 기반 Read-only 조회만 제공한다. 라벨이 생략된 SDK 조회는 on-live 발행 버전만 반환하고, latest는 마지막 발행 버전만 가리키며, production과 fallback은 허용하지 않는다.
 - **엄격한 접근 제약**: `.specify/memory/constitution.md` 및 프로젝트 규칙을 정의하는 파일은 거버넌스 확인 없이 독단적으로 변경하지 않음.
 
 ---

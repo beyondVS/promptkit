@@ -139,33 +139,21 @@ response = gemini.models.generate_content(
 
 ---
 
-# 5. Labels
+# 5. Labels and deployment
 
-Default label
-
-- production
-
-Optional labels
-
-- draft
-- dev
-- experiment
-
-If label is omitted, production must be returned.
+- Omitted SDK labels resolve only to the prompt's on-live published version.
+- No on-live version returns no-deployable-version without fallback.
+- `latest` is the only system-reserved label and points to the last published version.
+- Custom labels target published versions only; `production` is forbidden.
 
 ---
 
 # 6. API Requirements
 
-Required APIs
-
-- Prompt CRUD
-- Version CRUD
-- Label CRUD
-- Playground
-- Authentication
-
-No LLM execution API.
+- Dashboard CUD is session-authenticated and CSRF-protected.
+- SDK exposes only API-key-authenticated `GET /api/v1/prompts/<slug>/`.
+- Omitted labels resolve only to on-live; explicit labels resolve only to published targets.
+- No SDK CUD or LLM execution API is exposed.
 
 ---
 
