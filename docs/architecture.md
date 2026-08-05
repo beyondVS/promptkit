@@ -143,9 +143,9 @@ response = gemini.models.generate_content(
 
 ### 4.3 MVP 구성 정의
 초기 가동(MVP)에 필수적으로 보장되어야 하는 범위입니다.
-1. 프롬프트 CRUD 및 관리 화면
-2. 버전 관리 및 롤백 기능
-3. 라벨 관리 및Fallback 메커니즘
+1. 프롬프트 CRUD 및 대시보드 CUD 관리 화면 (`/dashboard/`)
+2. 버전 작성·발행·복제(Clone) 및 독립적 초안 관리 기능
+3. On-live 지정 및 발행 라벨 관리 (자동 Fallback 금지)
 4. Python SDK 코어 및 compile() 메서드
 5. Gemini 및 LiteLLM 어댑터(Adapter) 구현
 6. Django Integration 패키지 (`promptkit-django`)

@@ -33,4 +33,4 @@ uv run pytest
 
 ## Documentation verification
 
-Confirm `.specify/memory/constitution.md`, `AGENTS.md`, `docs/prompt-server-requirements.md`, `docs/project-spec.md`, `docs/architecture.md`, `docs/project_plan.md`, and `docs/sdk-read-api-contract.md` all state the same on-live, latest, label, and SDK-read-only policies.
+Confirm `.specify/memory/constitution.md`, `AGENTS.md`, `docs/prompt-server-requirements.md`, `docs/project-spec.md`, `docs/architecture.md`, `docs/project-plan.md`, and `docs/sdk-read-api-contract.md` all state the same on-live, latest, label, and SDK-read-only policies.

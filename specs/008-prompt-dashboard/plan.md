@@ -8,7 +8,7 @@
 
 Update the project constitution, agent guidance, and product/architecture documentation to make the dashboard policy authoritative: a draft can be edited, cloned, or deleted; publishing is irreversible; on-live is the sole default SDK resolution; `latest` denotes the last published version; and `production` is not a defined label. Then implement the schema, protected dashboard flows, and read-only SDK contract that enforce those rules.
 
-The implementation must preserve completed Day 01–07 entries in `docs/project_plan.md`; only unfinished work from Day 08 onward is revised or expanded.
+The implementation must preserve completed Day 01–07 entries in `docs/project-plan.md`; only unfinished work from Day 08 onward is revised or expanded.
 
 ## Technical Context
 
@@ -70,7 +70,7 @@ docs/
 ├── prompt-server-requirements.md     # PRD-level lifecycle and API boundary
 ├── project-spec.md                   # Product-level label and SDK policy
 ├── architecture.md                   # Lifecycle, routing, data, API architecture
-├── project_plan.md                   # Day 08+ schedule only
+├── project-plan.md                   # Day 08+ schedule only
 └── sdk-read-api-contract.md          # New durable SDK fetch contract
 apps/server/
 ├── prompts/models.py
@@ -89,7 +89,7 @@ tests/                               # Contract and integration coverage
 
 ## Implementation Phases
 
-1. **Governance and documentation first**: Amend the constitution and `AGENTS.md`; replace obsolete production/fallback/rollback descriptions in `docs/*.md`; create `docs/sdk-read-api-contract.md`; update only Day 08+ milestones in `docs/project_plan.md`.
+1. **Governance and documentation first**: Amend the constitution and `AGENTS.md`; replace obsolete production/fallback/rollback descriptions in `docs/*.md`; create `docs/sdk-read-api-contract.md`; update only Day 08+ milestones in `docs/project-plan.md`.
 2. **Schema and migration safety**: Add version lifecycle, on-live, optimistic concurrency, category-scoped prompt-name uniqueness, published-only labels, and normalized variable/section constraints. Before migration, classify existing labels and lifecycle data; explicitly transform supported records, reject unsupported records with actionable diagnostics, document the migration path, and test each outcome.
 3. **Dashboard lifecycle flows**: Build protected category, prompt, version, section, variable, label, and on-live management flows. Enforce draft-only mutation, clone-to-draft, publish immutability, conflict detection, and cascaded prompt deletion rules.
 4. **Read-only SDK resolution and routing**: Normalize the public path to `/api/v1/prompts/<slug>/`; remove duplicated API/dashboard exposure; resolve omitted label by on-live only; allow explicit labels only for published versions; return a documented no-deployable-version response without fallback.

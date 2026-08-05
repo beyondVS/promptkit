@@ -37,14 +37,14 @@
 * [x] **Day 07 (3h): Feature 007 - promptkit 컨셉 재정의, 대시보드 CUD, Read-Only API & 문서 최신화**
     *   `apps/server` 내 Django Session Auth 기반의 관리자 대시보드 CUD 화면(`/dashboard/`) 구축 및 프롬프트/카테고리 관리 기능 완성.
     *   SDK 전용 Read-only 프롬프트 조회 API(`GET /api/v1/prompts/<slug>/`) 구현 및 `.env` 시크릿 기반 `X-PromptKit-Api-Key` 헤더 인증 분리.
-    *   `constitution.md`, `AGENTS.md`, `README.md`, `docs/*.md` 및 `docs/project_plan.md` 최신 아키텍처 사양 동기화 완료.
+    *   `constitution.md`, `AGENTS.md`, `README.md`, `docs/*.md` 및 `docs/project-plan.md` 최신 아키텍처 사양 동기화 완료.
 
 ---
 
 ## 📦 2주차: 서버 기능 고도화 및 Python SDK Core 개발 (약 6시간)
 **목표**: 서버의 메타데이터 비즈니스 로직을 정교화하고, 프롬프트 변수 검증 및 변환을 제공하는 Python SDK 핵심 라이브러리를 개발합니다.
 
-* [ ] **Day 08 (1h): Lifecycle, on-live 및 Label 정책 구현**
+* [x] **Day 08 (1h): Lifecycle, on-live 및 Label 정책 구현**
     * 초안·발행·복제·삭제 lifecycle과 발행 버전 전용 라벨 규칙을 구현.
     * `latest`를 마지막 발행 버전에만 유지하고 `production`을 금지.
     * 라벨 생략 SDK 조회는 on-live 발행 버전만 반환하며 fallback을 사용하지 않음.

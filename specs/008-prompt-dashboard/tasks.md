@@ -17,7 +17,7 @@
 - [X] T003 [P] Replace rollback/environment/production assumptions with draft-publish-on-live policy in `docs/prompt-server-requirements.md`
 - [X] T004 [P] Replace label, compile-flow, and SDK default-lookup policy in `docs/project-spec.md`
 - [X] T005 [P] Update lifecycle, routing, API boundary, and MVP architecture in `docs/architecture.md`
-- [X] T006 Update only incomplete Day 08+ milestones for lifecycle, labels, SDK lookup, and validation in `docs/project_plan.md`
+- [X] T006 Update only incomplete Day 08+ milestones for lifecycle, labels, SDK lookup, and validation in `docs/project-plan.md`
 - [X] T007 [P] Create the durable SDK read API policy in `docs/sdk-read-api-contract.md`
 - [X] T008 Verify policy consistency across `.specify/memory/constitution.md`, `AGENTS.md`, and `docs/*.md`
 

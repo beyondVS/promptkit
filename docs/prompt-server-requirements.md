@@ -120,12 +120,12 @@ Prompt 조회 시
 
 ## 7. 개발 범위(MVP)
 
-* Prompt CRUD
-* Prompt Version 관리
-* Environment 관리
+* Prompt CRUD (대시보드 CUD)
+* Prompt Version 및 초안·발행·복제 관리
+* On-live 및 Label 배포 관리
 * Metadata 관리
-* Variable 정의
-* REST API
+* Variable 정의 및 템플릿 검증
+* Read-only REST API
 
 ---
 
