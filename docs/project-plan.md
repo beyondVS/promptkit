@@ -48,7 +48,7 @@
     * 초안·발행·복제·삭제 lifecycle과 발행 버전 전용 라벨 규칙을 구현.
     * `latest`를 마지막 발행 버전에만 유지하고 `production`을 금지.
     * 라벨 생략 SDK 조회는 on-live 발행 버전만 반환하며 fallback을 사용하지 않음.
-* [ ] **Day 09 (1h): Web Playground 기초 UI 및 변수 입력 폼 API 설계**
+* [x] **Day 09 (1h): Web Playground 기초 UI 및 변수 입력 폼 API 설계**
     *   실제 컴파일 연동은 제외하고, 관리자가 프롬프트의 동적 변수를 입력받을 수 있는 Playground 기초 UI 레이아웃 및 변수 스키마 조회 API 개발.
 * [ ] **Day 10 (1h): Python SDK (`packages/promptkit`) 환경 셋업 및 REST Client 개발**
     *   독자적인 패키지 디렉토리 구조 및 `pyproject.toml` 설정 후 즉시 Git subdirectory 독립 설치 테스트 실행.
