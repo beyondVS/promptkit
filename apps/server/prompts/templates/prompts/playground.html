@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prompt.name }} v{{ version.version_number }} - Playground</title>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f8fafc; --muted: #94a3b8; --accent: #38bdf8; --danger: #fca5a5; --success: #6ee7b7; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: var(--card); border-bottom: 1px solid var(--border); }
+        a { color: var(--accent); text-decoration: none; }
+        main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .card { padding: 1.5rem; margin-bottom: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; }
+        .meta { color: var(--muted); margin: .4rem 0 0; }
+        .variable { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .variable:last-child { border-bottom: 0; }
+        label { display: block; font-weight: 700; margin-bottom: .4rem; }
+        .hint { color: var(--muted); font-size: .9rem; margin: .3rem 0 .6rem; }
+        input, select, textarea { width: 100%; padding: .65rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; }
+        textarea { min-height: 100px; resize: vertical; }
+        .error { min-height: 1.2rem; margin: .35rem 0 0; color: var(--danger); font-size: .85rem; }
+        .invalid { border-color: var(--danger); }
+        #input-status { color: var(--success); }
+        .empty { color: var(--muted); text-align: center; padding: 2rem; }
+        .required { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <header>
+        <strong>PromptKit Playground</strong>
+        <a href="{% url 'dashboard-prompt-detail' prompt.id %}?version={{ version.version_number }}">Back to version</a>
+    </header>
+    <main data-schema-url="{% url 'dashboard-variable-schema' version.id %}">
+        <section class="card">
+            <h1>{{ prompt.name }}</h1>
+            <p class="meta">Version {{ version.version_number }} · {{ version.status|upper }} · Input values stay only in this browser page.</p>
+        </section>
+        <section class="card" aria-labelledby="variables-title">
+            <h2 id="variables-title">Variable inputs</h2>
+            {% if variables %}
+                <p id="input-status" role="status">Review required values before using this Playground in a later workflow.</p>
+                {% for variable in variables %}
+                    <div class="variable" data-variable data-type="{{ variable.var_type }}" data-required="{{ variable.required|yesno:'true,false' }}">
+                        <label for="variable-{{ variable.name }}">{{ variable.name }}{% if variable.required %} <span class="required" aria-label="required">*</span>{% endif %}</label>
+                        {% if variable.description %}<p class="hint">{{ variable.description }}</p>{% endif %}
+                        {% if variable.var_type == 'boolean' %}
+                            <select id="variable-{{ variable.name }}" aria-required="{{ variable.required|yesno:'true,false' }}">
+                                <option value="" {% if variable.default_value is None %}selected{% endif %}>Choose a value</option>
+                                <option value="true" {% if variable.default_value == 'true' %}selected{% endif %}>True</option>
+                                <option value="false" {% if variable.default_value == 'false' %}selected{% endif %}>False</option>
+                            </select>
+                        {% elif variable.var_type == 'json' %}
+                            <textarea id="variable-{{ variable.name }}" aria-required="{{ variable.required|yesno:'true,false' }}">{{ variable.default_value|default_if_none:'' }}</textarea>
+                        {% else %}
+                            <input id="variable-{{ variable.name }}" type="{% if variable.var_type == 'number' %}number{% else %}text{% endif %}" value="{{ variable.default_value|default_if_none:'' }}" aria-required="{{ variable.required|yesno:'true,false' }}">
+                        {% endif %}
+                        <p class="error" role="alert"></p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty">No variables are defined for this version. No input is needed.</p>
+            {% endif %}
+        </section>
+    </main>
+    <script>
+        function validateVariable(container) {
+            const control = container.querySelector('input, select, textarea');
+            const error = container.querySelector('.error');
+            const required = container.dataset.required === 'true';
+            const type = container.dataset.type;
+            const value = control.value.trim();
+            let message = '';
+
+            if (required && !value) message = 'This value is required.';
+            else if (value && type === 'number' && !Number.isFinite(Number(value))) message = 'Enter a valid number.';
+            else if (value && type === 'json') {
+                try { JSON.parse(value); } catch (_) { message = 'Enter valid JSON.'; }
+            }
+            error.textContent = message;
+            control.classList.toggle('invalid', Boolean(message));
+            return !message;
+        }
+
+        document.querySelectorAll('[data-variable]').forEach((container) => {
+            const control = container.querySelector('input, select, textarea');
+            control.addEventListener('input', () => validateVariable(container));
+            control.addEventListener('change', () => validateVariable(container));
+        });
+    </script>
+</body>
+</html>

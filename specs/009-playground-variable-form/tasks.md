@@ -12,7 +12,7 @@
 
 **Purpose**: Prepare the focused regression-test module for the feature.
 
-- [ ] T001 Create shared staff, non-staff, prompt, draft-version, published-version, and variable fixtures using `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py`
+- [X] T001 Create shared staff, non-staff, prompt, draft-version, published-version, and variable fixtures using `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ---
 
@@ -22,7 +22,7 @@
 
 **⚠️ CRITICAL**: Complete this phase before user-story implementation.
 
-- [ ] T002 Add protected Playground and schema view declarations in `apps/server/prompts/views/dashboard.py` and register their named version-primary-key routes in `apps/server/prompts/urls.py`
+- [X] T002 Add protected Playground and schema view declarations in `apps/server/prompts/views/dashboard.py` and register their named version-primary-key routes in `apps/server/prompts/urls.py`
 
 **Checkpoint**: The URL names and target shapes are available for isolated view and template work.
 
@@ -36,13 +36,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T003 [US1] Add page and schema contract tests for staff access, draft/published targets, schema ordering, nullable defaults, target isolation, and excluded template/section data in `apps/server/prompts/tests/test_dashboard_playground.py`
+- [X] T003 [US1] Add page and schema contract tests for staff access, draft/published targets, schema ordering, nullable defaults, target isolation, and excluded template/section data in `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Implement selected-version lookup and read-only variable-schema response behavior in the protected Playground views using existing `Prompt`, `Version`, and `VariableDefinition` data in `apps/server/prompts/views/dashboard.py`
-- [ ] T005 [US1] Add the selected-version Playground navigation link to the version toolbar in `apps/server/prompts/templates/prompts/prompt_detail.html`
-- [ ] T006 [US1] Create the Playground page with target metadata, schema loading, per-variable labels/descriptions/required markers, default-value initialization, and browser-only state in `apps/server/prompts/templates/prompts/playground.html`
+- [X] T004 [US1] Implement selected-version lookup and read-only variable-schema response behavior in the protected Playground views using existing `Prompt`, `Version`, and `VariableDefinition` data in `apps/server/prompts/views/dashboard.py`
+- [X] T005 [US1] Add the selected-version Playground navigation link to the version toolbar in `apps/server/prompts/templates/prompts/prompt_detail.html`
+- [X] T006 [US1] Create the Playground page with target metadata, schema loading, per-variable labels/descriptions/required markers, default-value initialization, and browser-only state in `apps/server/prompts/templates/prompts/playground.html`
 
 **Checkpoint**: Staff can independently prepare transient values for one selected draft or published version; no input is sent or stored.
 
@@ -56,11 +56,11 @@
 
 ### Tests for User Story 2
 
-- [ ] T007 [US2] Add response and rendered-page tests covering all four variable types, required/default metadata, and the absence of a value-submission endpoint in `apps/server/prompts/tests/test_dashboard_playground.py`
+- [X] T007 [US2] Add response and rendered-page tests covering all four variable types, required/default metadata, and the absence of a value-submission endpoint in `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Extend the Playground renderer with text, number, boolean, and JSON controls plus client-side required, number, and JSON validation messages in `apps/server/prompts/templates/prompts/playground.html`
+- [X] T008 [US2] Extend the Playground renderer with text, number, boolean, and JSON controls plus client-side required, number, and JSON validation messages in `apps/server/prompts/templates/prompts/playground.html`
 
 **Checkpoint**: The input form guides correct entry for all supported types while remaining local-only.
 
@@ -74,12 +74,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T009 [US3] Add tests for the no-variable empty state, unknown-version response, unauthenticated redirect, non-staff denial, and non-GET schema method rejection in `apps/server/prompts/tests/test_dashboard_playground.py`
+- [X] T009 [US3] Add tests for the no-variable empty state, unknown-version response, unauthenticated redirect, non-staff denial, and non-GET schema method rejection in `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Add a clear no-variable empty state and safe schema-load failure message to `apps/server/prompts/templates/prompts/playground.html`
-- [ ] T011 [US3] Ensure the Playground and schema views preserve existing dashboard authorization and unknown-version handling in `apps/server/prompts/views/dashboard.py`
+- [X] T010 [US3] Add a clear no-variable empty state and safe schema-load failure message to `apps/server/prompts/templates/prompts/playground.html`
+- [X] T011 [US3] Ensure the Playground and schema views preserve existing dashboard authorization and unknown-version handling in `apps/server/prompts/views/dashboard.py`
 
 **Checkpoint**: Empty and failure states are understandable and no unauthorized actor can obtain schema details.
 
@@ -89,9 +89,9 @@
 
 **Purpose**: Verify the feature against the documented contract and guard the intentionally excluded behavior.
 
-- [ ] T012 [P] Verify route names, payload fields, method boundary, and SDK API separation against `specs/009-playground-variable-form/contracts/dashboard-variable-schema.md`
-- [ ] T013 Run focused tests, full tests, Ruff, and MyPy, then complete the quickstart manual scenarios for type validation and refresh-time non-persistence in `specs/009-playground-variable-form/quickstart.md`
-- [ ] T014 [P] Review changed dashboard templates and views for the explicit absence of persistence, compilation, preview, and LLM calls against `specs/009-playground-variable-form/spec.md`
+- [X] T012 [P] Verify route names, payload fields, method boundary, and SDK API separation against `specs/009-playground-variable-form/contracts/dashboard-variable-schema.md`
+- [X] T013 Run focused tests, full tests, Ruff, and MyPy, then complete the quickstart manual scenarios for type validation and refresh-time non-persistence in `specs/009-playground-variable-form/quickstart.md`
+- [X] T014 [P] Review changed dashboard templates and views for the explicit absence of persistence, compilation, preview, and LLM calls against `specs/009-playground-variable-form/spec.md`
 
 ---
 

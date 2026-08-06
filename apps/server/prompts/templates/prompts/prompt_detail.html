@@ -166,6 +166,7 @@
                     </div>
 
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <a href="{% url 'dashboard-playground' selected_version.id %}" class="btn-btn btn-primary">Open Playground</a>
                         {% if selected_version.status == 'draft' %}
                             <form method="post" action="{% url 'dashboard-version-publish' selected_version.id %}">
                                 {% csrf_token %}
