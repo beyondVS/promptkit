@@ -10,7 +10,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError, models, transaction
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
@@ -364,6 +364,61 @@ class DashboardPromptDetailView(LoginRequiredMixin, DashboardStaffRequiredMixin,
         )
 
 
+class DashboardPlaygroundView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    """Dashboard entry point for a specific prompt version's Playground."""
+
+    template_name = "prompts/playground.html"
+
+    def get(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(
+            Version.objects.select_related("prompt").prefetch_related("variables"),
+            pk=version_id,
+        )
+        return render(
+            request,
+            self.template_name,
+            {
+                "prompt": version.prompt,
+                "version": version,
+                "variables": list(version.variables.all().order_by("name")),
+            },
+        )
+
+
+class DashboardVariableSchemaView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):
+    """Read-only dashboard schema endpoint for a specific prompt version."""
+
+    def get(self, request: HttpRequest, version_id: int) -> JsonResponse:
+        version = get_object_or_404(
+            Version.objects.select_related("prompt").prefetch_related("variables"),
+            pk=version_id,
+        )
+        return JsonResponse(
+            {
+                "prompt": {
+                    "id": version.prompt.id,
+                    "slug": version.prompt.slug,
+                    "name": version.prompt.name,
+                },
+                "version": {
+                    "id": version.id,
+                    "number": version.version_number,
+                    "status": version.status,
+                },
+                "variables": [
+                    {
+                        "name": variable.name,
+                        "var_type": variable.var_type,
+                        "required": variable.required,
+                        "default_value": variable.default_value,
+                        "description": variable.description,
+                    }
+                    for variable in version.variables.all().order_by("name")
+                ],
+            }
+        )
+
+
 # --- Section CUD Views (US1) ---
 
 
@@ -501,9 +556,7 @@ class DashboardVariableCreateView(LoginRequiredMixin, DashboardStaffRequiredMixi
         except Exception as e:
             messages.error(request, f"Failed to add variable: {e}")
 
-        return redirect(
-            f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}"
-        )
+        return redirect(f"/dashboard/prompts/{version.prompt.pk}/?version={version.version_number}")
 
 
 class DashboardVariableUpdateView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):

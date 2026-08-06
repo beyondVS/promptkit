@@ -15,6 +15,7 @@ from apps.server.prompts.views.dashboard import (
     DashboardLogoutView,
     DashboardOnLiveClearView,
     DashboardOnLiveSetView,
+    DashboardPlaygroundView,
     DashboardPromptCreateView,
     DashboardPromptDeleteView,
     DashboardPromptDetailView,
@@ -25,6 +26,7 @@ from apps.server.prompts.views.dashboard import (
     DashboardSectionUpdateView,
     DashboardVariableCreateView,
     DashboardVariableDeleteView,
+    DashboardVariableSchemaView,
     DashboardVariableUpdateView,
     DashboardVersionCloneView,
     DashboardVersionDeleteView,
@@ -95,6 +97,16 @@ urlpatterns = [
         "versions/<int:version_id>/delete/",
         DashboardVersionDeleteView.as_view(),
         name="dashboard-version-delete",
+    ),
+    path(
+        "versions/<int:version_id>/playground/",
+        DashboardPlaygroundView.as_view(),
+        name="dashboard-playground",
+    ),
+    path(
+        "api/versions/<int:version_id>/variables/",
+        DashboardVariableSchemaView.as_view(),
+        name="dashboard-variable-schema",
     ),
     # Sections CUD
     path(
