@@ -18,9 +18,9 @@
 
 **Purpose**: Create the standalone package boundary and resolve its declared runtime dependencies.
 
-- [ ] T001 Create the standalone distribution metadata and `src` build configuration with only `httpx` and Pydantic v2 runtime dependencies in `packages/promptkit/pyproject.toml`
-- [ ] T002 [P] Create the package README describing read-only scope, explicit client configuration, and independent installation in `packages/promptkit/README.md`
-- [ ] T003 Regenerate `uv.lock` and synchronize the new package member after T001 without changing the already-matching root workspace configuration in `pyproject.toml`
+- [X] T001 Create the standalone distribution metadata and `src` build configuration with only `httpx` and Pydantic v2 runtime dependencies in `packages/promptkit/pyproject.toml`
+- [X] T002 [P] Create the package README describing read-only scope, explicit client configuration, and independent installation in `packages/promptkit/README.md`
+- [X] T003 Regenerate `uv.lock` and synchronize the new package member after T001 without changing the already-matching root workspace configuration in `pyproject.toml`
 
 ---
 
@@ -30,8 +30,8 @@
 
 **⚠️ CRITICAL**: Complete this phase before implementing story behavior.
 
-- [ ] T004 Create the package module boundary and temporary explicit public exports in `packages/promptkit/src/promptkit/__init__.py`
-- [ ] T005 Create reusable `httpx.MockTransport` response builders and API-key-safe test fixtures in `tests/promptkit/unit/conftest.py`
+- [X] T004 Create the package module boundary and temporary explicit public exports in `packages/promptkit/src/promptkit/__init__.py`
+- [X] T005 Create reusable `httpx.MockTransport` response builders and API-key-safe test fixtures in `tests/promptkit/unit/conftest.py`
 
 **Checkpoint**: The package is importable in the workspace and every story can use an isolated HTTP transport.
 
@@ -45,14 +45,14 @@
 
 ### Tests for User Story 1
 
-- [ ] T006 [P] [US1] Add response-model tests for required fields, nested sections/variables, timestamps, and ignored unknown fields in `tests/promptkit/unit/test_models.py`
-- [ ] T007 [P] [US1] Add synchronous successful-fetch tests for the exact path, API-key header, omitted label, explicit label, and 10-second default in `tests/promptkit/unit/test_client.py`
+- [X] T006 [P] [US1] Add response-model tests for required fields, nested sections/variables, timestamps, and ignored unknown fields in `tests/promptkit/unit/test_models.py`
+- [X] T007 [P] [US1] Add synchronous successful-fetch tests for the exact path, API-key header, omitted label, explicit label, and 10-second default in `tests/promptkit/unit/test_client.py`
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement typed Pydantic category, variable, section, and retrieved-prompt models that reject missing required data and ignore additional data in `packages/promptkit/src/promptkit/models.py`
-- [ ] T009 [US1] Implement the synchronous `PromptKitClient` constructor, injected transport seam, authenticated GET request, caller-overridable timeout, and successful response decoding in `packages/promptkit/src/promptkit/client.py`
-- [ ] T010 [US1] Export `PromptKitClient` and the retrieved-prompt model types as the package public interface in `packages/promptkit/src/promptkit/__init__.py`
+- [X] T008 [US1] Implement typed Pydantic category, variable, section, and retrieved-prompt models that reject missing required data and ignore additional data in `packages/promptkit/src/promptkit/models.py`
+- [X] T009 [US1] Implement the synchronous `PromptKitClient` constructor, injected transport seam, authenticated GET request, caller-overridable timeout, and successful response decoding in `packages/promptkit/src/promptkit/client.py`
+- [X] T010 [US1] Export `PromptKitClient` and the retrieved-prompt model types as the package public interface in `packages/promptkit/src/promptkit/__init__.py`
 
 **Checkpoint**: On-live and explicit-label retrieval work with typed content, version metadata, sections, and variable definitions.
 
@@ -66,16 +66,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T011 [US2] Add tests for empty slug, forbidden `production`, unsafe registry URLs, and API-key-safe local validation failures in `tests/promptkit/unit/test_client.py`
-- [ ] T012 [US2] Add response-mapping tests for 401, unknown-slug 404, `no_deployable_version`, `label_not_found`, `invalid_label`, 429, and 3xx responses in `tests/promptkit/unit/test_client.py`
-- [ ] T013 [US2] Add transport and payload-failure tests for timeout/connection/TLS failures, no automatic retry, malformed JSON, and missing required response fields in `tests/promptkit/unit/test_client.py`
+- [X] T011 [US2] Add tests for empty slug, forbidden `production`, unsafe registry URLs, and API-key-safe local validation failures in `tests/promptkit/unit/test_client.py`
+- [X] T012 [US2] Add response-mapping tests for 401, unknown-slug 404, `no_deployable_version`, `label_not_found`, `invalid_label`, 429, and 3xx responses in `tests/promptkit/unit/test_client.py`
+- [X] T013 [US2] Add transport and payload-failure tests for timeout/connection/TLS failures, no automatic retry, malformed JSON, and missing required response fields in `tests/promptkit/unit/test_client.py`
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Define the base public error and typed authentication, missing-prompt, no-deployable-version, label, invalid-label, rate-limit, redirect, communication, and invalid-response errors in `packages/promptkit/src/promptkit/exceptions.py`
-- [ ] T015 [US2] Add client preflight validation for non-empty slug, explicit API key, forbidden `production`, HTTPS-or-loopback-HTTP URLs, and no-request local failures in `packages/promptkit/src/promptkit/client.py`
-- [ ] T016 [US2] Add no-retry, no-redirect HTTP status/error mapping and malformed-response handling to `packages/promptkit/src/promptkit/client.py`
-- [ ] T017 [US2] Export the typed public error hierarchy in `packages/promptkit/src/promptkit/__init__.py`
+- [X] T014 [US2] Define the base public error and typed authentication, missing-prompt, no-deployable-version, label, invalid-label, rate-limit, redirect, communication, and invalid-response errors in `packages/promptkit/src/promptkit/exceptions.py`
+- [X] T015 [US2] Add client preflight validation for non-empty slug, explicit API key, forbidden `production`, HTTPS-or-loopback-HTTP URLs, and no-request local failures in `packages/promptkit/src/promptkit/client.py`
+- [X] T016 [US2] Add no-retry, no-redirect HTTP status/error mapping and malformed-response handling to `packages/promptkit/src/promptkit/client.py`
+- [X] T017 [US2] Export the typed public error hierarchy in `packages/promptkit/src/promptkit/__init__.py`
 
 **Checkpoint**: Every required error category is distinguishable; no response path silently falls back to another prompt, version, or label.
 
@@ -89,11 +89,11 @@
 
 ### Tests for User Story 3
 
-- [ ] T018 [US3] Add a subprocess-based isolated-install regression test that creates a temporary virtual environment, installs the committed local Git `HEAD` subdirectory, and imports the public client in `tests/promptkit/integration/test_git_subdirectory_install.py`
+- [X] T018 [US3] Add a subprocess-based isolated-install regression test that creates a temporary virtual environment, installs the committed local Git `HEAD` subdirectory, and imports the public client in `tests/promptkit/integration/test_git_subdirectory_install.py`
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Add package installation and minimal client-import usage instructions matching the public API in `packages/promptkit/README.md`
+- [X] T019 [US3] Add package installation and minimal client-import usage instructions matching the public API in `packages/promptkit/README.md`
 - [ ] T020 [US3] After an explicitly user-approved checkpoint commit includes `packages/promptkit`, run the Git-subdirectory installation scenario from `specs/010-sdk-rest-client/quickstart.md` and report the result without modifying test source files
 
 **Checkpoint**: The committed package installs through its Git subdirectory and imports without Django, DRF, or `promptkit-django`.
@@ -104,9 +104,9 @@
 
 **Purpose**: Validate the completed public library and keep the package contract aligned with its implementation.
 
-- [ ] T021 Reconcile the active server serializer and error behavior in `docs/sdk-read-api-contract.md` with `apps/server/prompts/views/api.py` and `apps/server/prompts/serializers.py`
-- [ ] T022 [P] Verify package metadata, README examples, and public exports against `specs/010-sdk-rest-client/contracts/sdk-client-api.md` in `packages/promptkit/pyproject.toml`, `packages/promptkit/README.md`, and `packages/promptkit/src/promptkit/__init__.py`
-- [ ] T023 Run targeted SDK tests, workspace lint/format checks, and strict typing checks from `tests/promptkit/`, `packages/promptkit/`, and root `pyproject.toml`
+- [X] T021 Reconcile the active server serializer and error behavior in `docs/sdk-read-api-contract.md` with `apps/server/prompts/views/api.py` and `apps/server/prompts/serializers.py`
+- [X] T022 [P] Verify package metadata, README examples, and public exports against `specs/010-sdk-rest-client/contracts/sdk-client-api.md` in `packages/promptkit/pyproject.toml`, `packages/promptkit/README.md`, and `packages/promptkit/src/promptkit/__init__.py`
+- [X] T023 Run targeted SDK tests, workspace lint/format checks, and strict typing checks from `tests/promptkit/`, `packages/promptkit/`, and root `pyproject.toml`
 - [ ] T024 Run the full project test suite and re-run the independent-install quickstart after the final user-approved commit using `specs/010-sdk-rest-client/quickstart.md`
 
 ---
