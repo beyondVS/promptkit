@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ipaddress import ip_address
+from math import isfinite
 from typing import Any
 from urllib.parse import quote, urlsplit
 
@@ -39,18 +40,26 @@ class PromptKitClient:
         normalized_base_url = self._validate_base_url(base_url)
         if not isinstance(api_key, str) or not api_key.strip():
             raise InvalidConfigurationError("api_key must be a non-empty string")
-        if isinstance(timeout, bool) or timeout <= 0:
+        if (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, int | float)
+            or not isfinite(timeout)
+            or timeout <= 0
+        ):
             raise InvalidConfigurationError("timeout must be positive")
 
         self.timeout = timeout
-        self._client = httpx.Client(
-            base_url=normalized_base_url,
-            headers={"X-PromptKit-Api-Key": api_key},
-            timeout=timeout,
-            follow_redirects=False,
-            transport=transport,
-            trust_env=False,
-        )
+        try:
+            self._client = httpx.Client(
+                base_url=normalized_base_url,
+                headers={"X-PromptKit-Api-Key": api_key},
+                timeout=timeout,
+                follow_redirects=False,
+                transport=transport,
+                trust_env=False,
+            )
+        except (httpx.InvalidURL, ValueError) as error:
+            raise InvalidConfigurationError("base_url is not a valid URL") from error
 
     def fetch(self, slug: str, *, label: str | None = None) -> RetrievedPrompt:
         """Fetch the on-live prompt or an explicitly labelled published version."""
@@ -83,16 +92,21 @@ class PromptKitClient:
         if not isinstance(base_url, str) or not base_url.strip():
             raise InvalidConfigurationError("base_url must be a non-empty URL")
 
-        parsed = urlsplit(base_url)
+        try:
+            parsed = urlsplit(base_url)
+            hostname = parsed.hostname
+            parsed.port
+        except ValueError as error:
+            raise InvalidConfigurationError("base_url is not a valid URL") from error
         if parsed.username or parsed.password or parsed.query or parsed.fragment:
             raise InvalidConfigurationError(
                 "base_url must not include credentials, a query, or a fragment"
             )
-        if not parsed.hostname:
+        if not hostname:
             raise InvalidConfigurationError("base_url must include a hostname")
         if parsed.scheme == "https":
             return base_url.rstrip("/") + "/"
-        if parsed.scheme == "http" and PromptKitClient._is_loopback_host(parsed.hostname):
+        if parsed.scheme == "http" and PromptKitClient._is_loopback_host(hostname):
             return base_url.rstrip("/") + "/"
         raise InvalidConfigurationError("base_url must use HTTPS or loopback HTTP")
 

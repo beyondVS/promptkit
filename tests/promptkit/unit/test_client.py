@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import pytest
@@ -94,12 +94,30 @@ def test_rejects_invalid_request_without_calling_transport(
     assert api_key not in str(error.value)
 
 
-@pytest.mark.parametrize("base_url", ["http://registry.example.com", "ftp://registry.example.com"])
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "http://registry.example.com",
+        "ftp://registry.example.com",
+        "https://registry.example.com:bad",
+        "https://[::1",
+    ],
+)
 def test_rejects_unsafe_registry_url(api_key: str, base_url: str) -> None:
     with pytest.raises(InvalidConfigurationError) as error:
         PromptKitClient(base_url, api_key)
 
     assert api_key not in str(error.value)
+
+
+@pytest.mark.parametrize("timeout", [None, "10", 0, -1, float("nan")])
+def test_rejects_invalid_timeout(api_key: str, timeout: object) -> None:
+    with pytest.raises(InvalidConfigurationError):
+        PromptKitClient(
+            "https://registry.example.com",
+            api_key,
+            timeout=cast(float, timeout),
+        )
 
 
 @pytest.mark.parametrize(
@@ -131,7 +149,7 @@ def test_maps_api_failures_to_public_errors(
         client.fetch("support-reply")
 
 
-@pytest.mark.parametrize("failure", ["timeout", "connection"])
+@pytest.mark.parametrize("failure", ["timeout", "connection", "tls"])
 def test_maps_transport_failures_without_retry(
     api_key: str,
     mock_transport: Any,
@@ -144,6 +162,8 @@ def test_maps_transport_failures_without_retry(
         calls += 1
         if failure == "timeout":
             raise httpx.ReadTimeout("timed out", request=request)
+        if failure == "tls":
+            raise httpx.ConnectError("TLS handshake failed", request=request)
         raise httpx.ConnectError("connection failed", request=request)
 
     client = PromptKitClient(
