@@ -72,12 +72,14 @@ packages/
 
 tests/
 └── promptkit/
-    └── unit/
-        ├── test_client.py
-        └── test_models.py
+    ├── unit/
+    │   ├── test_client.py
+    │   └── test_models.py
+    └── integration/
+        └── test_git_subdirectory_install.py
 ```
 
-**Structure Decision**: Add a standalone `packages/promptkit` workspace member with a `src` layout. Keep protocol code, typed models, and public errors inside the package; keep its isolated tests under the existing `tests/promptkit/unit/` skeleton. Do not create compile, adapter, Django, cache, or async modules in this Day 10 slice.
+**Structure Decision**: Add a standalone `packages/promptkit` workspace member with a `src` layout. Keep protocol code, typed models, and public errors inside the package; keep isolated unit tests under the existing `tests/promptkit/unit/` skeleton and the Git-subdirectory installation regression test under `tests/promptkit/integration/`. Do not create compile, adapter, Django, cache, or async modules in this Day 10 slice.
 
 ## Complexity Tracking
 
