@@ -107,7 +107,7 @@
 - [X] T021 Reconcile the active server serializer and error behavior in `docs/sdk-read-api-contract.md` with `apps/server/prompts/views/api.py` and `apps/server/prompts/serializers.py`
 - [X] T022 [P] Verify package metadata, README examples, and public exports against `specs/010-sdk-rest-client/contracts/sdk-client-api.md` in `packages/promptkit/pyproject.toml`, `packages/promptkit/README.md`, and `packages/promptkit/src/promptkit/__init__.py`
 - [X] T023 Run targeted SDK tests, workspace lint/format checks, and strict typing checks from `tests/promptkit/`, `packages/promptkit/`, and root `pyproject.toml`
-- [ ] T024 Run the full project test suite and re-run the independent-install quickstart after the final user-approved commit using `specs/010-sdk-rest-client/quickstart.md`
+- [X] T024 Run the full project test suite and re-run the independent-install quickstart after the final user-approved commit using `specs/010-sdk-rest-client/quickstart.md`
 
 ---
 
