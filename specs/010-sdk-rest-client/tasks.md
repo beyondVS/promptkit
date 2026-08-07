@@ -94,7 +94,7 @@
 ### Implementation for User Story 3
 
 - [X] T019 [US3] Add package installation and minimal client-import usage instructions matching the public API in `packages/promptkit/README.md`
-- [ ] T020 [US3] After an explicitly user-approved checkpoint commit includes `packages/promptkit`, run the Git-subdirectory installation scenario from `specs/010-sdk-rest-client/quickstart.md` and report the result without modifying test source files
+- [X] T020 [US3] After an explicitly user-approved checkpoint commit includes `packages/promptkit`, run the Git-subdirectory installation scenario from `specs/010-sdk-rest-client/quickstart.md` and report the result without modifying test source files
 
 **Checkpoint**: The committed package installs through its Git subdirectory and imports without Django, DRF, or `promptkit-django`.
 

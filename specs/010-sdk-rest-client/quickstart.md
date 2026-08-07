@@ -46,8 +46,9 @@ Run this only after committing the package implementation. Create an empty tempo
 
 ```powershell
 $temporaryEnvironment = Join-Path $env:TEMP "promptkit-sdk-install-check"
-uv venv $temporaryEnvironment --python 3.13
-uv pip install --python "$temporaryEnvironment\Scripts\python.exe" "git+file:///D:/Projects/Private/promptkit@HEAD#subdirectory=packages/promptkit"
+uv venv $temporaryEnvironment --python 3.13 --seed
+$commit = git rev-parse HEAD
+& "$temporaryEnvironment\Scripts\python.exe" -m pip install "git+file:///D:/Projects/Private/promptkit@$commit#subdirectory=packages/promptkit"
 & "$temporaryEnvironment\Scripts\python.exe" -c "from promptkit import PromptKitClient; print(PromptKitClient.__name__)"
 Remove-Item -LiteralPath $temporaryEnvironment -Recurse
 ```
