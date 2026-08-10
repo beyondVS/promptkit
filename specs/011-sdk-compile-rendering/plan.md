@@ -21,7 +21,7 @@ template-engine dependency.
 
 **Storage**: N/A; compilation input and output are in-memory only
 
-**Testing**: pytest isolated SDK unit tests; Ruff; MyPy strict mode
+**Testing**: `unittest.TestCase`-based isolated SDK unit tests executed by pytest; Ruff; MyPy strict mode
 
 **Target Platform**: Python application environments supported by the SDK
 
