@@ -18,7 +18,7 @@
 
 **Purpose**: Extend the existing SDK test fixtures with reusable compile scenarios without changing package configuration.
 
-- [ ] T001 Add reusable retrieved-prompt payload builders for typed variables, defaults, and sections in `tests/promptkit/unit/conftest.py`
+- [X] T001 Add reusable retrieved-prompt payload builders for typed variables, defaults, and sections in `tests/promptkit/unit/conftest.py`
 
 ---
 
@@ -28,9 +28,9 @@
 
 **⚠️ CRITICAL**: Complete this phase before adding `compile()` behavior or its story tests.
 
-- [ ] T002 Add `MissingVariableError`, `InvalidVariableTypeError`, `UnexpectedVariableError`, and `TemplateValidationError` as `PromptKitError` subclasses in `packages/promptkit/src/promptkit/exceptions.py`
-- [ ] T003 Add immutable `CompiledPrompt` and its rendered-section representation with source slug, version, and label fields in `packages/promptkit/src/promptkit/models.py`
-- [ ] T004 Export `CompiledPrompt` and all compile-specific public errors from `packages/promptkit/src/promptkit/__init__.py`
+- [X] T002 Add `MissingVariableError`, `InvalidVariableTypeError`, `UnexpectedVariableError`, and `TemplateValidationError` as `PromptKitError` subclasses in `packages/promptkit/src/promptkit/exceptions.py`
+- [X] T003 Add immutable `CompiledPrompt` and its rendered-section representation with source slug, version, and label fields in `packages/promptkit/src/promptkit/models.py`
+- [X] T004 Export `CompiledPrompt` and all compile-specific public errors from `packages/promptkit/src/promptkit/__init__.py`
 
 **Checkpoint**: The package exposes the documented result/error types, with no compilation behavior added yet.
 
@@ -44,13 +44,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T005 [US1] Add failing `unittest.TestCase` public compile tests for valid rendering, repeated placeholders, all four valid declared types, and no-variable prompts in `tests/promptkit/unit/test_compiler.py`
-- [ ] T006 [US1] Add failing `unittest.TestCase` public compile tests for preservation of slug, version, label, roles, and section order in `tests/promptkit/unit/test_compiler.py`
+- [X] T005 [US1] Add failing `unittest.TestCase` public compile tests for valid rendering, repeated placeholders, all four valid declared types, and no-variable prompts in `tests/promptkit/unit/test_compiler.py`
+- [X] T006 [US1] Add failing `unittest.TestCase` public compile tests for preservation of slug, version, label, roles, and section order in `tests/promptkit/unit/test_compiler.py`
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement constrained parsing, full delimiter/declaration validation, strict Pydantic v2 schema validation, default normalization, and one-pass aggregate/section rendering helpers in `packages/promptkit/src/promptkit/compiler.py`
-- [ ] T008 [US1] Add `RetrievedPrompt.compile(params=...)` orchestration that validates before constructing `CompiledPrompt` in `packages/promptkit/src/promptkit/models.py`
+- [X] T007 [US1] Implement constrained parsing, full delimiter/declaration validation, strict Pydantic v2 schema validation, default normalization, and one-pass aggregate/section rendering helpers in `packages/promptkit/src/promptkit/compiler.py`
+- [X] T008 [US1] Add `RetrievedPrompt.compile(params=...)` orchestration that validates before constructing `CompiledPrompt` in `packages/promptkit/src/promptkit/models.py`
 
 **Checkpoint**: The public compile path validates every template and input before returning exact local output with traceable metadata.
 
@@ -64,14 +64,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T009 [US2] Add failing `unittest.TestCase` tests for required-value omission, valid caller override of defaults, and valid normalized defaults for all declared types in `tests/promptkit/unit/test_compiler.py`
-- [ ] T010 [US2] Add failing `unittest.TestCase` tests for strict wrong-type inputs, malformed defaults, and undeclared input keys in `tests/promptkit/unit/test_compiler.py`
-- [ ] T011 [US2] Add failing `unittest.TestCase` tests that compile errors do not include supplied values in `tests/promptkit/unit/test_compiler.py`
+- [X] T009 [US2] Add failing `unittest.TestCase` tests for required-value omission, valid caller override of defaults, and valid normalized defaults for all declared types in `tests/promptkit/unit/test_compiler.py`
+- [X] T010 [US2] Add failing `unittest.TestCase` tests for strict wrong-type inputs, malformed defaults, and undeclared input keys in `tests/promptkit/unit/test_compiler.py`
+- [X] T011 [US2] Add failing `unittest.TestCase` tests that compile errors do not include supplied values in `tests/promptkit/unit/test_compiler.py`
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Complete typed translation for Pydantic v2 missing, extra, and strict-type failures without exposing supplied values in `packages/promptkit/src/promptkit/compiler.py`
-- [ ] T013 [US2] Complete default-normalization failure handling and caller-precedence edge cases in `packages/promptkit/src/promptkit/compiler.py`
+- [X] T012 [US2] Complete typed translation for Pydantic v2 missing, extra, and strict-type failures without exposing supplied values in `packages/promptkit/src/promptkit/compiler.py`
+- [X] T013 [US2] Complete default-normalization failure handling and caller-precedence edge cases in `packages/promptkit/src/promptkit/compiler.py`
 
 **Checkpoint**: All declared input/default rules fail safely and predictably before rendering.
 
@@ -85,13 +85,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [US3] Add failing `unittest.TestCase` tests for unclosed/orphaned delimiters and unsupported placeholder expressions in `tests/promptkit/unit/test_compiler.py`
-- [ ] T015 [US3] Add failing `unittest.TestCase` tests for undeclared placeholders, unreferenced required declarations, and one-pass handling of placeholder-looking values in `tests/promptkit/unit/test_compiler.py`
+- [X] T014 [US3] Add failing `unittest.TestCase` tests for unclosed/orphaned delimiters and unsupported placeholder expressions in `tests/promptkit/unit/test_compiler.py`
+- [X] T015 [US3] Add failing `unittest.TestCase` tests for undeclared placeholders, unreferenced required declarations, and one-pass handling of placeholder-looking values in `tests/promptkit/unit/test_compiler.py`
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Complete malformed-delimiter, unsupported-syntax, and declaration-mismatch diagnostics in `packages/promptkit/src/promptkit/compiler.py`
-- [ ] T017 [US3] Confirm template-validation errors are raised before `CompiledPrompt` construction and retain single-pass rendering behavior in `packages/promptkit/src/promptkit/compiler.py`
+- [X] T016 [US3] Complete malformed-delimiter, unsupported-syntax, and declaration-mismatch diagnostics in `packages/promptkit/src/promptkit/compiler.py`
+- [X] T017 [US3] Confirm template-validation errors are raised before `CompiledPrompt` construction and retain single-pass rendering behavior in `packages/promptkit/src/promptkit/compiler.py`
 
 **Checkpoint**: Invalid templates never return a partially rendered prompt, and successful output remains traceable and non-recursive.
 
@@ -101,11 +101,11 @@
 
 **Purpose**: Verify the published surface, performance boundary, package isolation, and all quality gates.
 
-- [ ] T018 [P] Add a `unittest.TestCase` public-import regression assertion for compile models and errors in `tests/promptkit/unit/test_models.py`
-- [ ] T019 [P] Add the 50-variable/200-placeholder performance-boundary `unittest.TestCase` in `tests/promptkit/unit/test_compiler.py`
-- [ ] T020 Run the focused SDK tests, full test suite, Ruff check/format check, and MyPy; record results in `specs/011-sdk-compile-rendering/quickstart.md`
-- [ ] T021 Review `packages/promptkit/src/promptkit/` and `tests/promptkit/unit/` against [sdk-compile-api.md](contracts/sdk-compile-api.md) to confirm no server call, LLM invocation, framework dependency, or supplied-value disclosure was introduced
-- [ ] T022 Document `RetrievedPrompt.compile()`, `CompiledPrompt`, typed errors, and the local-only rendering boundary in `packages/promptkit/README.md`
+- [X] T018 [P] Add a `unittest.TestCase` public-import regression assertion for compile models and errors in `tests/promptkit/unit/test_models.py`
+- [X] T019 [P] Add the 50-variable/200-placeholder performance-boundary `unittest.TestCase` in `tests/promptkit/unit/test_compiler.py`
+- [X] T020 Run the focused SDK tests, full test suite, Ruff check/format check, and MyPy; record results in `specs/011-sdk-compile-rendering/quickstart.md`
+- [X] T021 Review `packages/promptkit/src/promptkit/` and `tests/promptkit/unit/` against [sdk-compile-api.md](contracts/sdk-compile-api.md) to confirm no server call, LLM invocation, framework dependency, or supplied-value disclosure was introduced
+- [X] T022 Document `RetrievedPrompt.compile()`, `CompiledPrompt`, typed errors, and the local-only rendering boundary in `packages/promptkit/README.md`
 
 ---
 

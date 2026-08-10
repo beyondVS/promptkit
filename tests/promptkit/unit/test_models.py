@@ -1,5 +1,7 @@
+import unittest
 from typing import Any
 
+import promptkit
 from promptkit.models import RetrievedPrompt
 
 
@@ -21,3 +23,14 @@ def test_retrieved_prompt_ignores_unknown_fields(prompt_payload: dict[str, Any])
     prompt = RetrievedPrompt.model_validate(prompt_payload)
 
     assert not hasattr(prompt, "unknown_field")
+
+
+class TestCompilePublicExports(unittest.TestCase):
+    """Keep compilation types available from the package root."""
+
+    def test_exports_compile_result_and_errors(self) -> None:
+        self.assertTrue(hasattr(promptkit, "CompiledPrompt"))
+        self.assertTrue(hasattr(promptkit, "MissingVariableError"))
+        self.assertTrue(hasattr(promptkit, "InvalidVariableTypeError"))
+        self.assertTrue(hasattr(promptkit, "UnexpectedVariableError"))
+        self.assertTrue(hasattr(promptkit, "TemplateValidationError"))

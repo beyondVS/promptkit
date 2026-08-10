@@ -47,3 +47,19 @@ class CommunicationError(PromptKitError):
 
 class InvalidResponseError(PromptKitError):
     """Raised when the registry response cannot satisfy the SDK contract."""
+
+
+class MissingVariableError(PromptKitError):
+    """Raised when compilation cannot resolve a referenced variable."""
+
+
+class InvalidVariableTypeError(PromptKitError):
+    """Raised when a variable value or default violates its declaration."""
+
+
+class UnexpectedVariableError(PromptKitError):
+    """Raised when compilation receives a value for an undeclared variable."""
+
+
+class TemplateValidationError(PromptKitError):
+    """Raised when a prompt template is malformed or inconsistent with declarations."""

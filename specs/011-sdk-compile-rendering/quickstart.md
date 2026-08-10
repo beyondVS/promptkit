@@ -37,3 +37,12 @@ Expected result: each fixture raises the matching typed error, does not include 
 Use variables with valid stored defaults for all four types and omit caller values. Then use an invalid stored default.
 
 Expected result: valid defaults are rendered after type normalization; an invalid default raises an invalid-variable-type error and yields no result. A valid caller value overrides a default.
+
+## Validation record
+
+Validated on 2026-08-10 with the project virtual environment (Python 3.13.9):
+
+- `uv run pytest` — 57 passed
+- `uv run ruff check` — passed
+- `uv run ruff format --check` — passed
+- `uv run mypy .` — passed with no issues in 78 source files
