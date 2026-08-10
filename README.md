@@ -67,14 +67,12 @@ promptkit/
 
 ```python
 from promptkit import PromptKitClient
-from promptkit.adapters import GeminiAdapter
-import google.genai as gemini
 
 # 1. REST Client 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
 
 # 2. 원격 프롬프트 조회 (라벨 생략 시 on-live 발행 버전 반환)
-prompt = client.prompts.get("customer_summary")
+prompt = client.fetch("customer_summary")
 
 # 3. SDK 로컬 컴파일 (Pydantic v2 기반 변수 유효성 검증)
 compiled = prompt.compile(
@@ -85,17 +83,13 @@ compiled = prompt.compile(
     }
 )
 
-# 4. LLM 어댑터를 사용해 공급자별 호출 인자 규격으로 변환
-prepared = GeminiAdapter().prepare(compiled)
-
-# 5. 애플리케이션 코드에서 실제 LLM 호출
-response = gemini.models.generate_content(
-    model="gemini-2.5-pro",
-    **prepared,
-)
-
-print(response.text)
+# 4. 렌더링 결과와 원본 버전 메타데이터 사용
+print(compiled.content)
+print(compiled.version)
 ```
+
+`compile()`은 입력값을 서버로 전송하거나 LLM을 호출하지 않습니다. Gemini·OpenAI
+어댑터는 Day 12에서 추가될 예정입니다.
 
 ---
 

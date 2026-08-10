@@ -66,14 +66,12 @@ LLM SDK (사용자 코드에서의 API 호출 인수)
 
 ```python
 from promptkit import PromptKitClient
-from promptkit.adapters import GeminiAdapter
-import google.genai as gemini
 
 # 1. 클라이언트 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
 
 # 2. 프롬프트 조회 (라벨 생략 시 on-live 발행 버전만 반환)
-prompt = client.prompts.get("summary")
+prompt = client.fetch("summary")
 
 # 3. SDK 수준에서의 로컬 컴파일 실행
 compiled = prompt.compile(
@@ -83,15 +81,13 @@ compiled = prompt.compile(
     }
 )
 
-# 4. 공급자 어댑터를 통한 인자 변환 (Gemini 스펙에 맞춤)
-gemini_args = GeminiAdapter().prepare(compiled)
-
-# 5. 사용자 코드에서 LLM 직접 실행 (SDK는 이 호출에 개입하지 않음)
-response = gemini.models.generate_content(
-    model="gemini-2.5-pro",
-    **gemini_args,
-)
+# 4. 완성된 텍스트와 원본 버전 정보 사용
+print(compiled.content)
+print(compiled.version)
 ```
+
+Day 11의 SDK는 여기까지의 조회·검증·로컬 렌더링만 제공합니다. 공급자 어댑터와
+실제 LLM 호출은 다음 단계에서 추가되며, SDK는 어떤 경우에도 LLM 호출을 대행하지 않습니다.
 
 ---
 

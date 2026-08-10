@@ -92,6 +92,12 @@ Headers:
 - 현재 Read API는 `ETag`, `If-None-Match`, `304 Not Modified` 조건부 요청을 구현하지 않습니다.
 - SDK의 로컬 캐싱과 Django 캐시 연동은 이 계약의 범위 밖입니다.
 
+### 4.3 Local Compilation Boundary
+- `PromptKitClient.fetch()`는 원격 레지스트리에서 템플릿, 변수 선언, 섹션 및 버전 메타데이터를 조회할 뿐 자동 렌더링하지 않습니다.
+- 조회된 `RetrievedPrompt`는 `compile(params=...)`으로 호출자 프로세스 안에서 별도로 검증·렌더링합니다. 컴파일 입력값은 이 HTTP API로 전송되지 않습니다.
+- 컴파일은 선언된 `{{ variable_name }}` 변수만 처리하며, 유효성 실패 또는 잘못된 템플릿에서는 부분 결과를 반환하지 않습니다.
+- 이 계약은 원격 조회 HTTP 프로토콜만 다룹니다. `CompiledPrompt`의 상세 데이터 및 오류 계약은 [Day 11 SDK 컴파일 계약](../specs/011-sdk-compile-rendering/contracts/sdk-compile-api.md)을 따릅니다.
+
 ---
 
 ## 5. HTTP Status Code Summary
