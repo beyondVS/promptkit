@@ -8,17 +8,30 @@ from promptkit.exceptions import (
     InvalidLabelError,
     InvalidRequestError,
     InvalidResponseError,
+    InvalidVariableTypeError,
     LabelNotFoundError,
+    MissingVariableError,
     NoDeployableVersionError,
     PromptKitError,
     PromptNotFoundError,
     RateLimitError,
     RedirectError,
+    TemplateValidationError,
+    UnexpectedVariableError,
 )
-from promptkit.models import PromptCategory, PromptSection, PromptVariable, RetrievedPrompt
+from promptkit.models import (
+    CompiledPrompt,
+    CompiledPromptSection,
+    PromptCategory,
+    PromptSection,
+    PromptVariable,
+    RetrievedPrompt,
+)
 
 __all__ = [
     "PromptCategory",
+    "CompiledPrompt",
+    "CompiledPromptSection",
     "PromptKitClient",
     "PromptKitError",
     "PromptNotFoundError",
@@ -33,6 +46,10 @@ __all__ = [
     "InvalidLabelError",
     "InvalidRequestError",
     "InvalidResponseError",
+    "InvalidVariableTypeError",
     "LabelNotFoundError",
     "NoDeployableVersionError",
+    "MissingVariableError",
+    "TemplateValidationError",
+    "UnexpectedVariableError",
 ]

@@ -53,7 +53,7 @@
 * [x] **Day 10 (1h): Python SDK (`packages/promptkit`) 환경 셋업 및 REST Client 개발**
     *   독자적인 패키지 디렉토리 구조 및 `pyproject.toml` 설정 후 즉시 Git subdirectory 독립 설치 테스트 실행.
     *   서버 API와 통신하여 프롬프트를 원격 조회하는 REST Client 모듈 및 유닛 테스트 작성.
-* [ ] **Day 11 (1h): SDK compile() 로컬 렌더링 엔진 개발**
+* [x] **Day 11 (1h): SDK compile() 로컬 렌더링 엔진 개발**
     *   프롬프트 내 동적 변수를 파싱하고 렌더링하는 `compile()` 메서드 개발.
     *   헌법 규정에 명시된 **Pydantic v2**를 연동하여 주입될 변수의 구조 및 유효성(Validation) 검증 로직 및 유닛 테스트 작성.
 * [ ] **Day 12 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
