@@ -63,3 +63,13 @@ conversion methods independently using `time.perf_counter()`.
 Expected result: every individual method measurement completes in under one second. The test
 module must not configure provider clients or credentials; successful execution with only core SDK
 dependencies confirms the conversion boundary remains local and independently installable.
+
+## Validation record
+
+Validated on 2026-08-11 with the project virtual environment (Python 3.13.9):
+
+- Focused adapter and independent-install tests — 13 passed, 18 subtests passed
+- Ruff check — passed
+- Ruff format check — 5 files already formatted
+- MyPy strict validation — passed with no issues in 14 source files
+- Full pytest suite — 69 passed, 23 subtests passed

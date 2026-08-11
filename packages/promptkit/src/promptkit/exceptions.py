@@ -63,3 +63,7 @@ class UnexpectedVariableError(PromptKitError):
 
 class TemplateValidationError(PromptKitError):
     """Raised when a prompt template is malformed or inconsistent with declarations."""
+
+
+class AdapterConversionError(PromptKitError):
+    """Raised when a compiled prompt cannot be mapped without changing its meaning."""

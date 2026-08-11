@@ -18,7 +18,7 @@
 
 **Purpose**: Prepare focused, provider-free fixtures for test-first adapter development.
 
-- [ ] T001 Create the `unittest.TestCase`-based adapter test module with reusable `CompiledPrompt` and ordered-section fixture builders in `tests/promptkit/unit/test_adapters.py`
+- [X] T001 Create the `unittest.TestCase`-based adapter test module with reusable `CompiledPrompt` and ordered-section fixture builders in `tests/promptkit/unit/test_adapters.py`
 
 ---
 
@@ -28,8 +28,8 @@
 
 **⚠️ CRITICAL**: Complete this phase before starting any user story implementation.
 
-- [ ] T002 [P] Add public `AdapterConversionError(PromptKitError)` without prompt-content disclosure in `packages/promptkit/src/promptkit/exceptions.py`
-- [ ] T003 [P] Define the Gemini, Chat Completions, and Responses `TypedDict` argument/message shapes plus the module logger in new `packages/promptkit/src/promptkit/adapters.py`
+- [X] T002 [P] Add public `AdapterConversionError(PromptKitError)` without prompt-content disclosure in `packages/promptkit/src/promptkit/exceptions.py`
+- [X] T003 [P] Define the Gemini, Chat Completions, and Responses `TypedDict` argument/message shapes plus the module logger in new `packages/promptkit/src/promptkit/adapters.py`
 
 **Checkpoint**: Shared types and the expected failure category exist without adding Gemini/OpenAI SDK dependencies.
 
@@ -45,13 +45,13 @@
 
 > **NOTE**: Write T004 first and confirm the new Gemini tests fail before T005.
 
-- [ ] T004 [US1] Add failing Gemini contract tests for exact dictionary shape, ascending ordering, multiple-system joining, assistant-to-model mapping, distinct repeated roles, and no-system `config` omission in `tests/promptkit/unit/test_adapters.py`
+- [X] T004 [US1] Add failing Gemini contract tests for exact dictionary shape, ascending ordering, multiple-system joining, assistant-to-model mapping, distinct repeated roles, and no-system `config` omission in `tests/promptkit/unit/test_adapters.py`
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Implement the shared valid-section ascending-order/system-partition helper and stateless `GeminiAdapter.to_generate_content_args()` on that helper in `packages/promptkit/src/promptkit/adapters.py`
-- [ ] T006 [US1] Export `GeminiAdapter`, its public argument `TypedDict` contracts, and `AdapterConversionError` from `packages/promptkit/src/promptkit/__init__.py`
-- [ ] T007 [US1] Run and pass the focused Gemini test selection in `tests/promptkit/unit/test_adapters.py`
+- [X] T005 [US1] Implement the shared valid-section ascending-order/system-partition helper and stateless `GeminiAdapter.to_generate_content_args()` on that helper in `packages/promptkit/src/promptkit/adapters.py`
+- [X] T006 [US1] Export `GeminiAdapter`, its public argument `TypedDict` contracts, and `AdapterConversionError` from `packages/promptkit/src/promptkit/__init__.py`
+- [X] T007 [US1] Run and pass the focused Gemini test selection in `tests/promptkit/unit/test_adapters.py`
 
 **Checkpoint**: User Story 1 converts valid sectioned prompts for Gemini independently and all Gemini happy-path tests pass.
 
@@ -67,14 +67,14 @@
 
 > **NOTE**: Write T008 and T009 first and confirm the new OpenAI tests fail before T010.
 
-- [ ] T008 [US2] Add failing Chat Completions tests for exact `messages` shape, ascending ordering, role/text preservation, and distinct consecutive roles in `tests/promptkit/unit/test_adapters.py`
-- [ ] T009 [US2] Add failing Responses tests for exact `instructions`/`input` shape, `\n\n` system joining, ascending ordering, role/text preservation, distinct consecutive roles, and `instructions` omission in `tests/promptkit/unit/test_adapters.py`
+- [X] T008 [US2] Add failing Chat Completions tests for exact `messages` shape, ascending ordering, role/text preservation, and distinct consecutive roles in `tests/promptkit/unit/test_adapters.py`
+- [X] T009 [US2] Add failing Responses tests for exact `instructions`/`input` shape, `\n\n` system joining, ascending ordering, role/text preservation, distinct consecutive roles, and `instructions` omission in `tests/promptkit/unit/test_adapters.py`
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Implement stateless `OpenAIAdapter.to_chat_completions_args()` and `OpenAIAdapter.to_responses_args()` by reusing the shared helper introduced in T005 in `packages/promptkit/src/promptkit/adapters.py`
-- [ ] T011 [US2] Export `OpenAIAdapter` and its Chat Completions and Responses argument `TypedDict` contracts from `packages/promptkit/src/promptkit/__init__.py`
-- [ ] T012 [US2] Run and pass the focused OpenAI test selection in `tests/promptkit/unit/test_adapters.py`
+- [X] T010 [US2] Implement stateless `OpenAIAdapter.to_chat_completions_args()` and `OpenAIAdapter.to_responses_args()` by reusing the shared helper introduced in T005 in `packages/promptkit/src/promptkit/adapters.py`
+- [X] T011 [US2] Export `OpenAIAdapter` and its Chat Completions and Responses argument `TypedDict` contracts from `packages/promptkit/src/promptkit/__init__.py`
+- [X] T012 [US2] Run and pass the focused OpenAI test selection in `tests/promptkit/unit/test_adapters.py`
 
 **Checkpoint**: User Story 2 exposes two independently callable OpenAI conversions and all OpenAI happy-path tests pass.
 
@@ -90,15 +90,15 @@
 
 > **NOTE**: Write T013–T015 first, confirm the new validation and warning cases fail, and record the per-method performance baseline before T016.
 
-- [ ] T013 [US3] Add failing cross-adapter tests for duplicate-order rejection, blank/differently-cased/unknown role rejection, actionable content-safe errors, and sectionless aggregate-content fallback in `tests/promptkit/unit/test_adapters.py`
-- [ ] T014 [US3] Add failing cross-adapter tests for exact provider-specific system-only outputs, one WARNING containing slug/version/label but no prompt text, absence of runtime warnings, preservation of literal placeholder-shaped text such as `{{ untouched_variable }}` without re-rendering, other text fidelity, source metadata exclusion, source immutability, and no provider calls in `tests/promptkit/unit/test_adapters.py`
-- [ ] T015 [US3] Add an isolated `time.perf_counter()` assertion that times each public method separately and requires each conversion of a valid 200-section prompt to complete in under one second in `tests/promptkit/unit/test_adapters.py`
+- [X] T013 [US3] Add failing cross-adapter tests for duplicate-order rejection, blank/differently-cased/unknown role rejection, actionable content-safe errors, and sectionless aggregate-content fallback in `tests/promptkit/unit/test_adapters.py`
+- [X] T014 [US3] Add failing cross-adapter tests for exact provider-specific system-only outputs, one WARNING containing slug/version/label but no prompt text, absence of runtime warnings, preservation of literal placeholder-shaped text such as `{{ untouched_variable }}` without re-rendering, other text fidelity, source metadata exclusion, source immutability, and no provider calls in `tests/promptkit/unit/test_adapters.py`
+- [X] T015 [US3] Add an isolated `time.perf_counter()` assertion that times each public method separately and requires each conversion of a valid 200-section prompt to complete in under one second in `tests/promptkit/unit/test_adapters.py`
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Harden the shared helper from T005 with pre-output role/order validation, sectionless user fallback, literal content handling without template interpretation, and one safe system-only logger call used by all adapter methods in `packages/promptkit/src/promptkit/adapters.py`
-- [ ] T017 [US3] Extend the isolated Git subdirectory installation regression to import and exercise the public adapters without provider SDK packages in `tests/promptkit/integration/test_git_subdirectory_install.py`
-- [ ] T018 [US3] Run and pass all adapter unit and independent-install integration scenarios in `tests/promptkit/unit/test_adapters.py` and `tests/promptkit/integration/test_git_subdirectory_install.py`
+- [X] T016 [US3] Harden the shared helper from T005 with pre-output role/order validation, sectionless user fallback, literal content handling without template interpretation, and one safe system-only logger call used by all adapter methods in `packages/promptkit/src/promptkit/adapters.py`
+- [X] T017 [US3] Extend the isolated Git subdirectory installation regression to import and exercise the public adapters without provider SDK packages in `tests/promptkit/integration/test_git_subdirectory_install.py`
+- [X] T018 [US3] Run and pass all adapter unit and independent-install integration scenarios in `tests/promptkit/unit/test_adapters.py` and `tests/promptkit/integration/test_git_subdirectory_install.py`
 
 **Checkpoint**: All three methods satisfy the complete safety and edge-case matrix without external dependencies, mutation, partial output, or provider calls.
 
@@ -108,10 +108,10 @@
 
 **Purpose**: Document the public surface and complete the project harness validation.
 
-- [ ] T019 Document all three public conversion methods, return shapes, caller-owned model/settings, system-only warning behavior, and provider-free usage in `packages/promptkit/README.md`
-- [ ] T020 [P] Run Ruff lint and format checks for `packages/promptkit/src/promptkit/adapters.py`, `packages/promptkit/src/promptkit/exceptions.py`, `packages/promptkit/src/promptkit/__init__.py`, `tests/promptkit/unit/test_adapters.py`, and `tests/promptkit/integration/test_git_subdirectory_install.py`
-- [ ] T021 [P] Run strict MyPy validation for `packages/promptkit` and `tests/promptkit`
-- [ ] T022 Run the full pytest suite and record the final adapter and regression results in `specs/012-provider-adapters/quickstart.md`
+- [X] T019 Document all three public conversion methods, return shapes, caller-owned model/settings, system-only warning behavior, and provider-free usage in `packages/promptkit/README.md`
+- [X] T020 [P] Run Ruff lint and format checks for `packages/promptkit/src/promptkit/adapters.py`, `packages/promptkit/src/promptkit/exceptions.py`, `packages/promptkit/src/promptkit/__init__.py`, `tests/promptkit/unit/test_adapters.py`, and `tests/promptkit/integration/test_git_subdirectory_install.py`
+- [X] T021 [P] Run strict MyPy validation for `packages/promptkit` and `tests/promptkit`
+- [X] T022 Run the full pytest suite and record the final adapter and regression results in `specs/012-provider-adapters/quickstart.md`
 
 ---
 
