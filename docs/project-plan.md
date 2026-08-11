@@ -56,8 +56,9 @@
 * [x] **Day 11 (1h): SDK compile() 로컬 렌더링 엔진 개발**
     *   프롬프트 내 동적 변수를 파싱하고 렌더링하는 `compile()` 메서드 개발.
     *   헌법 규정에 명시된 **Pydantic v2**를 연동하여 주입될 변수의 구조 및 유효성(Validation) 검증 로직 및 유닛 테스트 작성.
-* [ ] **Day 12 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
-    *   컴파일된 `CompiledPrompt`를 각 공급자 SDK(Gemini 및 OpenAI) 형식에 맞는 호출 인자 규격으로 치환하는 어댑터들 개발 및 어댑터 유닛 테스트 작성.
+* [x] **Day 12 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
+    *   `CompiledPrompt`를 Gemini `generate_content`, OpenAI Chat Completions 및 Responses API 호출 인자로 치환하는 provider-neutral 어댑터와 유닛·독립 설치 테스트 작성.
+    *   system-only 프롬프트의 안전한 반환 및 `WARNING` 로깅, 역할·순서 검증, 입력 불변성과 provider SDK 비의존성 보장.
 * [ ] **Day 13 (1h): LiteLLM Adapter 구현 및 SDK 전체 하네스 통합 검증**
     *   LiteLLM 규격에 대응하는 어댑터 추가 구현.
     *   SDK core의 모든 Public API에 대해 `pytest` 100% 통합 하네스 검증 구동.

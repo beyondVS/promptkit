@@ -1,7 +1,20 @@
 """Framework-agnostic, read-only client for the PromptKit registry."""
 
+from promptkit.adapters import (
+    GeminiAdapter,
+    GeminiConfig,
+    GeminiContent,
+    GeminiGenerateContentArgs,
+    GeminiTextPart,
+    OpenAIAdapter,
+    OpenAIChatCompletionsArgs,
+    OpenAIChatMessage,
+    OpenAIResponsesArgs,
+    OpenAIResponsesInputItem,
+)
 from promptkit.client import PromptKitClient
 from promptkit.exceptions import (
+    AdapterConversionError,
     AuthenticationError,
     CommunicationError,
     InvalidConfigurationError,
@@ -29,9 +42,20 @@ from promptkit.models import (
 )
 
 __all__ = [
+    "AdapterConversionError",
     "PromptCategory",
     "CompiledPrompt",
     "CompiledPromptSection",
+    "GeminiAdapter",
+    "GeminiConfig",
+    "GeminiContent",
+    "GeminiGenerateContentArgs",
+    "GeminiTextPart",
+    "OpenAIAdapter",
+    "OpenAIChatCompletionsArgs",
+    "OpenAIChatMessage",
+    "OpenAIResponsesArgs",
+    "OpenAIResponsesInputItem",
     "PromptKitClient",
     "PromptKitError",
     "PromptNotFoundError",

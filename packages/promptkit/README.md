@@ -72,3 +72,38 @@ print(compiled.version)
 Supported declared types are `string`, `number`, `boolean`, and JSON object or
 array. A successful `CompiledPrompt` retains the source prompt slug, version,
 label, and rendered ordered sections for later provider-specific formatting.
+
+## Convert a compiled prompt for an LLM provider
+
+PromptKit adapters only reshape an immutable `CompiledPrompt` into plain Python
+dictionaries. They do not import provider SDKs, select a model, read credentials,
+apply generation settings, or make an LLM request. Supply those caller-owned
+arguments separately when invoking your provider client.
+
+```python
+from promptkit import GeminiAdapter, OpenAIAdapter
+
+gemini_args = GeminiAdapter.to_generate_content_args(compiled)
+chat_args = OpenAIAdapter.to_chat_completions_args(compiled)
+responses_args = OpenAIAdapter.to_responses_args(compiled)
+```
+
+Gemini arguments contain ordered `contents` items using `user` or `model` roles
+and one text `part` per compiled conversation section. Ordered system sections
+are joined with `\n\n` under `config.system_instruction`; `config` is omitted
+when no system section exists.
+
+Chat Completions arguments contain one ordered `messages` item per compiled
+section with its `system`, `user`, or `assistant` role. Responses arguments place
+joined system text under `instructions` and ordered user/assistant items under
+`input`. Repeated roles remain separate in every format.
+
+All conversions reject duplicate section orders and roles other than exact
+`system`, `user`, or `assistant` values with `AdapterConversionError`. A compiled
+prompt without sections uses its aggregate content as one user item. Empty,
+whitespace, multiline, Unicode, and placeholder-shaped text remain unchanged.
+
+When a prompt contains only system sections, each method returns its target's
+system-only arguments and logs exactly one `WARNING` containing only the source
+slug, version, and label. The caller decides whether to add conversation content
+or invoke the provider. Compiled prompt text is never written to that log.
