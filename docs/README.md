@@ -14,6 +14,7 @@ PromptKit 프로젝트의 아키텍처, 서버/SDK/Django 통합 패키지 요�
 | [promptkit-sdk-requirements.md](promptkit-sdk-requirements.md) | Pure Python Core SDK (`packages/promptkit`) 전용 요구사항 | **SDK 요구사항** |
 | [promptkit-django-requirements.md](promptkit-django-requirements.md) | Django 연동 패키지 (`packages/promptkit-django`) 전용 요구사항 | **Django패키지 요구사항** |
 | [sdk-read-api-contract.md](sdk-read-api-contract.md) | SDK Read-Only API 규격, 인증, On-live/라벨 조회 규약 | **API 계약 문서** |
+| [Provider Adapter Contract](../specs/012-provider-adapters/contracts/sdk-provider-adapters.md) | Gemini 및 OpenAI 호출 인자 변환, 오류와 system-only 정책 | **SDK 변환 계약** |
 | [project-plan.md](project-plan.md) | MVP 완성을 위한 일자별 마일스톤 및 기술 리스크 대응 | **일정 관리 계획서** |
 | [roadmap.md](roadmap.md) | MVP 이후 확장 예정인 장기 기능 구상 및 기술 고도화 아이템 | **로드맵 문서** |
 

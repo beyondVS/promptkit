@@ -25,8 +25,8 @@
 
 ## ⚙️ Technical & Architectural Roadmap (기술 고도화 및 품질 개선 구상)
 
-1. **LLM Adapters 데이터 계약 상세화 (`CompiledPrompt` 확장)**
-   - `CompiledPrompt` 데이터 포맷과 다양한 LLM 공급자 어댑터(Gemini, OpenAI, LiteLLM 등)의 변환 인터페이스 규격을 더욱 정교하게 명세.
+1. **추가 Provider 및 Multimodal Adapter 확장**
+   - 확정된 Gemini와 OpenAI 텍스트 변환 계약을 기반으로 LiteLLM 등 추가 공급자와 이미지·오디오 같은 별도 part 타입을 명시적인 하위 호환 계약으로 확장.
 
 2. **Strict Prompt Injection Sanitization Layer**
    - SDK 컴파일 시 사용자 입력 데이터에 포함될 수 있는 시스템 명령어 주입 공격(Prompt Injection)을 감지하고 이스케이프하는 보안 레이어 추가.

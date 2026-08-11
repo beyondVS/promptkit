@@ -32,6 +32,7 @@
   - `InvalidVariableTypeError` (Pydantic 변수 타입 검증 실패)
   - `UnexpectedVariableError` (선언되지 않은 변수 입력)
   - `TemplateValidationError` (잘못된 템플릿 문법 또는 선언 불일치)
+  - `AdapterConversionError` (지원하지 않는 역할 또는 중복된 섹션 순서)
 
 ### 2.2 `compile()` 엔진 및 변수 검증
 - `RetrievedPrompt.compile(params=...)`은 `{{ variable_name }}` 형식만 파싱하며, 표현식·필터·속성 접근·제어문은 허용하지 않습니다.
@@ -48,11 +49,17 @@
 ### 2.3 LLM Provider Adapters 상세 규격
 컴파일 완료된 `CompiledPrompt` 객체를 각 공급자 SDK 형식으로 매핑하는 어댑터 인터페이스:
 - **`GeminiAdapter`**: Google GenAI SDK 규격
-  - `contents`: 역할별 메세지 블록 매핑
-  - `system_instruction`: 시스템 프롬프트 독립 매핑
+  - `to_generate_content_args()`: `user`는 `user`, `assistant`는 `model` 역할의 `contents`로 매핑
+  - system 섹션은 `\n\n`으로 결합하여 `config.system_instruction`에 매핑
 - **`OpenAIAdapter`**: OpenAI SDK 규격
-  - `messages`: `[{"role": "system"|"user"|"assistant", "content": "..."}]` 포맷팅
-- **`LiteLLMAdapter`**: LiteLLM 호환 멀티-프로바이더 규격 변환
+  - `to_chat_completions_args()`: 각 섹션을 ordered `messages`로 매핑
+  - `to_responses_args()`: system 섹션은 `instructions`, user/assistant 섹션은 ordered `input`으로 매핑
+- **공통 변환 정책**:
+  - 섹션 순서를 오름차순으로 정렬하며 반복 역할은 병합하지 않음
+  - 섹션이 없으면 aggregate content를 단일 user 항목으로 사용
+  - system-only 입력은 공급자별 system-only 인자를 반환하고 민감한 본문 없이 `WARNING` 로그를 한 번 기록
+  - 공급자 SDK, 모델, 자격 증명, 생성 설정 및 실제 호출은 어댑터 범위 밖이며 입력 `CompiledPrompt`를 변경하지 않음
+- **`LiteLLMAdapter` (예정)**: LiteLLM 호환 멀티-프로바이더 규격 변환
 
 ---
 
