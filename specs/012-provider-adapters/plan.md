@@ -30,8 +30,8 @@ PromptKit core SDK
 
 **Project Type**: framework-agnostic Python library
 
-**Performance Goals**: each supported conversion of a prompt with up to 200 sections completes
-in under one second on a standard development machine
+**Performance Goals**: in the project test environment, each of the three public methods converts
+a valid 200-section prompt in under one second when timed individually with `time.perf_counter()`
 
 **Constraints**: conversion only; exact text preservation; ascending unique order; no source
 mutation, provider request, SDK object, provider dependency, model/settings inference, or prompt

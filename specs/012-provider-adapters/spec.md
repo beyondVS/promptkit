@@ -94,9 +94,9 @@ An application developer receives a clear local failure when a compiled prompt c
 - **FR-003**: For prompts with conversation sections, Gemini conversion MUST return call-ready `google-genai` dictionary arguments with one `{"role": "user"|"model", "parts": [{"text": "..."}]}` item per section under `contents`; when system sections exist, it MUST include one string under `config.system_instruction`, joining multiple system sections in ascending `order` with exactly `\n\n`, and when none exist, it MUST omit `config` entirely.
 - **FR-004**: Gemini conversion MUST map a provider-neutral user role to `user`, MUST map an assistant role to `model`, and MUST preserve each section as one text part without changing its text.
 - **FR-005**: OpenAI Chat Completions conversion MUST return ordered `messages` containing one role/content item per source section, while Responses API conversion MUST join system sections in ascending `order` with exactly `\n\n` under one `instructions` string and return one `{"role": "user"|"assistant", "content": "..."}` item per conversation section under `input`; both targets MUST preserve applicable roles, text, and resolved order.
-- **FR-006**: Both conversions MUST sort sections by ascending `order`, MUST reject duplicate `order` values with no partial result, and MUST preserve that resolved order in all applicable provider arguments.
-- **FR-007**: When a compiled prompt contains no sections, both conversions MUST use its aggregate content as one user-role input.
-- **FR-008**: Both conversions MUST reject blank or unsupported section roles with an actionable local failure and MUST NOT return partial invocation arguments.
+- **FR-006**: All three conversion operations (Gemini, OpenAI Chat Completions, and OpenAI Responses) MUST sort sections by ascending `order`, MUST reject duplicate `order` values with no partial result, and MUST preserve that resolved order in all applicable provider arguments.
+- **FR-007**: When a compiled prompt contains no sections, all three conversion operations MUST use its aggregate content as one user-role input.
+- **FR-008**: All three conversion operations MUST reject blank or unsupported section roles with an actionable local failure and MUST NOT return partial invocation arguments.
 - **FR-009**: When any conversion receives only system sections, it MUST preserve them in the target's system-only arguments, MUST record exactly one standard log at WARNING level containing source `slug`, `version`, and `label` but no compiled prompt text, MUST NOT emit a runtime warning or error, and MUST leave provider-call viability to the caller; Gemini MUST return only `config.system_instruction`, Chat Completions MUST return ordered system `messages`, and Responses MUST return only `instructions`.
 - **FR-010**: Conversion MUST NOT mutate the completed prompt, re-render template variables, add source metadata to provider prompt content, or infer model and generation settings.
 - **FR-011**: Conversion MUST preserve empty strings, whitespace, line breaks, Unicode characters, and other already-compiled text exactly.
@@ -117,11 +117,11 @@ An application developer receives a clear local failure when a compiled prompt c
 
 ### Measurable Outcomes
 
-- **SC-001**: Across the supported-role test matrix, 100% of source section text and applicable ordering is preserved in both provider-specific results.
+- **SC-001**: Across the supported-role test matrix, 100% of source section text and applicable ordering is preserved in all three target-specific results.
 - **SC-002**: In all unsupported-role scenarios, 100% of conversions fail before producing partial invocation arguments and identify the offending role.
 - **SC-003**: A developer can convert the same valid compiled prompt for Gemini, OpenAI Chat Completions, or the OpenAI Responses API through a documented public operation without manually reshaping its content.
 - **SC-004**: Automated isolated tests cover 100% of the conversion paths and edge-case categories listed in FR-012, with no external provider request required.
-- **SC-005**: A compiled prompt containing up to 200 ordered sections can be converted for either provider in under one second on a standard development machine.
+- **SC-005**: In the project test environment, each of the three public conversion methods converts a valid compiled prompt containing 200 ordered sections in under one second when timed individually with `time.perf_counter()`.
 - **SC-006**: In 100% of system-only test scenarios across all supported targets, conversion returns the provider-specific system arguments, records exactly one standard WARNING containing source slug, version, and label but no compiled prompt text, emits no runtime warning or error, and makes no provider request.
 
 ## Assumptions

@@ -49,7 +49,7 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Implement stateless `GeminiAdapter.to_generate_content_args()` for valid sectioned prompts in `packages/promptkit/src/promptkit/adapters.py`
+- [ ] T005 [US1] Implement the shared valid-section ascending-order/system-partition helper and stateless `GeminiAdapter.to_generate_content_args()` on that helper in `packages/promptkit/src/promptkit/adapters.py`
 - [ ] T006 [US1] Export `GeminiAdapter`, its public argument `TypedDict` contracts, and `AdapterConversionError` from `packages/promptkit/src/promptkit/__init__.py`
 - [ ] T007 [US1] Run and pass the focused Gemini test selection in `tests/promptkit/unit/test_adapters.py`
 
@@ -72,7 +72,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Implement stateless `OpenAIAdapter.to_chat_completions_args()` and `OpenAIAdapter.to_responses_args()` for valid sectioned prompts in `packages/promptkit/src/promptkit/adapters.py`
+- [ ] T010 [US2] Implement stateless `OpenAIAdapter.to_chat_completions_args()` and `OpenAIAdapter.to_responses_args()` by reusing the shared helper introduced in T005 in `packages/promptkit/src/promptkit/adapters.py`
 - [ ] T011 [US2] Export `OpenAIAdapter` and its Chat Completions and Responses argument `TypedDict` contracts from `packages/promptkit/src/promptkit/__init__.py`
 - [ ] T012 [US2] Run and pass the focused OpenAI test selection in `tests/promptkit/unit/test_adapters.py`
 
@@ -88,15 +88,15 @@
 
 ### Tests for User Story 3
 
-> **NOTE**: Write T013–T015 first and confirm the newly covered safety behavior fails before T016.
+> **NOTE**: Write T013–T015 first, confirm the new validation and warning cases fail, and record the per-method performance baseline before T016.
 
 - [ ] T013 [US3] Add failing cross-adapter tests for duplicate-order rejection, blank/differently-cased/unknown role rejection, actionable content-safe errors, and sectionless aggregate-content fallback in `tests/promptkit/unit/test_adapters.py`
-- [ ] T014 [US3] Add failing cross-adapter tests for exact provider-specific system-only outputs, one WARNING containing slug/version/label but no prompt text, absence of runtime warnings, text fidelity, source metadata exclusion, source immutability, and no provider calls in `tests/promptkit/unit/test_adapters.py`
-- [ ] T015 [US3] Add a failing or unmet performance assertion that each public conversion handles a valid 200-section prompt in under one second in `tests/promptkit/unit/test_adapters.py`
+- [ ] T014 [US3] Add failing cross-adapter tests for exact provider-specific system-only outputs, one WARNING containing slug/version/label but no prompt text, absence of runtime warnings, preservation of literal placeholder-shaped text such as `{{ untouched_variable }}` without re-rendering, other text fidelity, source metadata exclusion, source immutability, and no provider calls in `tests/promptkit/unit/test_adapters.py`
+- [ ] T015 [US3] Add an isolated `time.perf_counter()` assertion that times each public method separately and requires each conversion of a valid 200-section prompt to complete in under one second in `tests/promptkit/unit/test_adapters.py`
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Centralize pre-output role/order validation, copied ascending sorting, sectionless user fallback, exact text preservation, and one safe system-only logger call across all adapter methods in `packages/promptkit/src/promptkit/adapters.py`
+- [ ] T016 [US3] Harden the shared helper from T005 with pre-output role/order validation, sectionless user fallback, literal content handling without template interpretation, and one safe system-only logger call used by all adapter methods in `packages/promptkit/src/promptkit/adapters.py`
 - [ ] T017 [US3] Extend the isolated Git subdirectory installation regression to import and exercise the public adapters without provider SDK packages in `tests/promptkit/integration/test_git_subdirectory_install.py`
 - [ ] T018 [US3] Run and pass all adapter unit and independent-install integration scenarios in `tests/promptkit/unit/test_adapters.py` and `tests/promptkit/integration/test_git_subdirectory_install.py`
 
@@ -122,15 +122,14 @@
 - **Setup (Phase 1)**: No dependencies; starts immediately.
 - **Foundational (Phase 2)**: Depends on T001 and blocks all user story implementation.
 - **User Story 1 (Phase 3)**: Depends on Phase 2 and delivers the suggested Gemini MVP.
-- **User Story 2 (Phase 4)**: Depends on Phase 2, not on US1 behavior. When implemented concurrently, coordinate edits to `adapters.py`, `__init__.py`, and `test_adapters.py`.
+- **User Story 2 (Phase 4)**: Depends on US1 completion because both OpenAI methods reuse the shared valid-section helper established in T005; its public output remains independently testable.
 - **User Story 3 (Phase 5)**: Depends on both US1 and US2 because it applies shared policies to all three completed conversion methods.
 - **Polish (Phase 6)**: Depends on all selected user stories. T020 and T021 can run in parallel after T019; T022 follows both.
 
 ### User Story Dependency Graph
 
 ```text
-Setup → Foundational ─┬→ US1 (Gemini) ──┐
-                     └→ US2 (OpenAI) ──┴→ US3 (cross-adapter safety) → Polish
+Setup → Foundational → US1 (Gemini + shared helper) → US2 (OpenAI) → US3 (cross-adapter safety) → Polish
 ```
 
 ### Within Each User Story
@@ -138,12 +137,12 @@ Setup → Foundational ─┬→ US1 (Gemini) ──┐
 - Add the story's contract tests and observe the expected failure before implementing it.
 - Implement provider mapping before top-level public exports.
 - Run the story-focused tests before advancing to the next checkpoint.
-- For US3, add all shared-policy tests before refactoring the three methods onto the shared normalization path.
+- For US3, add all shared-policy tests before hardening the existing shared helper across the three methods.
 
 ### Parallel Opportunities
 
 - T002 and T003 can run in parallel after T001 because they create or edit different source files.
-- US1 and US2 are semantically independent after Phase 2 and can be developed in isolated branches/worktrees; their shared-file edits must be merged deliberately.
+- US1, US2, and US3 proceed sequentially because US2 reuses the T005 helper and US3 hardens behavior across all completed methods.
 - T020 and T021 can run in parallel after documentation is complete because both are read-only harness checks.
 - US3 is intentionally serialized after US1 and US2 because it validates and refactors their shared behavior.
 
@@ -151,11 +150,11 @@ Setup → Foundational ─┬→ US1 (Gemini) ──┐
 
 ## Parallel Example: User Story 1
 
-US1 uses one test file, one implementation file, and one public export file in strict TDD order, so its tasks should run sequentially: T004 → T005 → T006 → T007. Parallelize at the story level by developing US2 in an isolated worktree after Phase 2.
+US1 uses one test file, one implementation file, and one public export file in strict TDD order, so its tasks run sequentially: T004 → T005 → T006 → T007. Its shared helper becomes the implementation prerequisite for US2.
 
 ## Parallel Example: User Story 2
 
-T008 and T009 both edit `tests/promptkit/unit/test_adapters.py` and therefore run sequentially, followed by T010 → T011 → T012. In an isolated worktree, this sequence can run concurrently with the complete US1 sequence.
+T008 and T009 both edit `tests/promptkit/unit/test_adapters.py` and therefore run sequentially, followed by T010 → T011 → T012. T010 explicitly reuses the helper completed by T005 instead of introducing a second ordering or system-partition implementation.
 
 ## Parallel Example: User Story 3
 
@@ -183,8 +182,8 @@ US3 deliberately spans all public methods and shared files, so T013 → T014 →
 ### Parallel Team Strategy
 
 1. Complete T001–T003 together, with T002 and T003 in parallel.
-2. Develop US1 and US2 in separate worktrees because both touch the same three files.
-3. Merge both stories, then complete US3 against the integrated public surface.
+2. Complete US1 to establish the tested Gemini behavior and shared valid-section helper.
+3. Complete US2 on the shared helper, then apply the cross-adapter hardening in US3.
 4. Run Ruff and MyPy in parallel, followed by the full pytest suite.
 
 ---

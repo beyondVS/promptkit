@@ -57,9 +57,9 @@ no exception or provider request occurs.
 
 ## Validate performance and local-only behavior
 
-Build a valid 200-section prompt and time each conversion independently using
-`time.perf_counter()`.
+In the project test environment, build a valid 200-section prompt and time each of the three public
+conversion methods independently using `time.perf_counter()`.
 
-Expected result: each method completes in under one second. The test module must not configure
-provider clients or credentials; successful execution with only core SDK dependencies confirms the
-conversion boundary remains local and independently installable.
+Expected result: every individual method measurement completes in under one second. The test
+module must not configure provider clients or credentials; successful execution with only core SDK
+dependencies confirms the conversion boundary remains local and independently installable.

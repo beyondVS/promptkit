@@ -40,9 +40,21 @@ For a system-only prompt, `contents` is omitted and only `config.system_instruct
 
 ## OpenAI Chat Completions Invocation Arguments
 
-The output contains exactly one `messages` list. Every resolved source section remains a distinct
-dictionary with its original supported role and exact string `content`. A sectionless prompt
-produces one user message. A system-only prompt contains only ordered system messages.
+| Key | Presence | Value |
+|---|---|---|
+| `messages` | Always present | Ordered list containing one Chat Completions message dictionary per resolved section. |
+
+### OpenAI Chat Completions Message
+
+| Field | Type | Rule |
+|---|---|---|
+| `role` | `system`, `user`, or `assistant` string | Preserved from the provider-neutral section after exact role validation. |
+| `content` | string | Copied exactly without normalization, joining, or re-rendering. |
+
+Every resolved source section remains a distinct message, including consecutive sections with the
+same role. A sectionless prompt produces one user message whose `content` is the aggregate compiled
+content. A system-only prompt keeps `messages` present and contains only the ordered system
+messages; unlike Gemini and Responses, system messages are not joined or moved to another key.
 
 ## OpenAI Responses Invocation Arguments
 
