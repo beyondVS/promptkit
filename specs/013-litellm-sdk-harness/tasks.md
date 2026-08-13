@@ -17,7 +17,7 @@
 
 **Purpose**: Establish the Day 13 validation baseline before changing the core SDK.
 
-- [ ] T001 Run the baseline core SDK suite and retain the result against `tests/promptkit/` before modifying `packages/promptkit/`.
+- [ ] T001 Run `uv run pytest tests/promptkit` before modifying `packages/promptkit/` and retain the complete command, exit code, pass/fail counts, and failure summary in the implementation-session validation log for comparison with T014.
 
 ---
 
@@ -44,7 +44,7 @@ The existing immutable `CompiledPrompt` models and `_resolve_sections()` policy 
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Add typed LiteLLM message/completion-argument contracts and `LiteLLMAdapter.to_completion_args()` using the existing `_resolve_sections()` and `_partition_sections()` policy in `packages/promptkit/src/promptkit/adapters.py`.
+- [ ] T004 [US1] Add typed LiteLLM message/completion-argument contracts and `LiteLLMAdapter.to_completion_args()` in `packages/promptkit/src/promptkit/adapters.py`, calling `_partition_sections()` exactly once and reusing its resolved ordered sections so role/order validation, sectionless fallback, and the system-only WARNING occur without a second `_resolve_sections()` pass.
 - [ ] T005 [US1] Export `LiteLLMAdapter`, `LiteLLMChatMessage`, and `LiteLLMCompletionArgs` from the package root and add them to `__all__` in `packages/promptkit/src/promptkit/__init__.py`.
 - [ ] T006 [US1] Document LiteLLM conversion usage and the caller-owned model/credential/execution boundary in `packages/promptkit/README.md`.
 - [ ] T007 [US1] Extend the isolated Git-subdirectory install assertion for the LiteLLM adapter and confirm the installed environment has no LiteLLM dependency in `tests/promptkit/integration/test_git_subdirectory_install.py`.
@@ -62,9 +62,9 @@ The existing immutable `CompiledPrompt` models and `_resolve_sections()` policy 
 ### Tests and Harness for User Story 2
 
 - [ ] T008 [US2] Create a package-root public API inventory and two-way coverage-map assertion that reports missing and stale export names in `tests/promptkit/integration/test_public_sdk_harness.py`.
-- [ ] T009 [US2] Add public-import and data-contract assertions for every exported client, prompt model, adapter, typed argument contract, and exception hierarchy in `tests/promptkit/integration/test_public_sdk_harness.py`.
-- [ ] T010 [US2] Add a controlled successful journey using `httpx.MockTransport`: authenticated `PromptKitClient.fetch()`, `RetrievedPrompt.compile()`, and all Gemini, OpenAI, and LiteLLM conversion outputs in `tests/promptkit/integration/test_public_sdk_harness.py`.
-- [ ] T011 [US2] Add public failure-path assertions for client configuration/request/label, HTTP status and transport errors, malformed registry responses, compilation errors, and `AdapterConversionError` while checking API keys and supplied secret values remain undisclosed in `tests/promptkit/integration/test_public_sdk_harness.py`.
+- [ ] T009 [US2] Add public-import and data-contract assertions for every exported client, prompt model, adapter, typed argument contract, and exception hierarchy in `tests/promptkit/integration/test_public_sdk_harness.py`, explicitly covering model validation boundaries, frozen `CompiledPrompt`/`CompiledPromptSection` mutation rejection, mutable registry-response models where promised, and slug/version/label/category/section metadata preservation.
+- [ ] T010 [US2] Add a controlled successful journey using `httpx.MockTransport` in `tests/promptkit/integration/test_public_sdk_harness.py`: authenticated `PromptKitClient.fetch()`, `RetrievedPrompt.compile()`, and all Gemini, OpenAI, and LiteLLM conversion outputs, with journey-specific test IDs or assertion messages that identify retrieval, compilation, and each adapter target on failure.
+- [ ] T011 [US2] Add a parameterized public failure matrix in `tests/promptkit/integration/test_public_sdk_harness.py` covering `InvalidConfigurationError`, `InvalidRequestError`, `InvalidLabelError`, `AuthenticationError`, `RateLimitError`, `RedirectError`, `PromptNotFoundError`, `LabelNotFoundError`, `NoDeployableVersionError`, `CommunicationError`, `InvalidResponseError`, `MissingVariableError`, `InvalidVariableTypeError`, `UnexpectedVariableError`, `TemplateValidationError`, and `AdapterConversionError`; give each case a journey-specific test ID or assertion message and verify API keys, supplied secret values, and prohibited rendered prompt text remain undisclosed.
 
 **Checkpoint**: The full declared package-root public surface has local end-to-end contract coverage without contacting external services.
 
