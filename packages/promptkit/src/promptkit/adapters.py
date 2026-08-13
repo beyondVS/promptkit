@@ -62,6 +62,19 @@ class OpenAIResponsesArgs(TypedDict, total=False):
     input: list[OpenAIResponsesInputItem]
 
 
+class LiteLLMChatMessage(TypedDict):
+    """One LiteLLM completion message."""
+
+    role: Literal["system", "user", "assistant"]
+    content: str
+
+
+class LiteLLMCompletionArgs(TypedDict):
+    """Plain arguments for ``litellm.completion`` owned by prompt conversion."""
+
+    messages: list[LiteLLMChatMessage]
+
+
 def _partition_sections(
     prompt: CompiledPrompt,
 ) -> tuple[list[CompiledPromptSection], list[str], list[CompiledPromptSection]]:
@@ -113,6 +126,25 @@ class GeminiAdapter:
         if system_texts:
             result["config"] = {"system_instruction": "\n\n".join(system_texts)}
         return result
+
+
+class LiteLLMAdapter:
+    """Convert compiled prompts to LiteLLM completion arguments."""
+
+    @staticmethod
+    def to_completion_args(prompt: CompiledPrompt) -> LiteLLMCompletionArgs:
+        """Return plain LiteLLM arguments without importing or invoking LiteLLM."""
+        ordered_sections, _, _ = _partition_sections(prompt)
+        messages: list[LiteLLMChatMessage] = []
+        for section in ordered_sections:
+            if section.role == "system":
+                role: Literal["system", "user", "assistant"] = "system"
+            elif section.role == "user":
+                role = "user"
+            else:
+                role = "assistant"
+            messages.append({"role": role, "content": section.content})
+        return {"messages": messages}
 
 
 class OpenAIAdapter:

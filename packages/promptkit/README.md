@@ -81,11 +81,12 @@ apply generation settings, or make an LLM request. Supply those caller-owned
 arguments separately when invoking your provider client.
 
 ```python
-from promptkit import GeminiAdapter, OpenAIAdapter
+from promptkit import GeminiAdapter, LiteLLMAdapter, OpenAIAdapter
 
 gemini_args = GeminiAdapter.to_generate_content_args(compiled)
 chat_args = OpenAIAdapter.to_chat_completions_args(compiled)
 responses_args = OpenAIAdapter.to_responses_args(compiled)
+litellm_args = LiteLLMAdapter.to_completion_args(compiled)
 ```
 
 Gemini arguments contain ordered `contents` items using `user` or `model` roles
@@ -107,3 +108,9 @@ When a prompt contains only system sections, each method returns its target's
 system-only arguments and logs exactly one `WARNING` containing only the source
 slug, version, and label. The caller decides whether to add conversation content
 or invoke the provider. Compiled prompt text is never written to that log.
+
+LiteLLM arguments contain one ordered `{"role": "system"|"user"|"assistant",
+"content": "..."}` item per compiled section under `messages`. PromptKit does
+not install or import LiteLLM, select its required `model`, provide credentials,
+set generation options, or call `litellm.completion`; the application supplies
+those caller-owned values when it makes the request.
