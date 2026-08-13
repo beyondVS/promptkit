@@ -34,6 +34,7 @@ promptkit/
   - `compile()` 엔진: Pydantic v2 기반 변수 유효성 검증 및 로컬 Jinja2-style 렌더링
   - `GeminiAdapter`: `CompiledPrompt`를 Google Gen AI `generate_content` 호출 인자로 변환
   - `OpenAIAdapter`: `CompiledPrompt`를 OpenAI Chat Completions 또는 Responses 호출 인자로 변환
+  - `LiteLLMAdapter`: `CompiledPrompt`를 LiteLLM `completion`의 ordered `messages` 호출 인자로 변환
   - 어댑터는 순수 dictionary 변환만 담당하며 공급자 SDK를 import하거나 LLM을 호출하지 않음
 
 ### 1.3 packages/promptkit-django (Django Integration)
@@ -67,7 +68,7 @@ LLM SDK (사용자 코드에서의 API 호출 인수)
 ### SDK 사용 가이드라인 예시
 
 ```python
-from promptkit import GeminiAdapter, OpenAIAdapter, PromptKitClient
+from promptkit import GeminiAdapter, LiteLLMAdapter, OpenAIAdapter, PromptKitClient
 
 # 1. 클라이언트 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
@@ -87,15 +88,16 @@ compiled = prompt.compile(
 gemini_args = GeminiAdapter.to_generate_content_args(compiled)
 chat_args = OpenAIAdapter.to_chat_completions_args(compiled)
 responses_args = OpenAIAdapter.to_responses_args(compiled)
+litellm_args = LiteLLMAdapter.to_completion_args(compiled)
 
 # 5. 완성된 텍스트와 원본 버전 정보 사용
 print(compiled.content)
 print(compiled.version)
 ```
 
-Day 12의 SDK는 조회·검증·로컬 렌더링에 더해 Gemini와 OpenAI용 호출 인자 변환을
-제공합니다. 모델, 자격 증명, 생성 설정과 실제 LLM 호출은 호출자가 관리하며 SDK는
-어떤 경우에도 공급자 SDK를 import하거나 LLM 호출을 대행하지 않습니다.
+Day 13의 SDK는 조회·검증·로컬 렌더링에 더해 Gemini, OpenAI 및 LiteLLM용 호출 인자
+변환을 제공합니다. 모델, 자격 증명, 생성 설정과 실제 LLM 호출은 호출자가 관리하며
+SDK는 어떤 경우에도 공급자 SDK를 import하거나 LLM 호출을 대행하지 않습니다.
 
 ---
 

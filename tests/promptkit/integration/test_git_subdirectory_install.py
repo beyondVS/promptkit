@@ -46,7 +46,7 @@ def test_installs_committed_git_subdirectory_in_isolated_environment(tmp_path: P
             (
                 "import importlib.util; "
                 "from promptkit import (CompiledPrompt, CompiledPromptSection, "
-                "GeminiAdapter, OpenAIAdapter, PromptKitClient); "
+                "GeminiAdapter, LiteLLMAdapter, OpenAIAdapter, PromptKitClient); "
                 "assert PromptKitClient.__name__ == 'PromptKitClient'; "
                 "prompt = CompiledPrompt(slug='demo', version=1, label=None, "
                 "content='Hello', sections=(CompiledPromptSection(role='user', "
@@ -57,9 +57,12 @@ def test_installs_committed_git_subdirectory_in_isolated_environment(tmp_path: P
                 "{'messages': [{'role': 'user', 'content': 'Hello'}]}; "
                 "assert OpenAIAdapter.to_responses_args(prompt) == "
                 "{'input': [{'role': 'user', 'content': 'Hello'}]}; "
+                "assert LiteLLMAdapter.to_completion_args(prompt) == "
+                "{'messages': [{'role': 'user', 'content': 'Hello'}]}; "
                 "assert importlib.util.find_spec('django') is None; "
                 "assert importlib.util.find_spec('google') is None; "
-                "assert importlib.util.find_spec('openai') is None"
+                "assert importlib.util.find_spec('openai') is None; "
+                "assert importlib.util.find_spec('litellm') is None"
             ),
         ],
         check=True,

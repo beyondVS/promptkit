@@ -7,7 +7,7 @@ import warnings
 from collections.abc import Callable
 from unittest.mock import patch
 
-from promptkit import AdapterConversionError, GeminiAdapter, OpenAIAdapter
+from promptkit import AdapterConversionError, GeminiAdapter, LiteLLMAdapter, OpenAIAdapter
 from promptkit.models import CompiledPrompt, CompiledPromptSection
 
 Conversion = Callable[[CompiledPrompt], object]
@@ -39,6 +39,7 @@ def conversions() -> tuple[Conversion, ...]:
     """Return every public conversion operation under the shared policy."""
     return (
         GeminiAdapter.to_generate_content_args,
+        LiteLLMAdapter.to_completion_args,
         OpenAIAdapter.to_chat_completions_args,
         OpenAIAdapter.to_responses_args,
     )
@@ -158,6 +159,32 @@ class TestOpenAIAdapter(unittest.TestCase):
         self.assertNotIn("instructions", result)
 
 
+class TestLiteLLMAdapter(unittest.TestCase):
+    """Validate the public LiteLLM completion conversion without LiteLLM."""
+
+    def test_preserves_order_roles_and_distinct_messages(self) -> None:
+        prompt = compiled_prompt(
+            section("assistant", 3, "Prior answer"),
+            section("user", 1, "First question"),
+            section("system", 0, "Policy"),
+            section("user", 2, "Follow-up"),
+        )
+
+        result = LiteLLMAdapter.to_completion_args(prompt)
+
+        self.assertEqual(
+            result,
+            {
+                "messages": [
+                    {"role": "system", "content": "Policy"},
+                    {"role": "user", "content": "First question"},
+                    {"role": "user", "content": "Follow-up"},
+                    {"role": "assistant", "content": "Prior answer"},
+                ]
+            },
+        )
+
+
 class TestAdapterSafetyPolicy(unittest.TestCase):
     """Validate shared failures, fallback, logging, and local-only behavior."""
 
@@ -201,6 +228,10 @@ class TestAdapterSafetyPolicy(unittest.TestCase):
             {"messages": [{"role": "user", "content": prompt.content}]},
         )
         self.assertEqual(
+            LiteLLMAdapter.to_completion_args(prompt),
+            {"messages": [{"role": "user", "content": prompt.content}]},
+        )
+        self.assertEqual(
             OpenAIAdapter.to_responses_args(prompt),
             {"input": [{"role": "user", "content": prompt.content}]},
         )
@@ -223,6 +254,15 @@ class TestAdapterSafetyPolicy(unittest.TestCase):
             ),
             (
                 OpenAIAdapter.to_chat_completions_args,
+                {
+                    "messages": [
+                        {"role": "system", "content": first},
+                        {"role": "system", "content": second},
+                    ]
+                },
+            ),
+            (
+                LiteLLMAdapter.to_completion_args,
                 {
                     "messages": [
                         {"role": "system", "content": first},
@@ -268,6 +308,7 @@ class TestAdapterSafetyPolicy(unittest.TestCase):
 
         results = (
             GeminiAdapter.to_generate_content_args(prompt),
+            LiteLLMAdapter.to_completion_args(prompt),
             OpenAIAdapter.to_chat_completions_args(prompt),
             OpenAIAdapter.to_responses_args(prompt),
         )
@@ -295,6 +336,16 @@ class TestAdapterSafetyPolicy(unittest.TestCase):
         self.assertEqual(
             results[2],
             {
+                "messages": [
+                    {"role": "system", "content": ""},
+                    {"role": "user", "content": "{{ untouched_variable }}"},
+                    {"role": "assistant", "content": "  \n한글 🚀  "},
+                ]
+            },
+        )
+        self.assertEqual(
+            results[3],
+            {
                 "instructions": "",
                 "input": [
                     {"role": "user", "content": "{{ untouched_variable }}"},
@@ -319,6 +370,7 @@ class TestAdapterSafetyPolicy(unittest.TestCase):
         self.assertFalse(
             any(name == "openai" or name.startswith("google") for name in imported_names)
         )
+        self.assertNotIn("litellm", imported_names)
 
     def test_each_conversion_handles_200_sections_in_under_one_second(self) -> None:
         prompt = compiled_prompt(

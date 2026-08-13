@@ -59,9 +59,9 @@
 * [x] **Day 12 (1h): Gemini Adapter 및 OpenAI Adapter 구현**
     *   `CompiledPrompt`를 Gemini `generate_content`, OpenAI Chat Completions 및 Responses API 호출 인자로 치환하는 provider-neutral 어댑터와 유닛·독립 설치 테스트 작성.
     *   system-only 프롬프트의 안전한 반환 및 `WARNING` 로깅, 역할·순서 검증, 입력 불변성과 provider SDK 비의존성 보장.
-* [ ] **Day 13 (1h): LiteLLM Adapter 구현 및 SDK 전체 하네스 통합 검증**
-    *   LiteLLM 규격에 대응하는 어댑터 추가 구현.
-    *   SDK core의 모든 Public API에 대해 `pytest` 100% 통합 하네스 검증 구동.
+* [x] **Day 13 (1h): LiteLLM Adapter 구현 및 SDK 전체 하네스 통합 검증**
+    *   LiteLLM `completion` 규격의 순서 보존 `messages` 변환 어댑터 구현 및 독립 설치 비의존성 검증.
+    *   SDK core의 모든 Public API inventory와 성공·실패 여정을 검증하는 `pytest` 통합 하네스 추가.
 
 ---
 
