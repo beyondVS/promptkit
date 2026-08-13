@@ -59,6 +59,6 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 
 1. **Prompt Server**: 대시보드 CUD (`/dashboard/`), Read-Only API (`GET /api/v1/prompts/<slug>/`)
 2. **Version & Deployment**: 초안/발행/복제(Clone) 라이프사이클, On-live 지정 (자동 Fallback 금지, `production` 라벨 금지)
-3. **Core SDK & Adapters**: `PromptKitClient`, `compile()`, Gemini `generate_content`, OpenAI Chat Completions / Responses Adapters 및 후속 LiteLLM Adapter
+3. **Core SDK & Adapters**: `PromptKitClient`, `compile()`, Gemini `generate_content`, OpenAI Chat Completions / Responses 및 LiteLLM `completion` Adapters
 4. **Django Integration**: `promptkit-django` 캐싱 및 설정 자동화
 5. **Playground**: 대시보드 내 템플릿 컴파일 프리뷰 인터페이스

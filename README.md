@@ -14,7 +14,7 @@ PromptKit은 LLM 기반 애플리케이션에서 사용되는 프롬프트(Promp
 * **Django Template 대시보드 CUD**: 프롬프트 생성, 수정, 삭제(CUD) 및 관리자 인증(Django Session Auth)은 백엔드 대시보드에서 전담합니다.
 * **SDK Read-Only Fetch**: `promptkit-sdk`는 `X-PromptKit-Api-Key` HTTP Header 인증을 거쳐 레지스트리로부터 프롬프트를 안전하게 조회(Read-only)합니다.
 * **SDK-First & Client-Side Compilation**: 동적 변수 파싱 및 컴파일(`compile()`)은 SDK에서 처리하여 서버 부하 및 API 지연(Latency)을 최소화합니다.
-* **Provider-Neutral Adapters**: 컴파일 결과를 Gemini `generate_content`, OpenAI Chat Completions 및 Responses API 호출 인자 형태의 순수 Python dictionary로 변환하며, 공급자 SDK import나 실제 LLM 호출은 수행하지 않습니다.
+* **Provider-Neutral Adapters**: 컴파일 결과를 Gemini `generate_content`, OpenAI Chat Completions·Responses 및 LiteLLM `completion` 호출 인자 형태의 순수 Python dictionary로 변환하며, 공급자 SDK import나 실제 LLM 호출은 수행하지 않습니다.
 
 * **Framework Agnostic Core SDK**: 코어 SDK (`packages/promptkit`)는 순수 Python 3.13+ 기반으로 유지되며, Django 전용 통합 기능은 독립 패키지(`packages/promptkit-django`)로 확장됩니다.
 * **Label-Driven On-Live Resolution**: 라벨 생략 시 해당 프롬프트의 `on-live`로 지정된 발행 버전만 반환하며, `on-live`가 없으면 자동 fallback 없이 404(`no_deployable_version`)를 응답합니다. (`production` 라벨 사용은 금지됩니다.)
@@ -67,7 +67,7 @@ promptkit/
 ## ⚡ Quick Start
 
 ```python
-from promptkit import GeminiAdapter, OpenAIAdapter, PromptKitClient
+from promptkit import GeminiAdapter, LiteLLMAdapter, OpenAIAdapter, PromptKitClient
 
 # 1. REST Client 초기화
 client = PromptKitClient(base_url="http://localhost:8000", api_key="your-api-key")
@@ -88,14 +88,16 @@ compiled = prompt.compile(
 gemini_args = GeminiAdapter.to_generate_content_args(compiled)
 chat_args = OpenAIAdapter.to_chat_completions_args(compiled)
 responses_args = OpenAIAdapter.to_responses_args(compiled)
+litellm_args = LiteLLMAdapter.to_completion_args(compiled)
 
 # 5. 렌더링 결과와 원본 버전 메타데이터 사용
 print(compiled.content)
 print(compiled.version)
 ```
 
-`compile()`과 어댑터는 입력값을 서버나 LLM 공급자에게 전송하지 않습니다. 모델,
-자격 증명, 생성 설정 및 실제 API 호출은 호출자 애플리케이션의 책임입니다.
+`compile()`과 어댑터는 입력값을 서버나 LLM 공급자에게 전송하지 않습니다. LiteLLM
+어댑터는 순서가 보존된 `messages`를 반환하며, 모델, 자격 증명, 생성 설정 및 실제
+`litellm.completion` 호출을 포함한 API 호출은 호출자 애플리케이션의 책임입니다.
 
 ---
 

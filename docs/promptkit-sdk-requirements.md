@@ -54,12 +54,18 @@
 - **`OpenAIAdapter`**: OpenAI SDK 규격
   - `to_chat_completions_args()`: 각 섹션을 ordered `messages`로 매핑
   - `to_responses_args()`: system 섹션은 `instructions`, user/assistant 섹션은 ordered `input`으로 매핑
+- **`LiteLLMAdapter`**: LiteLLM `completion` 규격
+  - `to_completion_args()`: 각 섹션을 역할과 본문이 보존된 ordered `messages`로 매핑
 - **공통 변환 정책**:
   - 섹션 순서를 오름차순으로 정렬하며 반복 역할은 병합하지 않음
   - 섹션이 없으면 aggregate content를 단일 user 항목으로 사용
   - system-only 입력은 공급자별 system-only 인자를 반환하고 민감한 본문 없이 `WARNING` 로그를 한 번 기록
   - 공급자 SDK, 모델, 자격 증명, 생성 설정 및 실제 호출은 어댑터 범위 밖이며 입력 `CompiledPrompt`를 변경하지 않음
-- **`LiteLLMAdapter` (예정)**: LiteLLM 호환 멀티-프로바이더 규격 변환
+  - LiteLLM은 설치하거나 import하지 않으며, 호출자는 `messages` 외에 필요한 `model` 등의 인자와 실제 `litellm.completion` 호출을 관리함
+
+### 2.4 Public API 통합 하네스
+- `promptkit.__all__` inventory와 명시적 검증 맵의 일치를 검증하여 public export 누락 또는 stale entry를 식별합니다.
+- 정상 fetch → compile → Gemini·OpenAI·LiteLLM 변환 여정과 공개 예외 계층의 실패 경계를 `pytest` 통합 테스트로 검증합니다.
 
 ---
 
