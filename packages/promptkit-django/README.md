@@ -6,14 +6,20 @@ responses, retry requests, or contact the registry at startup.
 
 ## Install
 
-Install from this repository's package subdirectory:
+The core SDK is not published to a package index. Install both packages from the
+repository's default branch in one command:
 
 ```bash
-uv pip install "git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
+uv pip install \
+  "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit" \
+  "promptkit-django @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
 ```
 
-The distribution resolves a compatible released `promptkit` package. It does not use
-a sibling checkout or editable workspace dependency.
+Installing only `promptkit-django` makes the dependency resolver search its configured
+package indexes for `promptkit`, where it is not currently available. Supplying both
+Git subdirectories lets the explicitly installed core SDK satisfy the
+`promptkit>=0.1,<0.2` dependency. Because these URLs track the default branch, install
+or upgrade both packages together to keep their versions compatible.
 
 ## Configure Django
 
