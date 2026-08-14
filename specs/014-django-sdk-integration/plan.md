@@ -83,6 +83,7 @@ tests/
 └── promptkit_django/
     ├── unit/
     │   ├── test_configuration.py
+    │   ├── test_public_api.py
     │   └── test_registry.py
     └── integration/
         ├── test_django_lifecycle.py
