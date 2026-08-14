@@ -38,9 +38,11 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 ### Core Rules
 - **No Secrets**: API Key, DB 비밀번호 등 민감 정보 하드코딩 금지 (`.env` 전용).
 - **SDK Boundaries**: SDK는 절대로 LLM API를 직접 호출하지 않음 (Adapters는 렌더링된 인자 포맷팅만 전담).
-- **Git Subdirectory Installation**: 모노레포 내 각 패키지(`packages/promptkit` 등)는 독립적으로 설치 가능해야 함:
+- **Git Subdirectory Installation**: 모노레포의 패키지는 Git subdirectory로 설치하며, 별도 패키지 인덱스를 사용하지 않는 현재 정책상 Django 통합 사용자는 코어 SDK와 통합 패키지를 함께 지정해야 함:
   ```bash
-  pip install "git+https://github.com/<org>/promptkit.git#subdirectory=packages/promptkit"
+  uv add \
+    "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit" \
+    "promptkit-django @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
   ```
 
 ---
@@ -51,7 +53,7 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 | :--- | :--- | :--- |
 | `apps/server` | 프롬프트 저장소, 대시보드 CUD, Read-Only API Serving | Django, DRF, PostgreSQL |
 | `packages/promptkit` | 원격 프롬프트 fetch, 로컬 `compile()`, Pydantic 변수 검증, LLM Adapters | Pydantic v2, httpx |
-| `packages/promptkit-django` | Django Settings 연동, Cache 기반 프롬프트 조회 최적화, Helper APIs | `promptkit`, Django |
+| `packages/promptkit-django` | `PROMPTKIT` Settings 검증, AppConfig 시작 시 SDK 자동 등록, `get_client()` 제공 | `promptkit`, Django, Pydantic v2 |
 
 ---
 
@@ -60,5 +62,5 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 1. **Prompt Server**: 대시보드 CUD (`/dashboard/`), Read-Only API (`GET /api/v1/prompts/<slug>/`)
 2. **Version & Deployment**: 초안/발행/복제(Clone) 라이프사이클, On-live 지정 (자동 Fallback 금지, `production` 라벨 금지)
 3. **Core SDK & Adapters**: `PromptKitClient`, `compile()`, Gemini `generate_content`, OpenAI Chat Completions / Responses 및 LiteLLM `completion` Adapters
-4. **Django Integration**: `promptkit-django` 캐싱 및 설정 자동화
+4. **Django Integration**: `promptkit-django` 설정 검증 및 SDK 인스턴스 자동 등록. Cache/ETag 최적화는 후속 단계에서 확장
 5. **Playground**: 대시보드 내 템플릿 컴파일 프리뷰 인터페이스

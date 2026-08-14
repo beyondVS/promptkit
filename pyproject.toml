@@ -30,6 +30,9 @@ packages = ["apps/server"]
 [tool.uv.workspace]
 members = ["apps/*", "packages/*"]
 
+[tool.uv.sources]
+promptkit = { workspace = true }
+
 [tool.ruff]
 target-version = "py313"
 line-length = 100

@@ -1,6 +1,6 @@
 # PromptKit SDK Read API Contract
 
-본 문서는 `promptkit-sdk`와 `apps/server` 간의 프롬프트 원격 조회(Read-Only API) 공식 데이터 및 HTTP 프로토콜 계약 문서입니다.
+본 문서는 Core SDK distribution인 `promptkit`과 `apps/server` 간의 프롬프트 원격 조회(Read-Only API) 공식 데이터 및 HTTP 프로토콜 계약 문서입니다.
 
 ---
 

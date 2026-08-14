@@ -1,1 +1,1 @@
-# Unit tests for packages/promptkit-django
+"""Unit tests for the Django integration package."""

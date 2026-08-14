@@ -12,7 +12,7 @@ PromptKit은 LLM 기반 애플리케이션에서 사용되는 프롬프트(Promp
 
 * **LLM Gateway 배제 (Prompt Registry Focus)**: Prompt Server는 LLM 호출을 대행하지 않으며, 프롬프트 저장, 대시보드 기반 버전 관리(CUD), 및 SDK 전용 Read-only 라벨 조회 역할에만 집중합니다.
 * **Django Template 대시보드 CUD**: 프롬프트 생성, 수정, 삭제(CUD) 및 관리자 인증(Django Session Auth)은 백엔드 대시보드에서 전담합니다.
-* **SDK Read-Only Fetch**: `promptkit-sdk`는 `X-PromptKit-Api-Key` HTTP Header 인증을 거쳐 레지스트리로부터 프롬프트를 안전하게 조회(Read-only)합니다.
+* **SDK Read-Only Fetch**: `promptkit`은 `X-PromptKit-Api-Key` HTTP Header 인증을 거쳐 레지스트리로부터 프롬프트를 안전하게 조회(Read-only)합니다.
 * **SDK-First & Client-Side Compilation**: 동적 변수 파싱 및 컴파일(`compile()`)은 SDK에서 처리하여 서버 부하 및 API 지연(Latency)을 최소화합니다.
 * **Provider-Neutral Adapters**: 컴파일 결과를 Gemini `generate_content`, OpenAI Chat Completions·Responses 및 LiteLLM `completion` 호출 인자 형태의 순수 Python dictionary로 변환하며, 공급자 SDK import나 실제 LLM 호출은 수행하지 않습니다.
 
@@ -30,7 +30,7 @@ promptkit/
 │   └── server/            # Django REST Framework 기반 Prompt Management Server
 ├── packages/
 │   ├── promptkit/         # Framework-Agnostic Core Python SDK
-│   └── promptkit-django/  # Django 설정 및 Cache API 연동 패키지
+│   └── promptkit-django/  # Django 설정 및 SDK 자동 등록 패키지
 ├── docs/                  # 아키텍처 및 요구사항 명세 문서
 ├── examples/              # E2E 사용 예제 스크립트
 └── tests/                 # 하이브리드 테스트 수트 (pytest / TestCase)
@@ -42,25 +42,23 @@ promptkit/
 
 ### Core Python SDK (`packages/promptkit`)
 
-* **uv (추천)**
-  ```bash
-  uv add "git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit"
-  ```
-* **pip**
-  ```bash
-  pip install "git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit"
-  ```
+```bash
+uv add "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit"
+```
 
 ### Django Integration Package (`packages/promptkit-django`)
 
-* **uv (추천)**
-  ```bash
-  uv add "git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
-  ```
-* **pip**
-  ```bash
-  pip install "git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
-  ```
+코어 SDK를 별도 패키지 인덱스에 배포하지 않으므로 기본 브랜치의 두 Git
+subdirectory를 함께 설치합니다.
+
+```bash
+uv add \
+  "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit" \
+  "promptkit-django @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
+```
+
+두 패키지는 함께 설치·업그레이드해야 합니다. `promptkit-django`만 설치하면
+resolver가 패키지 인덱스에서 `promptkit`을 찾으므로 현재 배포 정책에서는 실패합니다.
 
 ---
 
@@ -125,6 +123,8 @@ uv run pytest
 ## 📄 Documentation
 
 * 📌 [Prompt Server Requirements](docs/promptkit-server-requirements.md)
+* 📦 [Core SDK Requirements](docs/promptkit-sdk-requirements.md)
+* 🔌 [Django Integration Requirements](docs/promptkit-django-requirements.md)
 * 📐 [Project Specification](docs/project-spec.md)
 * 🗺️ [Architecture Diagram](docs/architecture.md)
 * 📅 [Implementation Plan (19-Day MVP)](docs/project-plan.md)

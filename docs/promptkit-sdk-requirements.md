@@ -74,5 +74,5 @@
 모노레포 내에서 완전히 격리되어 Git Subdirectory 방식으로 독립 설치 가능해야 함:
 
 ```bash
-pip install "git+https://github.com/<org>/promptkit.git#subdirectory=packages/promptkit"
+uv add "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit"
 ```
