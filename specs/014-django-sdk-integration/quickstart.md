@@ -13,10 +13,10 @@ focused Django-integration tests, then the project quality gates:
 
 ```powershell
 uv sync
-uv run pytest tests/promptkit_django
-uv run ruff check
-uv run ruff format --check
-uv run mypy .
+uv run --package promptkit-django pytest tests/promptkit_django
+uv run --package promptkit-django ruff check packages/promptkit-django tests/promptkit_django
+uv run --package promptkit-django ruff format --check packages/promptkit-django tests/promptkit_django
+uv run --package promptkit-django mypy packages/promptkit-django
 ```
 
 Expected outcomes:

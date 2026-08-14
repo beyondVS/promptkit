@@ -18,10 +18,10 @@
 
 **Purpose**: Create the independently distributed package shell and make the workspace resolve it.
 
-- [ ] T001 Create the `promptkit-django` PEP 621/Hatchling package metadata with direct `Django>=5,<6`, `promptkit>=0.1,<0.2`, and `pydantic>=2,<3` runtime bounds, package README, and typed source marker in `packages/promptkit-django/pyproject.toml`, `packages/promptkit-django/README.md`, and `packages/promptkit-django/src/promptkit_django/py.typed`
-- [ ] T002 Create the deliberate package root and test-package markers in `packages/promptkit-django/src/promptkit_django/__init__.py`, `tests/promptkit_django/__init__.py`, `tests/promptkit_django/unit/__init__.py`, and `tests/promptkit_django/integration/__init__.py`
-- [ ] T003 After T001, update the workspace resolution for the new distribution and verify reproducibility in `uv.lock`
-- [ ] T004 Immediately after T001–T003, add and run a packaging smoke test that builds the core SDK wheel, snapshots only `packages/promptkit-django`, installs its Git subdirectory with the wheelhouse, and fails the scaffold gate on metadata, dependency-resolution, installation, or import errors in `tests/promptkit_django/integration/test_git_subdirectory_install.py`
+- [X] T001 Create the `promptkit-django` PEP 621/Hatchling package metadata with direct `Django>=5,<6`, `promptkit>=0.1,<0.2`, and `pydantic>=2,<3` runtime bounds, package README, and typed source marker in `packages/promptkit-django/pyproject.toml`, `packages/promptkit-django/README.md`, and `packages/promptkit-django/src/promptkit_django/py.typed`
+- [X] T002 Create the deliberate package root and test-package markers in `packages/promptkit-django/src/promptkit_django/__init__.py`, `tests/promptkit_django/__init__.py`, `tests/promptkit_django/unit/__init__.py`, and `tests/promptkit_django/integration/__init__.py`
+- [X] T003 After T001, update the workspace resolution for the new distribution and verify reproducibility in `uv.lock`
+- [X] T004 Immediately after T001–T003, add and run a packaging smoke test that builds the core SDK wheel, snapshots only `packages/promptkit-django`, installs its Git subdirectory with the wheelhouse, and fails the scaffold gate on metadata, dependency-resolution, installation, or import errors in `tests/promptkit_django/integration/test_git_subdirectory_install.py`
 
 ---
 
@@ -31,9 +31,9 @@
 
 **⚠️ CRITICAL**: Complete this phase before lifecycle or packaging integration work.
 
-- [ ] T005 [P] Add public, typed, credential-safe configuration and uninitialized error classes in `packages/promptkit-django/src/promptkit_django/exceptions.py`
-- [ ] T006 [P] Write focused configuration-contract tests for missing, blank, wrong-type, unsafe URL, default timeout, aggregated reporting of every affected or unknown key, and non-disclosure when API keys contain whitespace or non-ASCII characters in `tests/promptkit_django/unit/test_configuration.py`
-- [ ] T007 Implement the strict Pydantic `PROMPTKIT` mapping parser and core-client configuration-error normalization in `packages/promptkit-django/src/promptkit_django/configuration.py`
+- [X] T005 [P] Add public, typed, credential-safe configuration and uninitialized error classes in `packages/promptkit-django/src/promptkit_django/exceptions.py`
+- [X] T006 [P] Write focused configuration-contract tests for missing, blank, wrong-type, unsafe URL, default timeout, aggregated reporting of every affected or unknown key, and non-disclosure when API keys contain whitespace or non-ASCII characters in `tests/promptkit_django/unit/test_configuration.py`
+- [X] T007 Implement the strict Pydantic `PROMPTKIT` mapping parser and core-client configuration-error normalization in `packages/promptkit-django/src/promptkit_django/configuration.py`
 
 **Checkpoint**: The package parses only `BASE_URL`, `API_KEY`, and optional `TIMEOUT`, and reports affected setting names without credential disclosure.
 
@@ -45,10 +45,10 @@
 
 **Independent Test**: Configure a minimal Django Apps registry with valid settings, run startup, retrieve the registered client, and verify base URL/API-key construction behavior plus default timeout without a registry request.
 
-- [ ] T008 [P] [US1] Write the minimal-Django startup contract tests for valid settings, omitted `TIMEOUT`, deployment/test settings overrides in fresh Apps registries, and immediate invalid-settings startup failure in `tests/promptkit_django/integration/test_django_lifecycle.py`
-- [ ] T009 [US1] Implement eager settings validation and one client construction during Django application startup in `packages/promptkit-django/src/promptkit_django/apps.py`
-- [ ] T010 [US1] Implement the documented `get_client()` accessor that resolves a completed integration registration without lazy construction in `packages/promptkit-django/src/promptkit_django/registry.py`
-- [ ] T011 [US1] Document installation, `INSTALLED_APPS`, the `PROMPTKIT` mapping, defaults, and safe failure behavior in `packages/promptkit-django/README.md`
+- [X] T008 [P] [US1] Write the minimal-Django startup contract tests for valid settings, omitted `TIMEOUT`, deployment/test settings overrides in fresh Apps registries, and immediate invalid-settings startup failure in `tests/promptkit_django/integration/test_django_lifecycle.py`
+- [X] T009 [US1] Implement eager settings validation and one client construction during Django application startup in `packages/promptkit-django/src/promptkit_django/apps.py`
+- [X] T010 [US1] Implement the documented `get_client()` accessor that resolves a completed integration registration without lazy construction in `packages/promptkit-django/src/promptkit_django/registry.py`
+- [X] T011 [US1] Document installation, `INSTALLED_APPS`, the `PROMPTKIT` mapping, defaults, and safe failure behavior in `packages/promptkit-django/README.md`
 
 **Checkpoint**: A valid minimal host project can configure and access a client; malformed configuration stops startup and contains no API-key value.
 
@@ -60,9 +60,9 @@
 
 **Independent Test**: Invoke startup/access repeatedly in one isolated registry and assert object identity; initialize a fresh registry and assert it does not reuse prior lifecycle state.
 
-- [ ] T012 [P] [US2] Add lifecycle identity, repeated-ready idempotence, pre-initialization access, absent-app access, and fresh-registry isolation tests in `tests/promptkit_django/unit/test_registry.py`
-- [ ] T013 [US2] Complete AppConfig-scoped registration guards and accessor error translation for repeated startup and unavailable registrations in `packages/promptkit-django/src/promptkit_django/apps.py` and `packages/promptkit-django/src/promptkit_django/registry.py`
-- [ ] T014 [US2] Add the explicit `PromptKitDjangoConfig` application configuration and all supported public exports to `packages/promptkit-django/src/promptkit_django/__init__.py`
+- [X] T012 [P] [US2] Add lifecycle identity, repeated-ready idempotence, pre-initialization access, absent-app access, and fresh-registry isolation tests in `tests/promptkit_django/unit/test_registry.py`
+- [X] T013 [US2] Complete AppConfig-scoped registration guards and accessor error translation for repeated startup and unavailable registrations in `packages/promptkit-django/src/promptkit_django/apps.py` and `packages/promptkit-django/src/promptkit_django/registry.py`
+- [X] T014 [US2] Add the explicit `PromptKitDjangoConfig` application configuration and all supported public exports to `packages/promptkit-django/src/promptkit_django/__init__.py`
 
 **Checkpoint**: Repeated startup/access returns the identical client within one registry, while missing or incomplete initialization never constructs a client lazily.
 
@@ -74,9 +74,9 @@
 
 **Independent Test**: Build the core wheel, commit a temporary Git snapshot containing only `packages/promptkit-django`, install its subdirectory into a fresh `uv` environment with the wheelhouse supplied, and run minimal Django startup/import assertions outside the repository import path.
 
-- [ ] T015 [US3] Extend the scaffold smoke test into the full isolated lifecycle test by asserting installed distribution locations, public imports, minimal `django.setup()`, and repeated `get_client()` identity without repository-root or server paths in `tests/promptkit_django/integration/test_git_subdirectory_install.py`
-- [ ] T016 [US3] Verify the exact metadata and dependency bounds declared by T001 against the full isolated test, and correct only demonstrated packaging defects without adding sibling paths, direct Git dependencies, or editable workspace resolution in `packages/promptkit-django/pyproject.toml`
-- [ ] T017 [US3] Extend the installation usage and verification notes in `packages/promptkit-django/README.md` with the Git subdirectory command and the no-server/no-live-registry boundary
+- [X] T015 [US3] Extend the scaffold smoke test into the full isolated lifecycle test by asserting installed distribution locations, public imports, minimal `django.setup()`, and repeated `get_client()` identity without repository-root or server paths in `tests/promptkit_django/integration/test_git_subdirectory_install.py`
+- [X] T016 [US3] Verify the exact metadata and dependency bounds declared by T001 against the full isolated test, and correct only demonstrated packaging defects without adding sibling paths, direct Git dependencies, or editable workspace resolution in `packages/promptkit-django/pyproject.toml`
+- [X] T017 [US3] Extend the installation usage and verification notes in `packages/promptkit-django/README.md` with the Git subdirectory command and the no-server/no-live-registry boundary
 
 **Checkpoint**: A clean environment installs, imports, and initializes the Django integration from its Git subdirectory with no repository-root or Prompt Server source access.
 
@@ -86,10 +86,10 @@
 
 **Purpose**: Verify the public package contract, workspace quality gates, and independently installable artifact together.
 
-- [ ] T018 Add public-export, `py.typed`, docstring, and secret-redaction regression assertions in `tests/promptkit_django/unit/test_public_api.py`
-- [ ] T019 After T018, run the focused package suite and full project test suite, recording and fixing only Day 14 failures: `tests/promptkit_django/` and `tests/`
-- [ ] T020 Run Ruff formatting/linting and MyPy validation for `packages/promptkit-django/` and `tests/promptkit_django/`, then separately verify locked workspace synchronization against `uv.lock`
-- [ ] T021 Execute every scenario in `specs/014-django-sdk-integration/quickstart.md` and update only inaccurate validation commands or expected outcomes in that file
+- [X] T018 Add public-export, `py.typed`, docstring, and secret-redaction regression assertions in `tests/promptkit_django/unit/test_public_api.py`
+- [X] T019 After T018, run the focused package suite and full project test suite, recording and fixing only Day 14 failures: `tests/promptkit_django/` and `tests/`
+- [X] T020 Run Ruff formatting/linting and MyPy validation for `packages/promptkit-django/` and `tests/promptkit_django/`, then separately verify locked workspace synchronization against `uv.lock`
+- [X] T021 Execute every scenario in `specs/014-django-sdk-integration/quickstart.md` and update only inaccurate validation commands or expected outcomes in that file
 
 ---
 
