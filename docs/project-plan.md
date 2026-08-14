@@ -68,9 +68,10 @@
 ## ⚡ 3주차: Django Integration 및 최종 교차 검증 (약 6시간)
 **목표**: Django 환경 전용 연동 패키지를 완성하고, 모노레포의 빌드 배포 방식 및 에이전트 독립 감사를 거쳐 릴리즈를 준비합니다.
 
-* [ ] **Day 14 (1h): Django Integration 패키지 (`packages/promptkit-django`) 셋업**
-    *   Django 설정(`settings.py`) 파일과의 연동 매커니즘 구현 및 SDK 인스턴스 자동 등록.
-    *   패키지 생성 직후 Git subdirectory 독립 설치 가능 여부 즉시 검증.
+* [x] **Day 14 (1h): Django Integration 패키지 (`packages/promptkit-django`) 셋업**
+    *   단일 `PROMPTKIT` 설정 mapping의 엄격한 검증과 AppConfig 기반 SDK 인스턴스 자동 등록 및 `get_client()` 접근 구현.
+    *   Core SDK wheelhouse를 이용한 Git subdirectory 독립 설치, public import 및 최소 Django lifecycle 검증 완료.
+    *   패키지 인덱스를 사용하지 않는 개발 단계에서는 기본 브랜치의 Core SDK와 Django integration Git subdirectory를 함께 설치하도록 문서화.
 * [ ] **Day 15 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
     *   조회 성능 향상 및 서버 부하 최소화를 위한 Django 내장 Cache API 연동 데코레이터/헬퍼 구현.
     *   HTTP ETag / If-None-Match 헤더 기반의 조건부 검증 및 짧은 TTL(Time-To-Live) 적용을 통한 캐시 정합성 전략 구현.

@@ -39,7 +39,10 @@ promptkit/
 
 ### 1.3 packages/promptkit-django (Django Integration)
 - **역할**: Django 웹 애플리케이션에서 PromptKit SDK를 플러그인 형태로 손쉽게 적용할 수 있도록 돕는 라이브러리
-- **기능**: Django Settings 연동, Django Cache 기반 프롬프트 Caching & ETag 무효화 헬퍼
+- **현재 기능**: 단일 `PROMPTKIT` Settings mapping 검증, AppConfig 시작 시 `PromptKitClient` 자동 등록, `get_client()` 기반 lifecycle-scoped 인스턴스 접근
+- **설정 계약**: `BASE_URL`, `API_KEY` 필수, `TIMEOUT` 선택(기본값 `10.0`). 잘못되거나 알 수 없는 설정은 자격 증명을 노출하지 않고 시작 단계에서 실패
+- **후속 확장**: Django Cache 및 ETag/TTL 정합성 기능은 Day 15 범위이며 현재 패키지에는 포함되지 않음
+- **설치 경계**: 패키지 인덱스를 사용하지 않으므로 외부 사용자는 기본 브랜치의 `packages/promptkit`과 `packages/promptkit-django` Git subdirectory를 함께 설치
 
 ---
 
