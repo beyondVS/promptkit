@@ -10,6 +10,8 @@ def test_public_api_is_deliberate_and_typed() -> None:
         "PromptKitDjangoConfig",
         "PromptKitDjangoConfigurationError",
         "PromptKitDjangoNotInitializedError",
+        "clear_prompt_cache",
+        "fetch_cached",
         "get_client",
     ]
     assert importlib.resources.files("promptkit_django").joinpath("py.typed").is_file()

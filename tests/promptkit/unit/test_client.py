@@ -5,6 +5,7 @@ import pytest
 from promptkit import (
     AuthenticationError,
     CommunicationError,
+    ConditionalFetchResult,
     InvalidConfigurationError,
     InvalidLabelError,
     InvalidRequestError,
@@ -200,3 +201,75 @@ def test_rejects_malformed_or_incomplete_success_response(
         malformed.fetch("support-reply")
     with pytest.raises(InvalidResponseError):
         incomplete.fetch("support-reply")
+
+
+def test_conditional_fetch_sends_validator_and_returns_typed_304(
+    api_key: str,
+    mock_transport: Any,
+) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.headers["If-None-Match"] == '"current"'
+        return httpx.Response(304, headers={"ETag": '"current"'})
+
+    client = PromptKitClient(
+        "https://registry.example.com", api_key, transport=mock_transport(handler)
+    )
+
+    result = client.fetch_conditional("support-reply", etag='"current"')
+
+    assert isinstance(result, ConditionalFetchResult)
+    assert result.not_modified is True
+    assert result.prompt is None
+    assert result.etag == '"current"'
+
+
+def test_conditional_fetch_returns_validated_200_and_requires_etag(
+    api_key: str,
+    mock_transport: Any,
+    prompt_payload: dict[str, Any],
+) -> None:
+    client = PromptKitClient(
+        "https://registry.example.com",
+        api_key,
+        transport=mock_transport(
+            lambda request: httpx.Response(200, json=prompt_payload, headers={"ETag": '"v1"'})
+        ),
+    )
+
+    result = client.fetch_conditional("support-reply")
+
+    assert result.not_modified is False
+    assert result.prompt is not None
+    assert result.prompt.slug == "support-reply"
+    assert result.etag == '"v1"'
+
+    missing = PromptKitClient(
+        "https://registry.example.com",
+        api_key,
+        transport=mock_transport(lambda request: httpx.Response(200, json=prompt_payload)),
+    )
+    with pytest.raises(InvalidResponseError):
+        missing.fetch_conditional("support-reply")
+
+
+def test_existing_fetch_still_treats_304_as_redirect(
+    api_key: str,
+    mock_transport: Any,
+) -> None:
+    client = PromptKitClient(
+        "https://registry.example.com",
+        api_key,
+        transport=mock_transport(lambda request: httpx.Response(304, headers={"ETag": '"v1"'})),
+    )
+
+    with pytest.raises(RedirectError):
+        client.fetch("support-reply")
+
+
+def test_conditional_fetch_result_rejects_malformed_entity_tags() -> None:
+    with pytest.raises(ValueError):
+        ConditionalFetchResult(
+            not_modified=True,
+            prompt=None,
+            etag="not-an-entity-tag",
+        )

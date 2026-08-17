@@ -25,6 +25,7 @@ def test_load_settings_returns_declared_values_and_default_timeout() -> None:
     assert settings.API_KEY.get_secret_value() == "test-api-key"
     assert settings.TIMEOUT == 10.0
     assert defaulted.TIMEOUT == 10.0
+    assert defaulted.CACHE_TTL == 60.0
     assert "test-api-key" not in repr(settings)
 
 
@@ -38,6 +39,9 @@ def test_load_settings_returns_declared_values_and_default_timeout() -> None:
         (valid_settings(BASE_URL=1), {"BASE_URL"}),
         (valid_settings(TIMEOUT=True), {"TIMEOUT"}),
         (valid_settings(TIMEOUT=math.nan), {"TIMEOUT"}),
+        (valid_settings(CACHE_TTL=True), {"CACHE_TTL"}),
+        (valid_settings(CACHE_TTL=-1), {"CACHE_TTL"}),
+        (valid_settings(CACHE_TTL=math.nan), {"CACHE_TTL"}),
         (valid_settings(UNKNOWN="value"), {"UNKNOWN"}),
     ],
 )
@@ -56,11 +60,25 @@ def test_load_settings_reports_affected_names_without_secret_values(
 
 def test_load_settings_aggregates_every_invalid_and_unknown_key() -> None:
     with pytest.raises(PromptKitDjangoConfigurationError) as error:
-        load_settings({"BASE_URL": "", "API_KEY": "", "TIMEOUT": 0, "UNKNOWN": "value"})
+        load_settings(
+            {
+                "BASE_URL": "",
+                "API_KEY": "",
+                "TIMEOUT": 0,
+                "CACHE_TTL": -1,
+                "UNKNOWN": "value",
+            }
+        )
 
     message = str(error.value)
-    for name in ("BASE_URL", "API_KEY", "TIMEOUT", "UNKNOWN"):
+    for name in ("BASE_URL", "API_KEY", "TIMEOUT", "CACHE_TTL", "UNKNOWN"):
         assert name in message
+
+
+def test_cache_ttl_zero_is_valid_and_disables_cache_reuse() -> None:
+    settings = load_settings(valid_settings(CACHE_TTL=0))
+
+    assert settings.CACHE_TTL == 0.0
 
 
 def test_create_client_uses_validated_values() -> None:

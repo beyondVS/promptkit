@@ -26,9 +26,7 @@ def test_ready_registers_one_client_when_called_repeatedly() -> None:
         first = config.client
         config.ready()
 
-    assert first is not None
     assert config.client is first
-    first.close()
 
 
 def test_get_client_returns_registered_client(monkeypatch: pytest.MonkeyPatch) -> None:

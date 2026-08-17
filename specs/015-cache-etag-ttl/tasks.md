@@ -18,7 +18,7 @@
 
 **Purpose**: Prepare the focused Django-cache test module without changing application runtime behavior.
 
-- [ ] T001 Create the LocMem-cache fixture and shared registry transport helpers in `tests/promptkit_django/unit/test_cache.py`
+- [X] T001 Create the LocMem-cache fixture and shared registry transport helpers in `tests/promptkit_django/unit/test_cache.py`
 
 ---
 
@@ -28,13 +28,13 @@
 
 **⚠️ CRITICAL**: Complete this phase before implementing any Django cache behavior.
 
-- [ ] T002 [P] Convert shared ORM fixtures to `setUpTestData()` and add direct ETag, ETag changes after serialized-field updates, on-live movement, and label reassignment, valid/malformed/list/weak/wildcard `If-None-Match`, bodyless 304, and unchanged error/auth regression cases in `apps/server/prompts/tests/test_read_only_api.py`
-- [ ] T003 [P] Add public `ConditionalFetchResult` import, `fetch_conditional()` signature and invariants, validator-aware HTTPX transport, 304 outcome, missing-ETag validation, and unchanged `fetch()` redirect/error cases in `tests/promptkit/unit/test_client.py`
-- [ ] T004 [P] Implement canonical serialized-response ETag generation and successful GET conditional 304 handling in `apps/server/prompts/views/api.py`
-- [ ] T005 [P] Define `ConditionalFetchResult` with the 200 prompt and 304 not-modified invariants in `packages/promptkit/src/promptkit/models.py`
-- [ ] T006 Implement `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult`, header handling, 304 branching, and missing-ETag validation in `packages/promptkit/src/promptkit/client.py`
-- [ ] T007 Export `ConditionalFetchResult` as the supporting public type for `fetch_conditional()` in `packages/promptkit/src/promptkit/__init__.py`
-- [ ] T008 Update ETag/304 status and response-header guarantees in `docs/sdk-read-api-contract.md`
+- [X] T002 [P] Convert shared ORM fixtures to `setUpTestData()` and add direct ETag, ETag changes after serialized-field updates, on-live movement, and label reassignment, valid/malformed/list/weak/wildcard `If-None-Match`, bodyless 304, and unchanged error/auth regression cases in `apps/server/prompts/tests/test_read_only_api.py`
+- [X] T003 [P] Add public `ConditionalFetchResult` import, `fetch_conditional()` signature and invariants, validator-aware HTTPX transport, 304 outcome, missing-ETag validation, and unchanged `fetch()` redirect/error cases in `tests/promptkit/unit/test_client.py`
+- [X] T004 [P] Implement canonical serialized-response ETag generation and successful GET conditional 304 handling in `apps/server/prompts/views/api.py`
+- [X] T005 [P] Define `ConditionalFetchResult` with the 200 prompt and 304 not-modified invariants in `packages/promptkit/src/promptkit/models.py`
+- [X] T006 Implement `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult`, header handling, 304 branching, and missing-ETag validation in `packages/promptkit/src/promptkit/client.py`
+- [X] T007 Export `ConditionalFetchResult` as the supporting public type for `fetch_conditional()` in `packages/promptkit/src/promptkit/__init__.py`
+- [X] T008 Update ETag/304 status and response-header guarantees in `docs/sdk-read-api-contract.md`
 
 **Checkpoint**: A direct authenticated registry request emits a deterministic ETag, a matching conditional request returns 304 with no body, and the core SDK can distinguish that 304 without changing existing `fetch()`.
 
@@ -48,17 +48,17 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Add `CACHE_TTL` default, zero, invalid-type/value, unknown-key, and credential-redaction tests in `tests/promptkit_django/unit/test_configuration.py`
-- [ ] T010 [P] [US1] Add an exact 100-lookup/one-registry-call performance assertion, fresh-hit behavior, omitted-versus-explicit-label and registry-address isolation, credential absence from cache keys/values/errors/logs, unsuccessful-response non-storage, and uncached-client regression cases in `tests/promptkit_django/unit/test_cache.py`
-- [ ] T011 [P] [US1] Add startup registration coverage for retained validated cache settings in `tests/promptkit_django/integration/test_django_lifecycle.py`
-- [ ] T012 [P] [US1] Add the expected `fetch_cached()` export, typing marker, and public docstring contract before implementation in `tests/promptkit_django/unit/test_public_api.py`
+- [X] T009 [P] [US1] Add `CACHE_TTL` default, zero, invalid-type/value, unknown-key, and credential-redaction tests in `tests/promptkit_django/unit/test_configuration.py`
+- [X] T010 [P] [US1] Add an exact 100-lookup/one-registry-call performance assertion, fresh-hit behavior, omitted-versus-explicit-label and registry-address isolation, credential absence from cache keys/values/errors/logs, unsuccessful-response non-storage, and uncached-client regression cases in `tests/promptkit_django/unit/test_cache.py`
+- [X] T011 [P] [US1] Add startup registration coverage for retained validated cache settings in `tests/promptkit_django/integration/test_django_lifecycle.py`
+- [X] T012 [P] [US1] Add the expected `fetch_cached()` export, typing marker, and public docstring contract before implementation in `tests/promptkit_django/unit/test_public_api.py`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Extend strict `PROMPTKIT` parsing with the defaulted, finite, non-negative `CACHE_TTL` field and a validated-settings client factory in `packages/promptkit-django/src/promptkit_django/configuration.py`
-- [ ] T014 [US1] Retain validated settings with the one registered client during AppConfig startup in `packages/promptkit-django/src/promptkit_django/apps.py`
-- [ ] T015 [US1] Implement single-record cache serialization without credentials, safe canonical identity hashing, fresh-window lookup, successful ETag-bearing response storage only, and `CACHE_TTL=0` bypass in `packages/promptkit-django/src/promptkit_django/cache.py`
-- [ ] T016 [US1] Export the opt-in `fetch_cached()` helper with a public type hint and docstring without changing `get_client()` in `packages/promptkit-django/src/promptkit_django/__init__.py`
+- [X] T013 [US1] Extend strict `PROMPTKIT` parsing with the defaulted, finite, non-negative `CACHE_TTL` field and a validated-settings client factory in `packages/promptkit-django/src/promptkit_django/configuration.py`
+- [X] T014 [US1] Retain validated settings with the one registered client during AppConfig startup in `packages/promptkit-django/src/promptkit_django/apps.py`
+- [X] T015 [US1] Implement single-record cache serialization without credentials, safe canonical identity hashing, fresh-window lookup, successful ETag-bearing response storage only, and `CACHE_TTL=0` bypass in `packages/promptkit-django/src/promptkit_django/cache.py`
+- [X] T016 [US1] Export the opt-in `fetch_cached()` helper with a public type hint and docstring without changing `get_client()` in `packages/promptkit-django/src/promptkit_django/__init__.py`
 
 **Checkpoint**: User Story 1 works with only the default Django cache backend and no request to the registry during the configured fresh interval.
 
@@ -72,11 +72,11 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [US2] Add stale-retention, outgoing `If-None-Match`, bodyless 304 refresh, changed-200 replacement, ETag-less successful-response rejection, post-retention full-fetch, malformed-entry, label reassignment, on-live removal, deletion, access denial, and registry-error no-stale-or-cross-label-fallback cases in `tests/promptkit_django/unit/test_cache.py`
+- [X] T017 [US2] Add stale-retention, outgoing `If-None-Match`, bodyless 304 refresh, changed-200 replacement, ETag-less successful-response rejection, post-retention full-fetch, malformed-entry, label reassignment, on-live removal, deletion, access denial, and registry-error no-stale-or-cross-label-fallback cases in `tests/promptkit_django/unit/test_cache.py`
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Extend cache-entry validation and `fetch_cached()` with two-window freshness/revalidation logic, typed conditional SDK retrieval, atomic replacement, and cache-miss fallback behavior in `packages/promptkit-django/src/promptkit_django/cache.py`
+- [X] T018 [US2] Extend cache-entry validation and `fetch_cached()` with two-window freshness/revalidation logic, typed conditional SDK retrieval, atomic replacement, and cache-miss fallback behavior in `packages/promptkit-django/src/promptkit_django/cache.py`
 
 **Checkpoint**: User Story 2 returns a stale retained prompt only after a matching 304; changed, missing, malformed, or failed registry outcomes never serve stale data.
 
@@ -90,13 +90,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T019 [P] [US3] Add per-prompt/all-entry invalidation, unrelated-key preservation, cache-backend failure with credential-redacted errors/logs, concurrent invalidation/write, and no-partial-entry cases in `tests/promptkit_django/unit/test_cache.py`
-- [ ] T020 [P] [US3] Add the expected `clear_prompt_cache()` export, type hint, docstring, and coexistence with `fetch_cached()` to `tests/promptkit_django/unit/test_public_api.py`
+- [X] T019 [P] [US3] Add per-prompt/all-entry invalidation, unrelated-key preservation, cache-backend failure with credential-redacted errors/logs, concurrent invalidation/write, and no-partial-entry cases in `tests/promptkit_django/unit/test_cache.py`
+- [X] T020 [P] [US3] Add the expected `clear_prompt_cache()` export, type hint, docstring, and coexistence with `fetch_cached()` to `tests/promptkit_django/unit/test_public_api.py`
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Add global and per-prompt generation-token keys, pre-write generation recheck, credential-safe cache-failure bypass, and `clear_prompt_cache(slug=None)` in `packages/promptkit-django/src/promptkit_django/cache.py`
-- [ ] T022 [US3] Export `clear_prompt_cache()` with a public type hint and cache-isolation docstring in `packages/promptkit-django/src/promptkit_django/__init__.py`
+- [X] T021 [US3] Add global and per-prompt generation-token keys, pre-write generation recheck, credential-safe cache-failure bypass, and `clear_prompt_cache(slug=None)` in `packages/promptkit-django/src/promptkit_django/cache.py`
+- [X] T022 [US3] Export `clear_prompt_cache()` with a public type hint and cache-isolation docstring in `packages/promptkit-django/src/promptkit_django/__init__.py`
 
 **Checkpoint**: User Story 3 invalidates only PromptKit-owned entries in the intended scope and never calls the Django backend's global clear operation.
 
@@ -106,9 +106,9 @@
 
 **Purpose**: Complete user documentation and run the feature's focused and repository-wide verification ladder.
 
-- [ ] T023 [P] Document `CACHES["default"]`, `CACHE_TTL`, `fetch_cached()`, and `clear_prompt_cache()` in `packages/promptkit-django/README.md`
-- [ ] T024 Run every focused ETag, SDK, configuration, cache, and lifecycle scenario from `specs/015-cache-etag-ttl/quickstart.md`
-- [ ] T025 Run Ruff check/format verification, MyPy, and the full pytest suite specified in `pyproject.toml`
+- [X] T023 [P] Document `CACHES["default"]`, `CACHE_TTL`, `fetch_cached()`, and `clear_prompt_cache()` in `packages/promptkit-django/README.md`
+- [X] T024 Run every focused ETag, SDK, configuration, cache, and lifecycle scenario from `specs/015-cache-etag-ttl/quickstart.md`
+- [X] T025 Run Ruff check/format verification, MyPy, and the full pytest suite specified in `pyproject.toml`
 
 ---
 

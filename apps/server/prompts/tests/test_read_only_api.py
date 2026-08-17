@@ -14,6 +14,7 @@ from apps.server.prompts.models import (
     VariableDefinition,
 )
 from apps.server.prompts.services.lifecycle import (
+    clone_version,
     create_prompt_with_initial_draft,
     publish_version,
     set_custom_label,
@@ -24,22 +25,23 @@ from apps.server.prompts.services.lifecycle import (
 class SDKReadOnlyAPITestCase(TestCase):
     prompt: Prompt
 
-    def setUp(self) -> None:
-        self.category, _ = PromptCategory.objects.get_or_create(
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.category, _ = PromptCategory.objects.get_or_create(
             slug="general",
             defaults={"name": "General", "description": "General prompts"},
         )
-        self.prompt, self.v1 = create_prompt_with_initial_draft(
-            category=self.category,
+        cls.prompt, cls.v1 = create_prompt_with_initial_draft(
+            category=cls.category,
             name="Greeting Prompt",
             slug="greeting-prompt",
         )
         Section.objects.create(
-            version=self.v1, role="user", order=0, content="Hello {{ user_name }}!"
+            version=cls.v1, role="user", order=0, content="Hello {{ user_name }}!"
         )
-        VariableDefinition.objects.create(version=self.v1, name="user_name", var_type="string")
-        self.pub_v1 = publish_version(self.v1.id)
-        self.valid_api_key = settings.PROMPTKIT_API_KEY
+        VariableDefinition.objects.create(version=cls.v1, name="user_name", var_type="string")
+        cls.pub_v1 = publish_version(cls.v1.id)
+        cls.valid_api_key = settings.PROMPTKIT_API_KEY
 
     def test_omitted_label_with_no_on_live_version_returns_404_no_deployable_version(self) -> None:
         url = reverse("sdk-prompt-fetch", kwargs={"slug": "greeting-prompt"})
@@ -96,3 +98,69 @@ class SDKReadOnlyAPITestCase(TestCase):
         self.assertEqual(
             self.client.delete(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key).status_code, 405
         )
+
+    def test_successful_response_has_deterministic_etag_and_matching_request_is_bodyless(
+        self,
+    ) -> None:
+        set_on_live_version(self.prompt, self.pub_v1.version_number)
+        url = reverse("sdk-prompt-fetch", kwargs={"slug": "greeting-prompt"})
+        first = self.client.get(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)
+
+        self.assertEqual(first.status_code, 200)
+        self.assertTrue(first["ETag"].startswith('"'))
+        second = self.client.get(
+            url,
+            HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key,
+            HTTP_IF_NONE_MATCH=first["ETag"],
+        )
+        self.assertEqual(second.status_code, 304)
+        self.assertEqual(second.content, b"")
+        self.assertEqual(second["ETag"], first["ETag"])
+
+    def test_weak_list_and_wildcard_validators_match_but_malformed_value_does_not(self) -> None:
+        set_on_live_version(self.prompt, self.pub_v1.version_number)
+        url = reverse("sdk-prompt-fetch", kwargs={"slug": "greeting-prompt"})
+        etag = self.client.get(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)["ETag"]
+
+        for validator in (f'"other", W/{etag}', "*"):
+            response = self.client.get(
+                url,
+                HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key,
+                HTTP_IF_NONE_MATCH=validator,
+            )
+            self.assertEqual(response.status_code, 304)
+        malformed = self.client.get(
+            url,
+            HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key,
+            HTTP_IF_NONE_MATCH=etag[1:-1],
+        )
+        self.assertEqual(malformed.status_code, 200)
+
+    def test_etag_changes_for_observable_prompt_and_resolution_changes(self) -> None:
+        set_on_live_version(self.prompt, self.pub_v1.version_number)
+        url = reverse("sdk-prompt-fetch", kwargs={"slug": "greeting-prompt"})
+        initial = self.client.get(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)["ETag"]
+
+        self.prompt.description = "Changed description"
+        self.prompt.save(update_fields=["description"])
+        changed = self.client.get(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)["ETag"]
+        self.assertNotEqual(initial, changed)
+
+        draft = clone_version(self.pub_v1.id)
+        draft.template_text = "Changed template"
+        draft.save(update_fields=["template_text"])
+        published = publish_version(draft.id)
+        set_on_live_version(self.prompt, published.version_number)
+        moved = self.client.get(url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)["ETag"]
+        self.assertNotEqual(changed, moved)
+
+        set_custom_label(self.prompt, "staging", self.pub_v1.version_number)
+        labelled_url = f"{url}?label=staging"
+        first_label = self.client.get(labelled_url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)[
+            "ETag"
+        ]
+        set_custom_label(self.prompt, "staging", published.version_number)
+        second_label = self.client.get(labelled_url, HTTP_X_PROMPTKIT_API_KEY=self.valid_api_key)[
+            "ETag"
+        ]
+        self.assertNotEqual(first_label, second_label)

@@ -38,6 +38,7 @@ from promptkit.exceptions import (
 from promptkit.models import (
     CompiledPrompt,
     CompiledPromptSection,
+    ConditionalFetchResult,
     PromptCategory,
     PromptSection,
     PromptVariable,
@@ -49,6 +50,7 @@ __all__ = [
     "PromptCategory",
     "CompiledPrompt",
     "CompiledPromptSection",
+    "ConditionalFetchResult",
     "GeminiAdapter",
     "GeminiConfig",
     "GeminiContent",

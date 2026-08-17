@@ -4,7 +4,17 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Any, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+def is_valid_entity_tag(value: object) -> bool:
+    """Return whether a value is a complete HTTP entity tag."""
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    if candidate.startswith("W/"):
+        candidate = candidate[2:]
+    return len(candidate) >= 2 and candidate.startswith('"') and candidate.endswith('"')
 
 
 class _RegistryModel(BaseModel):
@@ -71,3 +81,24 @@ class RetrievedPrompt(_RegistryModel):
         from promptkit.compiler import compile_prompt
 
         return cast(CompiledPrompt, compile_prompt(self, params))
+
+
+class ConditionalFetchResult(BaseModel):
+    """One validator-aware prompt retrieval outcome."""
+
+    model_config = ConfigDict(frozen=True)
+
+    not_modified: bool
+    prompt: RetrievedPrompt | None
+    etag: str
+
+    @model_validator(mode="after")
+    def validate_outcome(self) -> "ConditionalFetchResult":
+        """Keep 200 and 304 result shapes unambiguous for cache consumers."""
+        if not is_valid_entity_tag(self.etag):
+            raise ValueError("etag must be a valid HTTP entity tag")
+        if self.not_modified and self.prompt is not None:
+            raise ValueError("not-modified results must not include a prompt")
+        if not self.not_modified and self.prompt is None:
+            raise ValueError("full retrieval results must include a prompt")
+        return self
