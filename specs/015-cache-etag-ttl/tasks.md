@@ -28,12 +28,12 @@
 
 **⚠️ CRITICAL**: Complete this phase before implementing any Django cache behavior.
 
-- [ ] T002 [P] Add direct ETag, valid/malformed/list/weak `If-None-Match`, bodyless 304, and unchanged error/auth regression cases in `apps/server/prompts/tests/test_read_only_api.py`
-- [ ] T003 [P] Add validator-aware HTTPX transport cases, 304 typed outcome, ETag validation, and unchanged `fetch()` redirect/error behavior in `tests/promptkit/unit/test_client.py`
+- [ ] T002 [P] Convert shared ORM fixtures to `setUpTestData()` and add direct ETag, ETag changes after serialized-field updates, on-live movement, and label reassignment, valid/malformed/list/weak/wildcard `If-None-Match`, bodyless 304, and unchanged error/auth regression cases in `apps/server/prompts/tests/test_read_only_api.py`
+- [ ] T003 [P] Add public `ConditionalFetchResult` import, `fetch_conditional()` signature and invariants, validator-aware HTTPX transport, 304 outcome, missing-ETag validation, and unchanged `fetch()` redirect/error cases in `tests/promptkit/unit/test_client.py`
 - [ ] T004 [P] Implement canonical serialized-response ETag generation and successful GET conditional 304 handling in `apps/server/prompts/views/api.py`
-- [ ] T005 [P] Define the typed conditional retrieval result with prompt-or-not-modified invariants in `packages/promptkit/src/promptkit/models.py`
-- [ ] T006 Implement the validator-aware `PromptKitClient` retrieval operation, header handling, 304 branching, and ETag validation in `packages/promptkit/src/promptkit/client.py`
-- [ ] T007 Export the new conditional retrieval result and operation's supporting public types in `packages/promptkit/src/promptkit/__init__.py`
+- [ ] T005 [P] Define `ConditionalFetchResult` with the 200 prompt and 304 not-modified invariants in `packages/promptkit/src/promptkit/models.py`
+- [ ] T006 Implement `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult`, header handling, 304 branching, and missing-ETag validation in `packages/promptkit/src/promptkit/client.py`
+- [ ] T007 Export `ConditionalFetchResult` as the supporting public type for `fetch_conditional()` in `packages/promptkit/src/promptkit/__init__.py`
 - [ ] T008 Update ETag/304 status and response-header guarantees in `docs/sdk-read-api-contract.md`
 
 **Checkpoint**: A direct authenticated registry request emits a deterministic ETag, a matching conditional request returns 304 with no body, and the core SDK can distinguish that 304 without changing existing `fetch()`.
@@ -49,16 +49,16 @@
 ### Tests for User Story 1
 
 - [ ] T009 [P] [US1] Add `CACHE_TTL` default, zero, invalid-type/value, unknown-key, and credential-redaction tests in `tests/promptkit_django/unit/test_configuration.py`
-- [ ] T010 [P] [US1] Add fresh-hit, omitted-versus-explicit-label, registry-address identity, and uncached-client regression cases in `tests/promptkit_django/unit/test_cache.py`
+- [ ] T010 [P] [US1] Add an exact 100-lookup/one-registry-call performance assertion, fresh-hit behavior, omitted-versus-explicit-label and registry-address isolation, credential absence from cache keys/values/errors/logs, unsuccessful-response non-storage, and uncached-client regression cases in `tests/promptkit_django/unit/test_cache.py`
 - [ ] T011 [P] [US1] Add startup registration coverage for retained validated cache settings in `tests/promptkit_django/integration/test_django_lifecycle.py`
+- [ ] T012 [P] [US1] Add the expected `fetch_cached()` export, typing marker, and public docstring contract before implementation in `tests/promptkit_django/unit/test_public_api.py`
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Extend strict `PROMPTKIT` parsing with the defaulted, finite, non-negative `CACHE_TTL` field and a validated-settings client factory in `packages/promptkit-django/src/promptkit_django/configuration.py`
-- [ ] T013 [US1] Retain validated settings with the one registered client during AppConfig startup in `packages/promptkit-django/src/promptkit_django/apps.py`
-- [ ] T014 [US1] Implement single-record cache serialization, safe canonical identity hashing, fresh-window lookup, normal ETag-bearing fetch storage, and `CACHE_TTL=0` bypass in `packages/promptkit-django/src/promptkit_django/cache.py`
-- [ ] T015 [US1] Export the opt-in `fetch_cached()` helper without changing `get_client()` in `packages/promptkit-django/src/promptkit_django/__init__.py`
-- [ ] T016 [US1] Extend deliberate public-export coverage for the cache helper in `tests/promptkit_django/unit/test_public_api.py`
+- [ ] T013 [US1] Extend strict `PROMPTKIT` parsing with the defaulted, finite, non-negative `CACHE_TTL` field and a validated-settings client factory in `packages/promptkit-django/src/promptkit_django/configuration.py`
+- [ ] T014 [US1] Retain validated settings with the one registered client during AppConfig startup in `packages/promptkit-django/src/promptkit_django/apps.py`
+- [ ] T015 [US1] Implement single-record cache serialization without credentials, safe canonical identity hashing, fresh-window lookup, successful ETag-bearing response storage only, and `CACHE_TTL=0` bypass in `packages/promptkit-django/src/promptkit_django/cache.py`
+- [ ] T016 [US1] Export the opt-in `fetch_cached()` helper with a public type hint and docstring without changing `get_client()` in `packages/promptkit-django/src/promptkit_django/__init__.py`
 
 **Checkpoint**: User Story 1 works with only the default Django cache backend and no request to the registry during the configured fresh interval.
 
@@ -72,7 +72,7 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [US2] Add stale-retention, outgoing `If-None-Match`, bodyless 304 refresh, changed-200 replacement, ETag-less response, post-retention full-fetch, malformed-entry, and registry-error no-stale-fallback cases in `tests/promptkit_django/unit/test_cache.py`
+- [ ] T017 [US2] Add stale-retention, outgoing `If-None-Match`, bodyless 304 refresh, changed-200 replacement, ETag-less successful-response rejection, post-retention full-fetch, malformed-entry, label reassignment, on-live removal, deletion, access denial, and registry-error no-stale-or-cross-label-fallback cases in `tests/promptkit_django/unit/test_cache.py`
 
 ### Implementation for User Story 2
 
@@ -90,12 +90,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T019 [US3] Add per-prompt/all-entry invalidation, unrelated-key preservation, cache-backend failure, concurrent invalidation/write, and no-partial-entry cases in `tests/promptkit_django/unit/test_cache.py`
+- [ ] T019 [P] [US3] Add per-prompt/all-entry invalidation, unrelated-key preservation, cache-backend failure with credential-redacted errors/logs, concurrent invalidation/write, and no-partial-entry cases in `tests/promptkit_django/unit/test_cache.py`
+- [ ] T020 [P] [US3] Add the expected `clear_prompt_cache()` export, type hint, docstring, and coexistence with `fetch_cached()` to `tests/promptkit_django/unit/test_public_api.py`
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Add global and per-prompt generation-token keys, pre-write generation recheck, cache-failure bypass, and `clear_prompt_cache(slug=None)` in `packages/promptkit-django/src/promptkit_django/cache.py`
-- [ ] T021 [US3] Export `clear_prompt_cache()` and document its cache-isolation behavior in `packages/promptkit-django/src/promptkit_django/__init__.py`
+- [ ] T021 [US3] Add global and per-prompt generation-token keys, pre-write generation recheck, credential-safe cache-failure bypass, and `clear_prompt_cache(slug=None)` in `packages/promptkit-django/src/promptkit_django/cache.py`
+- [ ] T022 [US3] Export `clear_prompt_cache()` with a public type hint and cache-isolation docstring in `packages/promptkit-django/src/promptkit_django/__init__.py`
 
 **Checkpoint**: User Story 3 invalidates only PromptKit-owned entries in the intended scope and never calls the Django backend's global clear operation.
 
@@ -105,9 +106,9 @@
 
 **Purpose**: Complete user documentation and run the feature's focused and repository-wide verification ladder.
 
-- [ ] T022 [P] Document `CACHES["default"]`, `CACHE_TTL`, `fetch_cached()`, and `clear_prompt_cache()` in `packages/promptkit-django/README.md`
-- [ ] T023 Run every focused ETag, SDK, configuration, cache, and lifecycle scenario from `specs/015-cache-etag-ttl/quickstart.md`
-- [ ] T024 Run Ruff check/format verification, MyPy, and the full pytest suite specified in `pyproject.toml`
+- [ ] T023 [P] Document `CACHES["default"]`, `CACHE_TTL`, `fetch_cached()`, and `clear_prompt_cache()` in `packages/promptkit-django/README.md`
+- [ ] T024 Run every focused ETag, SDK, configuration, cache, and lifecycle scenario from `specs/015-cache-etag-ttl/quickstart.md`
+- [ ] T025 Run Ruff check/format verification, MyPy, and the full pytest suite specified in `pyproject.toml`
 
 ---
 
@@ -116,11 +117,11 @@
 ### Phase Dependencies
 
 - **Phase 1**: Starts immediately.
-- **Phase 2**: T002–T005 can start after T001; T006 depends on T005; T007 depends on T006; T008 follows T004 and T006. It blocks every user story.
-- **Phase 3 / US1**: T009–T011 can run after Phase 2; T012 then T013 precede T014; T015 follows T014; T016 verifies T015.
-- **Phase 4 / US2**: Depends on US1's T014 cache entry and helper; T017 precedes T018.
-- **Phase 5 / US3**: Depends on US1's cache identity and US2's completed two-window state handling; T019 precedes T020, then T021.
-- **Phase 6**: T022 follows public API completion; T023 and T024 run after all desired story phases.
+- **Phase 2**: T002 and T003 start after T001 and must first fail for the missing behavior; T004 starts after T002, T005 starts after T003, T006 depends on T003 and T005, T007 depends on T006, and T008 follows T004 and T006. It blocks every user story.
+- **Phase 3 / US1**: T009–T012 can run after Phase 2 and must first fail for the missing behavior; T013 then T014 precede T015, and T016 follows T012 and T015.
+- **Phase 4 / US2**: Depends on US1's T015 cache entry and helper; T017 precedes T018.
+- **Phase 5 / US3**: Depends on US1's cache identity and US2's completed two-window state handling; T019 and T020 must first fail for the missing behavior, T021 follows T019, and T022 follows T020 and T021.
+- **Phase 6**: T023 follows public API completion; T024 and T025 run after all desired story phases.
 
 ### User Story Dependencies
 
@@ -139,9 +140,10 @@ Polish and full verification
 ### Parallel Opportunities
 
 - T002 and T003 are independent server/core contract tests.
-- T004 and T005 modify different server/core files and can proceed in parallel after their tests exist.
-- T009, T010, and T011 are independent US1 test files.
-- T022 can be prepared after the public cache API is stable while later verification work is in progress.
+- T004 and T005 modify different server/core files and can proceed in parallel after T002 and T003 have established failing tests.
+- T009, T010, T011, and T012 are independent US1 test files.
+- T019 and T020 cover different US3 test modules and can be authored in parallel.
+- T023 can be prepared after the public cache API is stable while later verification work is in progress.
 
 ## Implementation Strategy
 
@@ -161,4 +163,4 @@ Polish and full verification
 ### Format Validation
 
 - Every implementation task uses the required checkbox, sequential ID, optional `[P]`, story label where applicable, and exact path format.
-- Total tasks: 24.
+- Total tasks: 25.

@@ -12,9 +12,8 @@
 
 ### Session 2026-08-17
 
-- Q: How should callers opt into cached prompt retrieval? → A: Provide a separate cache-aware helper; keep `get_client().fetch()` unchanged and uncached.
+- Q: How should callers opt into cached prompt retrieval, and which entry point should the integration expose? → A: Provide one separate cache-aware helper; keep `get_client().fetch()` unchanged and uncached, and keep decorators outside this feature's scope.
 - Q: When should a valid cached prompt be revalidated with the registry? → A: Serve it without a registry request during its TTL, then revalidate on the first lookup after expiry.
-- Q: Which opt-in cache entry point should the integration expose? → A: Expose a cache-aware helper only; a decorator is outside this feature's scope.
 - Q: Should cache identity include category or expand this feature to category-scoped prompt slugs? → A: Preserve the current globally unique prompt slug contract; identify entries by non-secret registry address, global prompt slug, and label selection, without category.
 - Q: What should happen to the cached prompt and ETag after the freshness TTL expires? → A: Mark the entry stale but retain its representation and ETag for a separate revalidation-retention period; use them only for conditional revalidation, never as stale fallback.
 
@@ -74,7 +73,7 @@ An application operator can rely on automatic expiry and can explicitly clear on
 - An on-live assignment is removed, a custom label is moved, or the requested prompt is deleted after caching; revalidation removes the obsolete entry and preserves the registry's no-fallback behavior.
 - A cached value or validator is absent, malformed, or cannot be decoded; it is treated as a miss rather than returned to the caller.
 - The cache service is unavailable or rejects an operation; retrieval continues through the registry when possible, and cache failure does not change the registry result or expose credentials.
-- The registry returns a full successful response without a usable validator; the current result is returned but is not retained as a conditionally revalidatable entry.
+- The registry returns a full successful response without a usable validator; the conditional retrieval operation rejects it as an invalid response and does not retain it, while the existing uncached `fetch()` contract remains unchanged.
 - A conditional request contains multiple validators or a weak validator; matching follows HTTP validator semantics and never treats a partial string match as valid.
 - A request fails authentication or authorization; neither its error response nor data from a differently authorized request is cached or returned.
 
@@ -83,14 +82,14 @@ An application operator can rely on automatic expiry and can explicitly clear on
 ### Functional Requirements
 
 - **FR-001**: The integration MUST offer one documented, explicitly opt-in cache-aware helper that preserves the existing read-only prompt lookup inputs and result semantics; the client returned by `get_client()` and its `fetch()` operation MUST remain unchanged and uncached.
-- **FR-002**: A successful retrieval MUST retain the complete retrieved prompt representation, its registry-issued validator, a freshness boundary, and a separate revalidation-retention boundary.
+- **FR-002**: When caching is enabled with a positive TTL, a successful retrieval MUST retain the complete retrieved prompt representation, its registry-issued validator, a freshness boundary, and a separate revalidation-retention boundary; when TTL is zero, the integration MUST bypass cache reads and writes.
 - **FR-003**: Cache identity MUST distinguish the non-secret registry address, globally unique prompt slug, and explicit versus omitted label selection so different registries or resolutions cannot satisfy one another; credentials and category MUST NOT form part of the identity.
 - **FR-004**: A non-expired, valid matching entry MUST satisfy a repeated lookup without making any registry request or downloading a full prompt representation.
-- **FR-005**: The default freshness period MUST be 60 seconds and MUST be replaceable with a positive application-level setting; it controls only whether an entry may be returned without registry contact, while zero MUST disable fresh reuse, and negative, non-numeric, boolean, or otherwise invalid values MUST fail application startup without exposing credentials.
+- **FR-005**: The default freshness period MUST be 60 seconds and MUST be replaceable with a positive application-level setting; a value of zero MUST disable cache storage and reuse, and negative, non-numeric, boolean, or otherwise invalid values MUST fail application startup without exposing credentials.
 - **FR-006**: After freshness expires but before revalidation retention expires, the next lookup MUST use the retained validator for conditional registry revalidation and MUST NOT return the stale representation unless the registry confirms it is unchanged; after retention expires, the next lookup MUST perform a full registry retrieval.
 - **FR-007**: Every successful registry prompt representation eligible for caching MUST include a deterministic HTTP entity validator that changes whenever any client-observable field in that representation changes.
 - **FR-008**: When a conditional request validator matches the current representation, the registry MUST return HTTP 304 with no representation body; when it does not match, the registry MUST return the complete current representation and current validator.
-- **FR-009**: Conditional validator comparison MUST support valid HTTP `If-None-Match` forms used for retrieval, including weak validators and validator lists, and MUST reject malformed or partial matches safely.
+- **FR-009**: Conditional validator comparison MUST support valid HTTP `If-None-Match` forms used for retrieval, including weak validators, validator lists, and the wildcard value, and MUST reject malformed or partial matches safely.
 - **FR-010**: A not-modified result MUST cause the integration to return the cached prompt and begin new freshness and revalidation-retention periods without replacing the cached representation.
 - **FR-011**: A full successful revalidation response MUST atomically replace the cached representation and validator before the new entry is made available.
 - **FR-012**: If the registry reports that an expired prompt is unavailable or inaccessible, the integration MUST remove the matching cached entry and return that current outcome; it MUST NOT return a stale prompt or fall back to `latest`, a custom label, a draft, or another prompt version.
@@ -128,7 +127,7 @@ An application operator can rely on automatic expiry and can explicitly clear on
 ## Assumptions
 
 - The feature spans the registry's read-only fetch response and one explicitly opt-in cache-aware helper in the official Django integration; decorators are outside scope, and the registered client, its existing `fetch()` operation, and the core SDK remain uncached and framework agnostic.
-- The default short TTL is 60 seconds. Applications may choose a different positive duration, and a value of zero explicitly disables cache reuse.
+- The default short TTL is 60 seconds. Applications may choose a different positive duration, and a value of zero explicitly disables cache reads, writes, and reuse.
 - Fresh entries are returned without contacting the registry; the first lookup after expiry performs conditional revalidation, so publication changes may take up to one configured TTL to become visible.
 - A stale retained representation is conditional-request metadata, not a fallback response: it is returned only after a matching not-modified result, and registry errors remain visible to the caller.
 - Cache entries are private application data and are not shared across application deployments unless the application's selected cache service intentionally shares them.

@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add an explicitly opt-in `promptkit-django` cached-fetch helper while preserving the existing uncached `get_client().fetch()` contract. The helper uses only the host application's configured Django default cache backend, validates `PROMPTKIT.CACHE_TTL` during AppConfig startup, and uses a short fresh window followed by an equal-length revalidation-only window. It calls a new validator-aware core SDK operation after freshness expires. The Prompt Server emits deterministic representation ETags and returns bodyless 304 responses for matching `If-None-Match` values.
+Add an explicitly opt-in `promptkit-django` cached-fetch helper while preserving the existing uncached `get_client().fetch()` contract. The helper uses only the host application's configured Django default cache backend, validates `PROMPTKIT.CACHE_TTL` during AppConfig startup, and uses a short fresh window followed by an equal-length revalidation-only window. After freshness expires it calls `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult`. The Prompt Server emits deterministic representation ETags and returns bodyless 304 responses for matching `If-None-Match` values.
 
 ## Technical Context
 
@@ -64,8 +64,8 @@ apps/server/prompts/
 └── tests/test_read_only_api.py           # Server conditional-response contracts
 
 packages/promptkit/src/promptkit/
-├── client.py                             # Validator-aware HTTP retrieval primitive
-├── models.py                             # Conditional retrieval result type
+├── client.py                             # fetch_conditional() HTTP retrieval operation
+├── models.py                             # ConditionalFetchResult type
 └── __init__.py                           # Public SDK exports, if needed
 
 packages/promptkit-django/src/promptkit_django/

@@ -11,7 +11,7 @@ Returns the same `RetrievedPrompt` shape and raises the same registry/domain err
 - Stale retained entries revalidate using their ETag.
 - A matching 304 returns the cached prompt and refreshes both windows.
 - A changed 200 replaces the entry atomically.
-- Missing, malformed, cache-failing, expired-retention, and ETag-less entries cause a full registry lookup.
+- Missing, malformed, cache-failing, expired-retention, and ETag-less cached entries cause a full registry lookup; a successful conditional registry response without a usable ETag raises `InvalidResponseError` and is not cached.
 - Registry errors and cache backend failures never return stale prompt data.
 
 ### `clear_prompt_cache(slug=None)`
@@ -63,4 +63,18 @@ The server applies weak comparison for valid validator lists and wildcard values
 
 ## Core SDK conditional operation
 
-The core SDK adds a public validator-aware operation for the Django integration. It sends `If-None-Match` only when given a valid stored ETag, exposes a typed 304 not-modified outcome without JSON parsing, and validates an ETag on a full 200 response. It uses the same path construction, authentication, timeout, and error mapping as the existing client. `PromptKitClient.fetch()` is not redefined or made cache-aware.
+```text
+PromptKitClient.fetch_conditional(
+  slug: str,
+  *,
+  label: str | None = None,
+  etag: str | None = None,
+) -> ConditionalFetchResult
+```
+
+`ConditionalFetchResult` has the following invariant:
+
+- HTTP 200: `not_modified=False`, `prompt` contains a validated `RetrievedPrompt`, and `etag` contains the response validator.
+- HTTP 304: `not_modified=True`, `prompt=None`, and `etag` contains the confirmed response validator.
+
+The operation sends `If-None-Match` only when given a valid stored ETag, exposes a 304 outcome without JSON parsing, and raises `InvalidResponseError` when a successful 200 or 304 response lacks a usable ETag or violates the result invariant. It uses the same path construction, authentication, timeout, and error mapping as the existing client. `PromptKitClient.fetch()` is not redefined or made cache-aware.

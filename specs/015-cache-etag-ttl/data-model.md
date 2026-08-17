@@ -40,12 +40,12 @@ For a positive TTL, storage timeout is twice `CACHE_TTL`; the second half is a r
 
 Credentials, authorization headers, category, raw base URL, and prompt contents are not included in cache keys. Generation changes create new derived cache keys; prior physical entries expire naturally after their storage timeout.
 
-## Conditional retrieval result
+## `ConditionalFetchResult`
 
 | Field | Type | Meaning |
 |-------|------|---------|
-| `not_modified` | boolean | Whether the registry confirmed a supplied validator with HTTP 304 |
-| `prompt` | `RetrievedPrompt` or absent | Present only for a full successful 200 response |
-| `etag` | non-empty quoted opaque string | Validator received from the registry |
+| `not_modified` | boolean | `True` only when the registry confirmed a supplied validator with HTTP 304 |
+| `prompt` | `RetrievedPrompt` or absent | Required when `not_modified=False`; absent when `not_modified=True` |
+| `etag` | non-empty quoted opaque string | Required validator received from the registry for both 200 and 304 outcomes |
 
-The result is produced only by the new core SDK conditional operation. Existing `PromptKitClient.fetch()` continues to return `RetrievedPrompt` for 2xx results and keeps its present error behavior for all redirects.
+The result is produced only by `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult`. Existing `PromptKitClient.fetch()` continues to return `RetrievedPrompt` for 2xx results and keeps its present error behavior for all redirects.

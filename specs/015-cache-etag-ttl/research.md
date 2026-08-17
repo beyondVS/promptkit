@@ -37,7 +37,7 @@
 
 ## Conditional HTTP contract
 
-**Decision**: The registry serializes the selected successful response, builds a canonical representation digest, and returns it as a quoted opaque ETag. It applies HTTP `If-None-Match` comparison only after successful authentication, lookup, and label/on-live resolution. Matching GET requests receive 304 with the ETag and no body; non-matches receive 200 with the same representation and ETag. The core SDK adds a validator-aware retrieval operation that distinguishes 304 from redirects; the existing `fetch()` behavior remains unchanged.
+**Decision**: The registry serializes the selected successful response, builds a canonical representation digest, and returns it as a quoted opaque ETag. It applies HTTP `If-None-Match` comparison only after successful authentication, lookup, and label/on-live resolution. Matching GET requests receive 304 with the ETag and no body; non-matches receive 200 with the same representation and ETag. The core SDK adds `PromptKitClient.fetch_conditional(slug, *, label=None, etag=None) -> ConditionalFetchResult` to distinguish 304 from redirects; the existing `fetch()` behavior remains unchanged.
 
 **Rationale**: Building the ETag from the actual serialized payload makes every client-observable change invalidate it, including metadata, category, selected label, version, variables, and sections. A core transport operation avoids the Django helper reaching into private HTTPX client state and preserves existing public behavior.
 
