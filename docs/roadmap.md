@@ -31,8 +31,8 @@
 2. **Strict Prompt Injection Sanitization Layer**
    - SDK 컴파일 시 사용자 입력 데이터에 포함될 수 있는 시스템 명령어 주입 공격(Prompt Injection)을 감지하고 이스케이프하는 보안 레이어 추가.
 
-3. **Server-side ETag & Conditional 304 Caching Engine**
-   - 서버 레지스트리 및 `packages/promptkit-django` 간의 `ETag` (`W/"<slug>-v<ver>-r<rev>"`) 기반 `304 Not Modified` 조건부 Caching 엔진 고도화.
+3. **분산 캐시 운영 고도화**
+   - MVP에서 canonical response 기반 strong ETag, `304 Not Modified`, Django two-window TTL 캐시와 generation 무효화를 완료했다. 향후 cache stampede 완화, 관측성 지표 및 다중 프로세스·분산 backend 운영 검증을 확장한다.
 
 4. **표준화된 DRF JSON Error Schema & 코드 체계**
    - 서버 전체 API의 에러 응답 포맷(`{"error": {"code": "...", "message": "...", "details": {}}}`)과 모듈별 에러 코드를 상용 레벨로 가공 및 공통화.

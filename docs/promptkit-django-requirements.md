@@ -6,7 +6,7 @@
 
 ## 1. 개요 및 설계 원칙
 
-`packages/promptkit-django`는 Django 웹 애플리케이션에서 코어 SDK(`packages/promptkit`)를 표준 설정 및 AppConfig lifecycle에 연결하는 **공식 통합 라이브러리**이다. 현재 범위는 설정 검증과 SDK 인스턴스 자동 등록이며, Cache/ETag 기능은 Day 15 후속 범위이다.
+`packages/promptkit-django`는 Django 웹 애플리케이션에서 코어 SDK(`packages/promptkit`)를 표준 설정 및 AppConfig lifecycle에 연결하고, 호스트 프로젝트의 Django Cache를 이용한 opt-in 조회 최적화를 제공하는 **공식 통합 라이브러리**이다.
 
 ### 핵심 설계 원칙
 - **Standard Django Extension**: Django Settings 및 AppConfig 규격을 온전히 준수.
@@ -26,19 +26,24 @@ PROMPTKIT = {
     "BASE_URL": "https://registry.example.com",
     "API_KEY": os.environ["PROMPTKIT_API_KEY"],
     "TIMEOUT": 10.0,
+    "CACHE_TTL": 60.0,
 }
 ```
 
 - `BASE_URL`, `API_KEY`: 필수 non-blank 문자열
 - `TIMEOUT`: 선택 positive finite number, 기본값 `10.0`
+- `CACHE_TTL`: 선택 non-negative finite number(초), 기본값 `60.0`; `0`이면 캐시 읽기·쓰기·무효화를 모두 우회
 - 알 수 없는 key, 누락·공백·잘못된 타입·안전하지 않은 URL은 애플리케이션 시작을 즉시 실패시킴
 - `get_client()`는 시작 단계에서 등록된 동일 인스턴스를 반환하며 미설치·미초기화 상태에서는 integration-specific 오류를 발생시킴
 
-### 2.2 Django Cache Layer & ETag 핸드셰이크 규격 (Day 15 예정)
-- **Cache Key Naming**: `promptkit:prompt:<slug>:<label>` 형식의 캐시 키 포맷.
-- **Cache Lookup Flow**: 프롬프트 조회 요청 시 먼저 Django Cache 백엔드 조회.
-- **ETag Validation**: `If-None-Match: "W/<slug>-v<ver>-r<rev>"` 헤더를 전송하여 서버 변경 여부를 검증하고, `304 Not Modified` 수신 시 캐시된 프롬프트 즉시 반환.
-- **Automatic & Manual Invalidation**: TTL 만료 시 자동 갱신 및 `clear_prompt_cache(slug=None)` 헬퍼를 통한 수동 캐시 초기화 지원.
+### 2.2 Django Cache Layer & ETag 핸드셰이크 규격
+- **Opt-in Entry Point**: `fetch_cached(slug, *, label=None)`만 캐시 계층을 사용한다. `get_client().fetch()`의 uncached 동작과 오류 계약은 변경하지 않는다.
+- **Host Cache Backend**: 별도 backend를 만들지 않고 Django 프로젝트의 `CACHES["default"]`를 사용한다. backend 장애는 cache miss로 처리하되 원격 registry의 결과나 오류를 바꾸지 않는다.
+- **Cache Identity**: 정규화한 비밀값 없는 registry base URL, 전역 유일 prompt slug, label의 생략 여부와 값을 canonicalize한 뒤 SHA-256 digest로 키를 만든다. API key와 인증 header는 키나 값에 포함하지 않는다.
+- **Two-window TTL**: 저장 후 `CACHE_TTL` 동안은 네트워크 없이 fresh entry를 반환한다. backend에는 `2 × CACHE_TTL` 동안 보존하여 두 번째 동일 길이 구간에서만 조건부 재검증에 사용한다.
+- **ETag Validation**: 서버는 직렬화된 조회 응답의 canonical JSON을 SHA-256으로 digest한 quoted strong ETag를 반환한다. stale entry는 이 값을 `If-None-Match`로 전송하며, `304 Not Modified`이면 freshness를 연장하고 `200 OK`이면 prompt와 ETag를 하나의 record로 교체한다.
+- **Failure Semantics**: malformed cache entry는 miss이다. 재검증 중 registry 오류가 발생하면 해당 entry를 제거하고 오류를 그대로 전파하며 stale prompt로 fallback하지 않는다.
+- **Invalidation**: `clear_prompt_cache(slug=None)`는 generation token을 사용해 전체 또는 특정 slug의 모든 label variant를 논리적으로 무효화한다. 다른 애플리케이션 캐시는 지우지 않으며 `cache.clear()`나 backend-specific pattern delete에 의존하지 않는다.
 
 ### 2.3 Django Helpers, Mixins & Template Tags (향후 확장 후보)
 - **Class-Based View Mixin**: `PromptMixin`을 통한 CBV 내 프롬프트 자동 주입.

@@ -72,9 +72,9 @@
     *   단일 `PROMPTKIT` 설정 mapping의 엄격한 검증과 AppConfig 기반 SDK 인스턴스 자동 등록 및 `get_client()` 접근 구현.
     *   Core SDK wheelhouse를 이용한 Git subdirectory 독립 설치, public import 및 최소 Django lifecycle 검증 완료.
     *   패키지 인덱스를 사용하지 않는 개발 단계에서는 기본 브랜치의 Core SDK와 Django integration Git subdirectory를 함께 설치하도록 문서화.
-* [ ] **Day 15 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
-    *   조회 성능 향상 및 서버 부하 최소화를 위한 Django 내장 Cache API 연동 데코레이터/헬퍼 구현.
-    *   HTTP ETag / If-None-Match 헤더 기반의 조건부 검증 및 짧은 TTL(Time-To-Live) 적용을 통한 캐시 정합성 전략 구현.
+* [x] **Day 15 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
+    *   호스트의 `CACHES["default"]`를 사용하는 opt-in `fetch_cached()`와 `CACHE_TTL` 설정, prompt/global generation 무효화 구현.
+    *   canonical response 기반 strong ETag, `If-None-Match`/`304 Not Modified`, two-window TTL 재검증 및 no-stale-fallback 정합성 전략 구현.
 * [ ] **Day 16 (1h): Playground SDK 연동 및 E2E 예제 구현**
     *   `examples/` 디렉토리에 실제 DRF 서버-SDK-Gemini API 호출에 이르는 엔드투엔드 예제 시나리오 코드 작성.
     *   Day 09에 개발한 Playground 뷰에 SDK의 `compile()` 엔진을 최종 결합하여 **LLM 호출 없는 CompiledPrompt 텍스트 프리뷰 기능** 완성.

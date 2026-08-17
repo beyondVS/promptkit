@@ -22,6 +22,9 @@
 ### 2.1 PromptKitClient (REST Client) & 예외 체계
 - `GET /api/v1/prompts/<slug>/` 호출 및 `X-PromptKit-Api-Key` 헤더 전송.
 - Query Parameter: `?label=<label_name>` (생략 시 On-live 지정 버전만 조회).
+- `fetch()`는 기존의 uncached 전체 조회 계약을 유지하며, `fetch_conditional(..., etag=...)`은 선택적으로 `If-None-Match`를 보내 `200 OK`와 `304 Not Modified`를 구분한 `ConditionalFetchResult`를 반환한다.
+- 조건부 조회의 `200` 결과는 `prompt`와 유효한 quoted ETag를 포함하고, `304` 결과는 `prompt=None`과 ETag를 포함한다. 성공 응답의 ETag가 누락되거나 malformed이면 `InvalidResponseError`를 발생시킨다.
+- 코어 SDK는 조건부 요청 primitive만 제공하며 응답 저장, TTL, 무효화 및 stale fallback 정책은 구현하지 않는다.
 - 기본 Timeout은 10초이며, 호출자가 양수 값으로 재정의할 수 있습니다.
 - **SDK 예외 계층 구조**:
   - `PromptKitError` (기저 예외 클래스)

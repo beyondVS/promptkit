@@ -39,9 +39,10 @@ promptkit/
 
 ### 1.3 packages/promptkit-django (Django Integration)
 - **역할**: Django 웹 애플리케이션에서 PromptKit SDK를 플러그인 형태로 손쉽게 적용할 수 있도록 돕는 라이브러리
-- **현재 기능**: 단일 `PROMPTKIT` Settings mapping 검증, AppConfig 시작 시 `PromptKitClient` 자동 등록, `get_client()` 기반 lifecycle-scoped 인스턴스 접근
-- **설정 계약**: `BASE_URL`, `API_KEY` 필수, `TIMEOUT` 선택(기본값 `10.0`). 잘못되거나 알 수 없는 설정은 자격 증명을 노출하지 않고 시작 단계에서 실패
-- **후속 확장**: Django Cache 및 ETag/TTL 정합성 기능은 Day 15 범위이며 현재 패키지에는 포함되지 않음
+- **현재 기능**: 단일 `PROMPTKIT` Settings mapping 검증, AppConfig 시작 시 `PromptKitClient` 자동 등록, `get_client()` 접근, opt-in `fetch_cached()` 및 범위별 캐시 무효화
+- **설정 계약**: `BASE_URL`, `API_KEY` 필수, `TIMEOUT` 선택(기본값 `10.0`), `CACHE_TTL` 선택(기본값 `60.0`초). 잘못되거나 알 수 없는 설정은 자격 증명을 노출하지 않고 시작 단계에서 실패
+- **캐시 경계**: 호스트의 `CACHES["default"]`만 사용한다. `fetch_cached()`는 TTL 동안 fresh entry를 반환하고 다음 동일 길이 구간에서는 ETag로 재검증한다. `get_client().fetch()`는 기존처럼 항상 uncached이며 `CACHE_TTL=0`이면 모든 캐시 I/O를 우회한다.
+- **정합성**: 서버는 직렬화된 응답 representation의 strong ETag를 반환한다. stale entry는 `If-None-Match` 요청의 `304`로 freshness만 연장하거나 `200` 응답으로 원자적으로 교체하며, 원격 오류에는 stale fallback을 제공하지 않는다.
 - **설치 경계**: 패키지 인덱스를 사용하지 않으므로 외부 사용자는 기본 브랜치의 `packages/promptkit`과 `packages/promptkit-django` Git subdirectory를 함께 설치
 
 ---

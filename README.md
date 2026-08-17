@@ -13,6 +13,8 @@ PromptKit은 LLM 기반 애플리케이션에서 사용되는 프롬프트(Promp
 * **LLM Gateway 배제 (Prompt Registry Focus)**: Prompt Server는 LLM 호출을 대행하지 않으며, 프롬프트 저장, 대시보드 기반 버전 관리(CUD), 및 SDK 전용 Read-only 라벨 조회 역할에만 집중합니다.
 * **Django Template 대시보드 CUD**: 프롬프트 생성, 수정, 삭제(CUD) 및 관리자 인증(Django Session Auth)은 백엔드 대시보드에서 전담합니다.
 * **SDK Read-Only Fetch**: `promptkit`은 `X-PromptKit-Api-Key` HTTP Header 인증을 거쳐 레지스트리로부터 프롬프트를 안전하게 조회(Read-only)합니다.
+* **ETag 기반 조건부 검증**: Prompt Server는 조회 결과의 canonical representation으로 strong ETag를 생성하며, Core SDK는 `If-None-Match`/`304 Not Modified`를 다루는 조건부 조회 API를 제공합니다.
+* **Django Opt-in Cache**: `promptkit-django`의 `fetch_cached()`는 호스트 프로젝트의 `CACHES["default"]`와 짧은 TTL을 이용해 fresh hit와 stale revalidation을 처리합니다. 기존 `get_client().fetch()`는 캐시되지 않습니다.
 * **SDK-First & Client-Side Compilation**: 동적 변수 파싱 및 컴파일(`compile()`)은 SDK에서 처리하여 서버 부하 및 API 지연(Latency)을 최소화합니다.
 * **Provider-Neutral Adapters**: 컴파일 결과를 Gemini `generate_content`, OpenAI Chat Completions·Responses 및 LiteLLM `completion` 호출 인자 형태의 순수 Python dictionary로 변환하며, 공급자 SDK import나 실제 LLM 호출은 수행하지 않습니다.
 
@@ -30,7 +32,7 @@ promptkit/
 │   └── server/            # Django REST Framework 기반 Prompt Management Server
 ├── packages/
 │   ├── promptkit/         # Framework-Agnostic Core Python SDK
-│   └── promptkit-django/  # Django 설정 및 SDK 자동 등록 패키지
+│   └── promptkit-django/  # Django 설정, SDK 등록 및 opt-in 캐시 패키지
 ├── docs/                  # 아키텍처 및 요구사항 명세 문서
 ├── examples/              # E2E 사용 예제 스크립트
 └── tests/                 # 하이브리드 테스트 수트 (pytest / TestCase)
@@ -96,6 +98,11 @@ print(compiled.version)
 `compile()`과 어댑터는 입력값을 서버나 LLM 공급자에게 전송하지 않습니다. LiteLLM
 어댑터는 순서가 보존된 `messages`를 반환하며, 모델, 자격 증명, 생성 설정 및 실제
 `litellm.completion` 호출을 포함한 API 호출은 호출자 애플리케이션의 책임입니다.
+
+Django 애플리케이션에서는 `PROMPTKIT`에 `CACHE_TTL`(기본 `60.0`초)을 설정하고
+`promptkit_django.fetch_cached()`를 명시적으로 호출할 수 있습니다. `CACHE_TTL=0`은
+캐시 읽기와 쓰기를 모두 비활성화합니다. 자세한 계약은
+[Django Integration Requirements](docs/promptkit-django-requirements.md)를 참고하십시오.
 
 ---
 
