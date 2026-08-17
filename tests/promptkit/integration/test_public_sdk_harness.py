@@ -13,6 +13,7 @@ PUBLIC_CONTRACTS = {
     "CommunicationError": "test_public_exception_hierarchy_and_failure_paths",
     "CompiledPrompt": "test_public_model_contracts",
     "CompiledPromptSection": "test_public_model_contracts",
+    "ConditionalFetchResult": "test_public_model_contracts",
     "GeminiAdapter": "test_retrieval_compilation_and_provider_conversion_journey",
     "GeminiConfig": "test_public_typed_argument_contracts",
     "GeminiContent": "test_public_typed_argument_contracts",
@@ -183,6 +184,14 @@ def test_public_model_contracts() -> None:
     )
     assert retrieved.category.slug == "support"
     assert retrieved.sections[0].order == 0
+    conditional = promptkit.ConditionalFetchResult(
+        not_modified=False,
+        prompt=retrieved,
+        etag='"v1"',
+    )
+    assert conditional.etag == '"v1"'
+    with pytest.raises(ValidationError):
+        promptkit.ConditionalFetchResult(not_modified=True, prompt=retrieved, etag='"v1"')
 
 
 def test_retrieval_compilation_and_provider_conversion_journey() -> None:

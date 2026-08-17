@@ -4,6 +4,7 @@ import pytest
 from django.test.utils import override_settings
 from promptkit_django import get_client
 from promptkit_django.exceptions import PromptKitDjangoConfigurationError
+from promptkit_django.registry import get_client_settings
 
 
 def installed_apps() -> list[str]:
@@ -25,6 +26,7 @@ def test_startup_registers_client_with_default_timeout() -> None:
             client = get_client()
 
             assert client.timeout == 10.0
+            assert get_client_settings().CACHE_TTL == 60.0
             assert get_client() is client
             client.close()
 
@@ -41,6 +43,13 @@ def test_fresh_app_registries_use_their_own_settings() -> None:
             second = get_client()
             assert second.timeout == 2.0
             second.close()
+
+
+def test_startup_retains_validated_cache_ttl() -> None:
+    with override_settings(PROMPTKIT=valid_settings(CACHE_TTL=2.5)):
+        with override_settings(INSTALLED_APPS=installed_apps()):
+            assert get_client_settings().CACHE_TTL == 2.5
+            get_client().close()
 
 
 def test_invalid_settings_fail_during_application_startup() -> None:

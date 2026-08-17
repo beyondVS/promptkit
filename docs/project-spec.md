@@ -52,8 +52,8 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 | 패키지 | 주요 역할 및 책임 | 주요 의존성 |
 | :--- | :--- | :--- |
 | `apps/server` | 프롬프트 저장소, 대시보드 CUD, Read-Only API Serving | Django, DRF, PostgreSQL |
-| `packages/promptkit` | 원격 프롬프트 fetch, 로컬 `compile()`, Pydantic 변수 검증, LLM Adapters | Pydantic v2, httpx |
-| `packages/promptkit-django` | `PROMPTKIT` Settings 검증, AppConfig 시작 시 SDK 자동 등록, `get_client()` 제공 | `promptkit`, Django, Pydantic v2 |
+| `packages/promptkit` | 원격 프롬프트 fetch와 ETag 조건부 조회, 로컬 `compile()`, Pydantic 변수 검증, LLM Adapters | Pydantic v2, httpx |
+| `packages/promptkit-django` | `PROMPTKIT` Settings 검증, SDK 자동 등록, opt-in Django Cache/ETag 재검증 및 무효화 | `promptkit`, Django, Pydantic v2 |
 
 ---
 
@@ -62,5 +62,5 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 1. **Prompt Server**: 대시보드 CUD (`/dashboard/`), Read-Only API (`GET /api/v1/prompts/<slug>/`)
 2. **Version & Deployment**: 초안/발행/복제(Clone) 라이프사이클, On-live 지정 (자동 Fallback 금지, `production` 라벨 금지)
 3. **Core SDK & Adapters**: `PromptKitClient`, `compile()`, Gemini `generate_content`, OpenAI Chat Completions / Responses 및 LiteLLM `completion` Adapters
-4. **Django Integration**: `promptkit-django` 설정 검증 및 SDK 인스턴스 자동 등록. Cache/ETag 최적화는 후속 단계에서 확장
+4. **Django Integration**: `promptkit-django` 설정 검증, SDK 인스턴스 자동 등록 및 호스트의 default Django Cache를 이용한 opt-in ETag/TTL 정합성 계층
 5. **Playground**: 대시보드 내 템플릿 컴파일 프리뷰 인터페이스

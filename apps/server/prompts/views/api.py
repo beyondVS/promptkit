@@ -4,6 +4,9 @@ Authenticated via X-PromptKit-Api-Key Header.
 Strictly Read-only (GET only).
 """
 
+import hashlib
+import json
+
 from django.shortcuts import get_object_or_404
 from rest_framework import status as http_status
 from rest_framework.request import Request
@@ -88,4 +91,40 @@ class SDKPromptFetchAPIView(APIView):  # type: ignore[misc]
         }
 
         serializer = SDKPromptFetchResponseSerializer(data)
-        return Response(serializer.data)
+        payload = serializer.data
+        etag = self._etag_for_payload(payload)
+        if self._if_none_match_matches(request.headers.get("If-None-Match"), etag):
+            response = Response(status=http_status.HTTP_304_NOT_MODIFIED)
+            response["ETag"] = etag
+            return response
+
+        response = Response(payload)
+        response["ETag"] = etag
+        return response
+
+    @staticmethod
+    def _etag_for_payload(payload: object) -> str:
+        canonical = json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+            default=str,
+        ).encode("utf-8")
+        return f'"{hashlib.sha256(canonical).hexdigest()}"'
+
+    @staticmethod
+    def _if_none_match_matches(value: str | None, etag: str) -> bool:
+        if value is None:
+            return False
+        expected = etag[1:-1]
+        for candidate in value.split(","):
+            candidate = candidate.strip()
+            if candidate == "*":
+                return True
+            if candidate.startswith("W/"):
+                candidate = candidate[2:].strip()
+            if len(candidate) >= 2 and candidate.startswith('"') and candidate.endswith('"'):
+                if candidate[1:-1] == expected:
+                    return True
+        return False

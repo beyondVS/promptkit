@@ -6,7 +6,11 @@ from django.apps import AppConfig
 from django.conf import settings
 from promptkit import PromptKitClient
 
-from promptkit_django.configuration import create_client
+from promptkit_django.configuration import (
+    PromptKitSettings,
+    create_client_from_settings,
+    load_settings,
+)
 
 
 class PromptKitDjangoConfig(AppConfig):
@@ -17,8 +21,11 @@ class PromptKitDjangoConfig(AppConfig):
     verbose_name = "PromptKit Django Integration"
 
     client: PromptKitClient | None = None
+    client_settings: PromptKitSettings | None = None
 
     def ready(self) -> None:
         """Create the lifecycle-scoped client exactly once after settings load."""
         if getattr(self, "client", None) is None:
-            self.client = create_client(getattr(settings, "PROMPTKIT", None))
+            validated = load_settings(getattr(settings, "PROMPTKIT", None))
+            self.client = create_client_from_settings(validated)
+            self.client_settings = validated

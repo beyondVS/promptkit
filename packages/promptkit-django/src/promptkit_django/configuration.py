@@ -19,6 +19,7 @@ class PromptKitSettings(BaseModel):
     BASE_URL: str
     API_KEY: SecretStr
     TIMEOUT: float = 10.0
+    CACHE_TTL: float = 60.0
 
     @field_validator("BASE_URL", mode="before")
     @classmethod
@@ -52,6 +53,22 @@ class PromptKitSettings(BaseModel):
             raise ValueError("must be a positive finite number")
         return value
 
+    @field_validator("CACHE_TTL", mode="before")
+    @classmethod
+    def validate_cache_ttl_type(cls, value: object) -> object:
+        """Reject booleans before Pydantic treats them as numbers."""
+        if isinstance(value, bool):
+            raise ValueError("must be a non-negative finite number")
+        return value
+
+    @field_validator("CACHE_TTL")
+    @classmethod
+    def validate_cache_ttl_value(cls, value: float) -> float:
+        """Require a finite cache duration that can explicitly disable caching."""
+        if not isfinite(value) or value < 0:
+            raise ValueError("must be a non-negative finite number")
+        return value
+
 
 def load_settings(value: object) -> PromptKitSettings:
     """Parse a ``PROMPTKIT`` mapping and expose only safe configuration failures."""
@@ -71,6 +88,11 @@ def load_settings(value: object) -> PromptKitSettings:
 def create_client(value: object) -> PromptKitClient:
     """Validate host settings and construct the configured core SDK client."""
     settings = load_settings(value)
+    return create_client_from_settings(settings)
+
+
+def create_client_from_settings(settings: PromptKitSettings) -> PromptKitClient:
+    """Construct a core client from already validated Django integration settings."""
     try:
         return PromptKitClient(
             base_url=settings.BASE_URL,

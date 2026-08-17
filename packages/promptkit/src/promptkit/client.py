@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ipaddress import ip_address
 from math import isfinite
-from typing import Any
+from typing import Any, cast
 from urllib.parse import quote, urlsplit
 
 import httpx
@@ -23,7 +23,7 @@ from promptkit.exceptions import (
     RateLimitError,
     RedirectError,
 )
-from promptkit.models import RetrievedPrompt
+from promptkit.models import ConditionalFetchResult, RetrievedPrompt, is_valid_entity_tag
 
 
 class PromptKitClient:
@@ -48,6 +48,7 @@ class PromptKitClient:
         ):
             raise InvalidConfigurationError("timeout must be positive")
 
+        self.base_url = normalized_base_url
         self.timeout = timeout
         try:
             self._client = httpx.Client(
@@ -63,15 +64,7 @@ class PromptKitClient:
 
     def fetch(self, slug: str, *, label: str | None = None) -> RetrievedPrompt:
         """Fetch the on-live prompt or an explicitly labelled published version."""
-        if not isinstance(slug, str) or not slug.strip():
-            raise InvalidRequestError("slug must be a non-empty string")
-        if label is not None and (not isinstance(label, str) or not label.strip()):
-            raise InvalidLabelError("label must be a non-empty string when supplied")
-        if label is not None and label.casefold() == "production":
-            raise InvalidLabelError("the production label is not supported")
-
-        path = f"api/v1/prompts/{quote(slug, safe='')}/"
-        params: dict[str, Any] | None = None if label is None else {"label": label}
+        path, params = self._lookup_request(slug, label)
         try:
             response = self._client.get(path, params=params)
         except httpx.RequestError as error:
@@ -83,9 +76,67 @@ class PromptKitClient:
         except (ValidationError, ValueError, TypeError) as error:
             raise InvalidResponseError("registry returned an invalid prompt response") from error
 
+    def fetch_conditional(
+        self,
+        slug: str,
+        *,
+        label: str | None = None,
+        etag: str | None = None,
+    ) -> ConditionalFetchResult:
+        """Fetch a prompt and expose a typed 304 not-modified outcome."""
+        path, params = self._lookup_request(slug, label)
+        headers: dict[str, str] | None = None
+        if etag is not None:
+            if not is_valid_entity_tag(etag):
+                raise InvalidRequestError("etag must be a valid HTTP entity tag")
+            headers = {"If-None-Match": etag}
+        try:
+            response = self._client.get(path, params=params, headers=headers)
+        except httpx.RequestError as error:
+            raise CommunicationError("unable to communicate with the PromptKit registry") from error
+
+        if response.status_code == 304:
+            return ConditionalFetchResult(
+                not_modified=True,
+                prompt=None,
+                etag=self._response_etag(response),
+            )
+
+        self._raise_for_error_response(response)
+        try:
+            prompt = RetrievedPrompt.model_validate(response.json())
+        except (ValidationError, ValueError, TypeError) as error:
+            raise InvalidResponseError("registry returned an invalid prompt response") from error
+        return ConditionalFetchResult(
+            not_modified=False,
+            prompt=prompt,
+            etag=self._response_etag(response),
+        )
+
     def close(self) -> None:
         """Close the underlying synchronous HTTP client."""
         self._client.close()
+
+    @staticmethod
+    def _lookup_request(slug: str, label: str | None) -> tuple[str, dict[str, Any] | None]:
+        if not isinstance(slug, str) or not slug.strip():
+            raise InvalidRequestError("slug must be a non-empty string")
+        if label is not None and (not isinstance(label, str) or not label.strip()):
+            raise InvalidLabelError("label must be a non-empty string when supplied")
+        if label is not None and label.casefold() == "production":
+            raise InvalidLabelError("the production label is not supported")
+        path = f"api/v1/prompts/{quote(slug, safe='')}/"
+        return path, None if label is None else {"label": label}
+
+    @classmethod
+    def _response_etag(cls, response: httpx.Response) -> str:
+        etag = cast(str | None, response.headers.get("ETag"))
+        if not is_valid_entity_tag(etag):
+            raise InvalidResponseError(
+                "registry returned a successful response without a valid ETag"
+            )
+        assert etag is not None
+        return etag.strip()
 
     @staticmethod
     def _validate_base_url(base_url: str) -> str:
