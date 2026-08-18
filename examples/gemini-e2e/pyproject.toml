@@ -1,0 +1,16 @@
+[project]
+name = "promptkit-gemini-e2e"
+version = "0.1.0"
+description = "Prompt Server to PromptKit SDK to Gemini end-to-end example"
+requires-python = ">=3.13"
+dependencies = [
+    "google-genai>=2.18.1,<3",
+    "promptkit",
+    "python-dotenv>=1.0,<2",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+promptkit = { path = "../../packages/promptkit" }

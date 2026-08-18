@@ -18,9 +18,9 @@
 
 **Purpose**: Establish dependency boundaries and example configuration without changing runtime behavior.
 
-- [ ] T001 [P] Declare the compatible local `promptkit` dependency for the Django server in `apps/server/pyproject.toml` and refresh the repository `uv.lock` with `uv` only
-- [ ] T002 [P] Create the isolated Python 3.13+ consumer project with local `promptkit` and example-only `google-genai>=2.18.1,<3` dependencies in `examples/gemini-e2e/pyproject.toml` and generate `examples/gemini-e2e/uv.lock`
-- [ ] T003 [P] Add secret-free placeholders and descriptions for `PROMPTKIT_BASE_URL`, `PROMPTKIT_API_KEY`, `PROMPTKIT_PROMPT_SLUG`, `PROMPTKIT_PROMPT_PARAMS`, `GEMINI_API_KEY`, and `GEMINI_MODEL` in `examples/gemini-e2e/.env.example`
+- [X] T001 [P] Declare the compatible local `promptkit` dependency for the Django server in `apps/server/pyproject.toml` and refresh the repository `uv.lock` with `uv` only
+- [X] T002 [P] Create the isolated Python 3.13+ consumer project with local `promptkit` and example-only `google-genai>=2.18.1,<3` dependencies in `examples/gemini-e2e/pyproject.toml` and generate `examples/gemini-e2e/uv.lock`
+- [X] T003 [P] Add secret-free placeholders and descriptions for `PROMPTKIT_BASE_URL`, `PROMPTKIT_API_KEY`, `PROMPTKIT_PROMPT_SLUG`, `PROMPTKIT_PROMPT_PARAMS`, `GEMINI_API_KEY`, and `GEMINI_MODEL` in `examples/gemini-e2e/.env.example`
 
 ---
 
@@ -30,8 +30,8 @@
 
 **⚠️ CRITICAL**: Complete this phase before implementing any user story; do not add a migration, internal compile API, browser compiler, or provider dependency outside the example project.
 
-- [ ] T004 [P] Create the dashboard service package marker in `apps/server/prompts/services/__init__.py` without adding persistence or provider abstractions
-- [ ] T005 [P] Add regression assertions for the existing public `RetrievedPrompt`, `CompiledPrompt`, PromptKit validation exceptions, `PromptKitClient`, and `GeminiAdapter` imports in `tests/promptkit/integration/test_public_sdk_harness.py`
+- [X] T004 [P] Create the dashboard service package marker in `apps/server/prompts/services/__init__.py` without adding persistence or provider abstractions
+- [X] T005 [P] Add regression assertions for the existing public `RetrievedPrompt`, `CompiledPrompt`, PromptKit validation exceptions, `PromptKitClient`, and `GeminiAdapter` imports in `tests/promptkit/integration/test_public_sdk_harness.py`
 
 **Checkpoint**: Public SDK contracts and the existing protected Playground resource are ready for story work.
 
@@ -47,14 +47,14 @@
 
 > **Write these tests first and confirm they fail for the missing POST behavior.**
 
-- [ ] T006 [US1] Extend `DashboardPlaygroundTests` using Django `TestCase` and `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py` to cover successful typed POST compilation within the 2-second SC-001 limit, repeated substitutions, placeholder-like input remaining literal after a single substitution pass, no-variable output, section ordering, empty/whitespace/Unicode preservation, HTML escaping, exactly one SDK `compile()` call, zero provider calls, and zero database writes
+- [X] T006 [US1] Extend `DashboardPlaygroundTests` using Django `TestCase` and `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py` to cover successful typed POST compilation within the 2-second SC-001 limit, repeated substitutions, placeholder-like input remaining literal after a single substitution pass, no-variable output, section ordering, empty/whitespace/Unicode preservation, HTML escaping, exactly one SDK `compile()` call, zero provider calls, and zero database writes
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Implement the request-scoped dynamic Playground form in `apps/server/prompts/forms.py` with `variable__<name>` fields, declaration order, defaults, string whitespace retention, strict integer/finite-float parsing, explicit boolean parsing, object-or-array JSON parsing, omission of blank optional values, and explicit rejection of submitted `variable__*` names absent from the selected version declarations
-- [ ] T008 [P] [US1] Implement eager ORM snapshot loading plus ordered `Version`/variable/section mapping to public `RetrievedPrompt` and one-call `compile()` orchestration in `apps/server/prompts/services/playground.py`
-- [ ] T009 [US1] Add CSRF-protected POST handling to `DashboardPlaygroundView` in `apps/server/prompts/views/dashboard.py`, binding the dynamic form for the URL-selected version and rendering a request-local `CompiledPrompt` without saving models or invoking providers
-- [ ] T010 [US1] Replace the display-only controls with a named CSRF form and add auto-escaped, whitespace-preserving aggregate/ordered-section preview regions plus an explicit no-LLM notice in `apps/server/prompts/templates/prompts/playground.html`
+- [X] T007 [P] [US1] Implement the request-scoped dynamic Playground form in `apps/server/prompts/forms.py` with `variable__<name>` fields, declaration order, defaults, string whitespace retention, strict integer/finite-float parsing, explicit boolean parsing, object-or-array JSON parsing, omission of blank optional values, and explicit rejection of submitted `variable__*` names absent from the selected version declarations
+- [X] T008 [P] [US1] Implement eager ORM snapshot loading plus ordered `Version`/variable/section mapping to public `RetrievedPrompt` and one-call `compile()` orchestration in `apps/server/prompts/services/playground.py`
+- [X] T009 [US1] Add CSRF-protected POST handling to `DashboardPlaygroundView` in `apps/server/prompts/views/dashboard.py`, binding the dynamic form for the URL-selected version and rendering a request-local `CompiledPrompt` without saving models or invoking providers
+- [X] T010 [US1] Replace the display-only controls with a named CSRF form and add auto-escaped, whitespace-preserving aggregate/ordered-section preview regions plus an explicit no-LLM notice in `apps/server/prompts/templates/prompts/playground.html`
 
 **Checkpoint**: US1 is independently usable as an LLM-free compiled preview and is the MVP.
 
@@ -70,12 +70,12 @@
 
 > **Write these tests first and confirm the unsafe or unsupported cases fail before hardening.**
 
-- [ ] T011 [US2] Add missing/invalid values, undeclared `variable__unknown` rejection, compiler/template failure, safe redisplay, no-partial-result, captured-log and response redaction of submitted values/full prompt text, repeated POST statelessness, no-write, CSRF, unauthenticated, non-staff, deleted-version, and unknown-version cases to `apps/server/prompts/tests/test_dashboard_playground.py`
+- [X] T011 [US2] Add missing/invalid values, undeclared `variable__unknown` rejection, compiler/template failure, safe redisplay, no-partial-result, captured-log and response redaction of submitted values/full prompt text, repeated POST statelessness, no-write, CSRF, unauthenticated, non-staff, deleted-version, and unknown-version cases to `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Reject undeclared generated fields, map parsing failures and expected PromptKit missing/unexpected/type/template exceptions to actionable value-free form errors, discard all partial results, and prevent submitted values/full prompt text from entering logs across `apps/server/prompts/forms.py`, `apps/server/prompts/services/playground.py`, and `apps/server/prompts/views/dashboard.py`
-- [ ] T013 [US2] Render preserved safe field values, field/non-field errors, and an explicit failure state without any preview region or unsafe markup in `apps/server/prompts/templates/prompts/playground.html`
+- [X] T012 [US2] Reject undeclared generated fields, map parsing failures and expected PromptKit missing/unexpected/type/template exceptions to actionable value-free form errors, discard all partial results, and prevent submitted values/full prompt text from entering logs across `apps/server/prompts/forms.py`, `apps/server/prompts/services/playground.py`, and `apps/server/prompts/views/dashboard.py`
+- [X] T013 [US2] Render preserved safe field values, field/non-field errors, and an explicit failure state without any preview region or unsafe markup in `apps/server/prompts/templates/prompts/playground.html`
 
 **Checkpoint**: US1 success behavior and US2 correction behavior both work through the same protected Playground URL.
 
@@ -91,12 +91,12 @@
 
 > **Write these tests first; all provider and registry boundaries must be replaced so the suite remains offline and cost-free.**
 
-- [ ] T014 [US3] Create orchestration tests in `tests/examples/test_gemini_e2e.py` covering stage order, omitted-label fetch, strict parameter JSON, stop-on-configuration/registry/compilation/adapter failure, zero Gemini import/construction/calls without `--live`, exactly one fake live call with no retry, client closure, non-empty/unexpected response handling, non-zero expected failures, and secret-safe output
+- [X] T014 [US3] Create orchestration tests in `tests/examples/test_gemini_e2e.py` covering stage order, omitted-label fetch, strict parameter JSON, stop-on-configuration/registry/compilation/adapter failure, zero Gemini import/construction/calls without `--live`, exactly one fake live call with no retry, client closure, non-empty/unexpected response handling, non-zero expected failures, and secret-safe output
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Implement the typed synchronous CLI orchestration in `examples/gemini-e2e/gemini_e2e.py`: read environment configuration, fetch via `PromptKitClient.fetch(slug)` without fallback, compile locally, convert with `GeminiAdapter`, print only safe stage/source details, delay provider import and construction until `--live`, perform exactly one `generate_content` call, validate response text, close the client, and return stage-specific sanitized exit failures
-- [ ] T016 [P] [US3] Document server/on-live prompt prerequisites, environment setup, isolated `uv` commands, responsibility boundaries, safe non-live behavior, explicit cost-bearing `--live` opt-in, expected stage output, and troubleshooting in `examples/gemini-e2e/README.md`
+- [X] T015 [US3] Implement the typed synchronous CLI orchestration in `examples/gemini-e2e/gemini_e2e.py`: read environment configuration, fetch via `PromptKitClient.fetch(slug)` without fallback, compile locally, convert with `GeminiAdapter`, print only safe stage/source details, delay provider import and construction until `--live`, perform exactly one `generate_content` call, validate response text, close the client, and return stage-specific sanitized exit failures
+- [X] T016 [P] [US3] Document server/on-live prompt prerequisites, environment setup, isolated `uv` commands, responsibility boundaries, safe non-live behavior, explicit cost-bearing `--live` opt-in, expected stage output, and troubleshooting in `examples/gemini-e2e/README.md`
 
 **Checkpoint**: US3 demonstrates the full consumer journey while keeping SDK/server free of LLM execution and default tests free of live calls.
 
@@ -106,11 +106,11 @@
 
 **Purpose**: Validate contracts across all stories and record any environment-limited checks.
 
-- [ ] T017 [P] Run `uv run pytest apps/server/prompts/tests/test_dashboard_playground.py` and resolve only feature-related failures in the files changed by US1/US2
-- [ ] T018 [P] Run `uv run pytest tests/examples/test_gemini_e2e.py` without live credentials and prove the test doubles observe zero real network/provider requests
-- [ ] T019 Run `uv run ruff check`, `uv run ruff format --check`, `uv run mypy .`, and `uv run pytest`, resolving only regressions caused by this feature
-- [ ] T020 Execute the non-live workflow from `specs/016-playground-e2e-example/quickstart.md` against a prepared local Prompt Server and record registry → compilation → adapter completion with zero Gemini calls in the implementation completion report; if the server prerequisites are unavailable, record the exact unmet prerequisite and mark this check unverified rather than passing it by assumption
-- [ ] T021 After separate explicit authorization acknowledging network use and possible Gemini cost, execute the `--live` smoke workflow from `specs/016-playground-e2e-example/quickstart.md`, verify completion within the 10-minute SC-004 target and exactly one Gemini request with a non-empty response, and record sanitized evidence in the implementation completion report; without that authorization, record this check as explicitly deferred and do not make the request
+- [X] T017 [P] Run `uv run pytest apps/server/prompts/tests/test_dashboard_playground.py` and resolve only feature-related failures in the files changed by US1/US2
+- [X] T018 [P] Run `uv run pytest tests/examples/test_gemini_e2e.py` without live credentials and prove the test doubles observe zero real network/provider requests
+- [X] T019 Run `uv run ruff check`, `uv run ruff format --check`, `uv run mypy .`, and `uv run pytest`, resolving only regressions caused by this feature
+- [X] T020 Execute the non-live workflow from `specs/016-playground-e2e-example/quickstart.md` against a prepared local Prompt Server and record registry → compilation → adapter completion with zero Gemini calls in the implementation completion report; if the server prerequisites are unavailable, record the exact unmet prerequisite and mark this check unverified rather than passing it by assumption
+- [X] T021 After separate explicit authorization acknowledging network use and possible Gemini cost, execute the `--live` smoke workflow from `specs/016-playground-e2e-example/quickstart.md`, verify completion within the 10-minute SC-004 target and exactly one Gemini request with a non-empty response, and record sanitized evidence in the implementation completion report; without that authorization, record this check as explicitly deferred and do not make the request
 
 ---
 
