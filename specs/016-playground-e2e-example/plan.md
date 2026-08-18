@@ -67,18 +67,27 @@ apps/server/
 ├── pyproject.toml                              # Declare compatible core promptkit dependency
 └── prompts/
     ├── forms.py                                # Dynamic, typed, non-persisting Playground form
-    ├── services/playground.py                  # ORM-to-RetrievedPrompt mapping and compile orchestration
+    ├── services/
+    │   ├── __init__.py                         # Dashboard service package boundary
+    │   └── playground.py                       # ORM-to-RetrievedPrompt mapping and compile orchestration
     ├── views/dashboard.py                      # Existing GET plus CSRF-protected POST rendering
     ├── templates/prompts/playground.html       # Named inputs, submit action, errors, compiled preview
     └── tests/test_dashboard_playground.py      # Staff/CSRF/compile/error/no-write view coverage
 
 examples/gemini-e2e/
+├── .env.example                                # Secret-free example configuration contract
 ├── pyproject.toml                              # Isolated promptkit + google-genai dependency contract
+├── uv.lock                                     # Reproducible example-only dependency lock
 ├── README.md                                   # Safe setup and live invocation guide
 └── gemini_e2e.py                               # Fetch → compile → adapt → optional single live call
 
-tests/examples/
-└── test_gemini_e2e.py                          # Fake-boundary orchestration and secret-safety tests
+tests/
+├── examples/
+│   └── test_gemini_e2e.py                      # Fake-boundary orchestration and secret-safety tests
+└── promptkit/integration/
+    └── test_public_sdk_harness.py               # Public SDK import regression assertions
+
+uv.lock                                         # Updated server/core dependency lock
 ```
 
 **Structure Decision**: Keep Playground web concerns in the existing Django app, with form parsing and ORM-to-SDK conversion separated from the thin CBV. Keep live provider execution in an independently configured example project. The core SDK source and public contracts require no feature change.

@@ -41,17 +41,17 @@
 
 **Goal**: Let an authenticated staff user submit typed variables for the selected version and receive SDK-compiled aggregate and ordered section text without persistence or an LLM call.
 
-**Independent Test**: Submit valid values, including repeated variables, whitespace, Unicode, and a version with no variables; confirm the response identifies the selected slug/version, preserves ordered compiled output, states that no LLM was called, and leaves registry records unchanged.
+**Independent Test**: Submit valid values, including repeated variables, placeholder-like input text, whitespace, Unicode, and a version with no variables; confirm the response completes within 2 seconds, identifies the selected slug/version, performs only one substitution pass, preserves ordered compiled output, states that no LLM was called, and leaves registry records unchanged.
 
 ### Tests for User Story 1
 
 > **Write these tests first and confirm they fail for the missing POST behavior.**
 
-- [ ] T006 [US1] Extend `DashboardPlaygroundTests` using Django `TestCase` and `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py` to cover successful typed POST compilation, repeated substitutions, no-variable output, section ordering, empty/whitespace/Unicode preservation, HTML escaping, exactly one SDK `compile()` call, zero provider calls, and zero database writes
+- [ ] T006 [US1] Extend `DashboardPlaygroundTests` using Django `TestCase` and `setUpTestData` in `apps/server/prompts/tests/test_dashboard_playground.py` to cover successful typed POST compilation within the 2-second SC-001 limit, repeated substitutions, placeholder-like input remaining literal after a single substitution pass, no-variable output, section ordering, empty/whitespace/Unicode preservation, HTML escaping, exactly one SDK `compile()` call, zero provider calls, and zero database writes
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Implement the request-scoped dynamic Playground form in `apps/server/prompts/forms.py` with `variable__<name>` fields, declaration order, defaults, string whitespace retention, strict integer/finite-float parsing, explicit boolean parsing, object-or-array JSON parsing, and omission of blank optional values
+- [ ] T007 [P] [US1] Implement the request-scoped dynamic Playground form in `apps/server/prompts/forms.py` with `variable__<name>` fields, declaration order, defaults, string whitespace retention, strict integer/finite-float parsing, explicit boolean parsing, object-or-array JSON parsing, omission of blank optional values, and explicit rejection of submitted `variable__*` names absent from the selected version declarations
 - [ ] T008 [P] [US1] Implement eager ORM snapshot loading plus ordered `Version`/variable/section mapping to public `RetrievedPrompt` and one-call `compile()` orchestration in `apps/server/prompts/services/playground.py`
 - [ ] T009 [US1] Add CSRF-protected POST handling to `DashboardPlaygroundView` in `apps/server/prompts/views/dashboard.py`, binding the dynamic form for the URL-selected version and rendering a request-local `CompiledPrompt` without saving models or invoking providers
 - [ ] T010 [US1] Replace the display-only controls with a named CSRF form and add auto-escaped, whitespace-preserving aggregate/ordered-section preview regions plus an explicit no-LLM notice in `apps/server/prompts/templates/prompts/playground.html`
@@ -70,11 +70,11 @@
 
 > **Write these tests first and confirm the unsafe or unsupported cases fail before hardening.**
 
-- [ ] T011 [US2] Add validation, compiler-failure, safe redisplay, no-partial-result, secret-redaction, no-write, CSRF, unauthenticated, non-staff, deleted-version, and unknown-version cases to `apps/server/prompts/tests/test_dashboard_playground.py`
+- [ ] T011 [US2] Add missing/invalid values, undeclared `variable__unknown` rejection, compiler/template failure, safe redisplay, no-partial-result, captured-log and response redaction of submitted values/full prompt text, repeated POST statelessness, no-write, CSRF, unauthenticated, non-staff, deleted-version, and unknown-version cases to `apps/server/prompts/tests/test_dashboard_playground.py`
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Map generated-field parsing failures and expected PromptKit missing/unexpected/type/template exceptions to actionable value-free form errors, discard all partial results, and avoid prompt/input logging across `apps/server/prompts/forms.py`, `apps/server/prompts/services/playground.py`, and `apps/server/prompts/views/dashboard.py`
+- [ ] T012 [US2] Reject undeclared generated fields, map parsing failures and expected PromptKit missing/unexpected/type/template exceptions to actionable value-free form errors, discard all partial results, and prevent submitted values/full prompt text from entering logs across `apps/server/prompts/forms.py`, `apps/server/prompts/services/playground.py`, and `apps/server/prompts/views/dashboard.py`
 - [ ] T013 [US2] Render preserved safe field values, field/non-field errors, and an explicit failure state without any preview region or unsafe markup in `apps/server/prompts/templates/prompts/playground.html`
 
 **Checkpoint**: US1 success behavior and US2 correction behavior both work through the same protected Playground URL.
@@ -109,7 +109,8 @@
 - [ ] T017 [P] Run `uv run pytest apps/server/prompts/tests/test_dashboard_playground.py` and resolve only feature-related failures in the files changed by US1/US2
 - [ ] T018 [P] Run `uv run pytest tests/examples/test_gemini_e2e.py` without live credentials and prove the test doubles observe zero real network/provider requests
 - [ ] T019 Run `uv run ruff check`, `uv run ruff format --check`, `uv run mypy .`, and `uv run pytest`, resolving only regressions caused by this feature
-- [ ] T020 Execute the non-live workflow from `specs/016-playground-e2e-example/quickstart.md` against a prepared local Prompt Server, record that registry → compilation → adapter completes with zero Gemini calls, and leave the cost-bearing `--live` smoke check unexecuted unless separately authorized
+- [ ] T020 Execute the non-live workflow from `specs/016-playground-e2e-example/quickstart.md` against a prepared local Prompt Server and record registry → compilation → adapter completion with zero Gemini calls in the implementation completion report; if the server prerequisites are unavailable, record the exact unmet prerequisite and mark this check unverified rather than passing it by assumption
+- [ ] T021 After separate explicit authorization acknowledging network use and possible Gemini cost, execute the `--live` smoke workflow from `specs/016-playground-e2e-example/quickstart.md`, verify completion within the 10-minute SC-004 target and exactly one Gemini request with a non-empty response, and record sanitized evidence in the implementation completion report; without that authorization, record this check as explicitly deferred and do not make the request
 
 ---
 
@@ -122,7 +123,7 @@
 - **Phase 3 (US1)**: Depends on Phase 2 and supplies the MVP success path.
 - **Phase 4 (US2)**: Depends on the US1 form/service/view/template integration because it hardens those same components.
 - **Phase 5 (US3)**: Depends on Phase 1 and Phase 2 public SDK confirmation, but is otherwise independent of the Playground implementation.
-- **Phase 6 (Validation)**: T017 depends on US1/US2, T018 depends on US3, T019 depends on both focused suites, and T020 depends on the completed example plus a prepared local server.
+- **Phase 6 (Validation)**: T017 depends on US1/US2, T018 depends on US3, T019 depends on both focused suites, T020 depends on the completed example plus a prepared local server, and T021 additionally depends on separate live-call authorization and valid Gemini credentials.
 
 ### User Story Dependencies
 
@@ -136,7 +137,7 @@
 - US1: form and ORM mapping may proceed in parallel, then view integration, then template rendering.
 - US2: failure tests precede backend exception mapping and failure-state template rendering.
 - US3: fake-boundary tests precede CLI implementation; documentation can proceed in parallel from the approved contracts.
-- Never run the live Gemini smoke check as part of automated validation.
+- Never run the live Gemini smoke check as part of automated validation; T021 is a separately authorized manual check and otherwise ends as explicitly deferred.
 
 ### Parallel Opportunities
 
@@ -178,7 +179,7 @@ Task T016: Document examples/gemini-e2e/README.md from the approved contract
 1. **US1**: Deliver valid local compilation preview.
 2. **US2**: Add safe error correction without changing the success contract.
 3. **US3**: Add the isolated, opt-in provider consumer journey.
-4. **Polish**: Run focused and repository-wide gates, then validate the non-live quickstart.
+4. **Polish**: Run focused and repository-wide gates, validate the non-live quickstart, and either perform the separately authorized live smoke check or explicitly record its deferral.
 
 ### Scope Guardrails
 
