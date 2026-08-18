@@ -3,6 +3,7 @@ Django Template Dashboard Views for Prompt Registry CUD operations.
 Requires Django Session Authentication and Staff Permissions.
 """
 
+import logging
 from typing import Any
 
 from django.contrib import messages
@@ -15,7 +16,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.views import View
 from django.views.generic import ListView
+from promptkit import (
+    CompiledPrompt,
+    InvalidVariableTypeError,
+    MissingVariableError,
+    PromptKitError,
+    TemplateValidationError,
+    UnexpectedVariableError,
+)
 
+from apps.server.prompts.forms import PlaygroundCompileForm
 from apps.server.prompts.models import (
     Prompt,
     PromptCategory,
@@ -35,11 +45,17 @@ from apps.server.prompts.services.lifecycle import (
     set_custom_label,
     set_on_live_version,
 )
+from apps.server.prompts.services.playground import (
+    compile_playground_version,
+    playground_version_queryset,
+)
 from apps.server.prompts.services.templates import (
     is_variable_referenced,
     rename_variable_in_content,
     validate_variable_default_value,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DashboardStaffRequiredMixin(UserPassesTestMixin):
@@ -370,10 +386,35 @@ class DashboardPlaygroundView(LoginRequiredMixin, DashboardStaffRequiredMixin, V
     template_name = "prompts/playground.html"
 
     def get(self, request: HttpRequest, version_id: int) -> HttpResponse:
-        version = get_object_or_404(
-            Version.objects.select_related("prompt").prefetch_related("variables"),
-            pk=version_id,
-        )
+        version = get_object_or_404(playground_version_queryset(), pk=version_id)
+        form = PlaygroundCompileForm(version.variables.all())
+        return self._render(request, version, form=form)
+
+    def post(self, request: HttpRequest, version_id: int) -> HttpResponse:
+        version = get_object_or_404(playground_version_queryset(), pk=version_id)
+        form = PlaygroundCompileForm(version.variables.all(), data=request.POST)
+        preview = None
+        if form.is_valid():
+            try:
+                preview = compile_playground_version(version, form.compile_params)
+            except PromptKitError as error:
+                self._add_compile_error(form, error)
+                logger.error(
+                    "Playground compilation failed (slug=%s, version=%d, category=%s)",
+                    version.prompt.slug,
+                    version.version_number,
+                    type(error).__name__,
+                )
+        return self._render(request, version, form=form, preview=preview)
+
+    def _render(
+        self,
+        request: HttpRequest,
+        version: Version,
+        *,
+        form: PlaygroundCompileForm,
+        preview: CompiledPrompt | None = None,
+    ) -> HttpResponse:
         return render(
             request,
             self.template_name,
@@ -381,8 +422,29 @@ class DashboardPlaygroundView(LoginRequiredMixin, DashboardStaffRequiredMixin, V
                 "prompt": version.prompt,
                 "version": version,
                 "variables": list(version.variables.all().order_by("name")),
+                "form": form,
+                "preview": preview,
             },
         )
+
+    @staticmethod
+    def _add_compile_error(form: PlaygroundCompileForm, error: PromptKitError) -> None:
+        field_name: str | None = None
+        if isinstance(error, MissingVariableError | InvalidVariableTypeError):
+            variable_name = str(error).rsplit(":", maxsplit=1)[-1].strip()
+            candidate = form.field_name(variable_name)
+            if candidate in form.fields:
+                field_name = candidate
+        if isinstance(error, MissingVariableError):
+            form.add_error(field_name, "This value is required for compilation.")
+        elif isinstance(error, InvalidVariableTypeError):
+            form.add_error(field_name, "Enter a value matching the declared type.")
+        elif isinstance(error, UnexpectedVariableError):
+            form.add_error(None, "An undeclared variable was submitted.")
+        elif isinstance(error, TemplateValidationError):
+            form.add_error(None, "The prompt template does not match its variable declarations.")
+        else:
+            form.add_error(None, "The prompt could not be compiled.")
 
 
 class DashboardVariableSchemaView(LoginRequiredMixin, DashboardStaffRequiredMixin, View):

@@ -24,6 +24,10 @@
         #input-status { color: var(--success); }
         .empty { color: var(--muted); text-align: center; padding: 2rem; }
         .required { color: var(--danger); }
+        button { margin-top: 1rem; padding: .7rem 1rem; border: 0; border-radius: 6px; background: var(--accent); color: #082f49; font-weight: 700; cursor: pointer; }
+        .errorlist { color: var(--danger); }
+        .compiled { white-space: pre-wrap; overflow-wrap: anywhere; padding: 1rem; background: var(--bg); border-radius: 6px; }
+        .success { color: var(--success); }
     </style>
 </head>
 <body>
@@ -36,39 +40,52 @@
             <h1>{{ prompt.name }}</h1>
             <p class="meta">Version {{ version.version_number }} · {{ version.status|upper }} · Input values stay only in this browser page.</p>
         </section>
-        <section class="card" aria-labelledby="variables-title">
-            <h2 id="variables-title">Variable inputs</h2>
-            {% if variables %}
-                <p id="input-status" role="status">Review required values before using this Playground in a later workflow.</p>
-                {% for variable in variables %}
-                    <div class="variable" data-variable data-type="{{ variable.var_type }}" data-required="{{ variable.required|yesno:'true,false' }}">
-                        <label for="variable-{{ variable.name }}">{{ variable.name }}{% if variable.required %} <span class="required" aria-label="required">*</span>{% endif %}</label>
-                        {% if variable.description %}<p class="hint">{{ variable.description }}</p>{% endif %}
-                        {% if variable.var_type == 'boolean' %}
-                            <select id="variable-{{ variable.name }}" aria-required="{{ variable.required|yesno:'true,false' }}">
-                                <option value="" {% if variable.default_value is None %}selected{% endif %}>Choose a value</option>
-                                <option value="true" {% if variable.default_value == 'true' %}selected{% endif %}>True</option>
-                                <option value="false" {% if variable.default_value == 'false' %}selected{% endif %}>False</option>
-                            </select>
-                        {% elif variable.var_type == 'json' %}
-                            <textarea id="variable-{{ variable.name }}" aria-required="{{ variable.required|yesno:'true,false' }}">{{ variable.default_value|default_if_none:'' }}</textarea>
-                        {% else %}
-                            <input id="variable-{{ variable.name }}" type="{% if variable.var_type == 'number' %}number{% else %}text{% endif %}" value="{{ variable.default_value|default_if_none:'' }}" aria-required="{{ variable.required|yesno:'true,false' }}">
-                        {% endif %}
-                        <p class="error" role="alert"></p>
-                    </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <section class="card" aria-labelledby="variables-title">
+                <h2 id="variables-title">Variable inputs</h2>
+                {{ form.non_field_errors }}
+                {% if variables %}
+                    <p id="input-status" role="status">Review the values, then compile locally.</p>
+                    {% for field in form %}
+                        <div class="variable" data-variable>
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% if field.help_text %}<p class="hint">{{ field.help_text }}</p>{% endif %}
+                            {{ field }}
+                            <div class="error" role="alert">{{ field.errors }}</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="empty">No variables are defined for this version. No input is needed.</p>
+                {% endif %}
+                <button type="submit">Compile preview</button>
+            </section>
+        </form>
+        {% if preview %}
+            <section class="card" aria-labelledby="preview-title">
+                <h2 id="preview-title">Compiled preview</h2>
+                <p class="success" role="status">Compilation succeeded. No LLM request was made.</p>
+                <p class="meta">Source: {{ preview.slug }} · Version {{ preview.version }}</p>
+                <h3>Aggregate content</h3>
+                {% if preview.content %}<pre class="compiled">{{ preview.content }}</pre>{% else %}<p class="empty">Compiled content is empty.</p>{% endif %}
+                <h3>Ordered sections</h3>
+                {% for section in preview.sections %}
+                    <article>
+                        <h4>{{ section.order }} · {{ section.role }}</h4>
+                        {% if section.content %}<pre class="compiled">{{ section.content }}</pre>{% else %}<p class="empty">This section is empty.</p>{% endif %}
+                    </article>
+                {% empty %}
+                    <p class="empty">No compiled sections.</p>
                 {% endfor %}
-            {% else %}
-                <p class="empty">No variables are defined for this version. No input is needed.</p>
-            {% endif %}
-        </section>
+            </section>
+        {% endif %}
     </main>
     <script>
         function validateVariable(container) {
             const control = container.querySelector('input, select, textarea');
             const error = container.querySelector('.error');
-            const required = container.dataset.required === 'true';
-            const type = container.dataset.type;
+            const required = control.getAttribute('aria-required') === 'true';
+            const type = control.dataset.variableType;
             const value = control.value.trim();
             let message = '';
 

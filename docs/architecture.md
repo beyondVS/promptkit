@@ -24,8 +24,11 @@ promptkit/
 - **역할**: 프롬프트 데이터의 영속성 관리, 스태프 대시보드 CUD 및 Read-only API 서빙
 - **접근 제어**:
   - **대시보드 CUD (`/dashboard/`)**: Django Session Auth 및 CSRF 보장 (스태프 전용)
+  - **Playground (`/dashboard/versions/<version_id>/playground/`)**: 선택한 ORM 버전을
+    SDK `RetrievedPrompt`로 변환하여 request-local `compile()`을 수행하는 스태프 전용 프리뷰
   - **SDK Read-Only API (`/api/v1/prompts/<slug>/`)**: `X-PromptKit-Api-Key` Header 인증
-- **원칙**: 외부 SDK에 프롬프트 CUD API를 노출하지 않으며, LLM을 직접 호출하지 않음.
+- **원칙**: 외부 SDK에 프롬프트 CUD API를 노출하지 않으며, Playground도 DB 쓰기나
+  LLM 호출 없이 렌더링된 `CompiledPrompt` 텍스트만 표시함.
 
 ### 1.2 packages/promptkit (Python SDK Core)
 - **역할**: 서버로부터 원격 프롬프트를 조회하고, 클라이언트 측에서 동적 변수를 파싱/컴파일하여 LLM 인자로 변환
@@ -102,6 +105,19 @@ print(compiled.version)
 Day 13의 SDK는 조회·검증·로컬 렌더링에 더해 Gemini, OpenAI 및 LiteLLM용 호출 인자
 변환을 제공합니다. 모델, 자격 증명, 생성 설정과 실제 LLM 호출은 호출자가 관리하며
 SDK는 어떤 경우에도 공급자 SDK를 import하거나 LLM 호출을 대행하지 않습니다.
+
+### Playground 및 실행 예제 경계
+
+대시보드 Playground는 서버에 저장된 특정 버전과 사용자가 제출한 변수만 사용해 SDK
+컴파일을 한 번 수행합니다. 이 경로는 원격 Read-only API를 다시 호출하지 않고,
+aggregate content와 ordered sections를 autoescaped 텍스트로 표시하며 영속 상태를
+변경하지 않습니다.
+
+`examples/gemini-e2e`는 반대로 외부 애플리케이션의 책임 경계를 보여주는 격리 예제입니다.
+실제 Read-only API 조회와 로컬 컴파일·Gemini 변환을 수행하되, 기본 모드는 공급자 SDK를
+생성하지 않습니다. 사용자가 `--live`를 명시한 경우에만 예제 애플리케이션이 Gemini를
+정확히 한 번 호출합니다. 따라서 `google-genai`와 `.env` 로딩 의존성은 코어 SDK나
+Prompt Server가 아니라 예제 프로젝트에만 존재합니다.
 
 ---
 
