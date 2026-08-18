@@ -19,7 +19,9 @@
    - 프롬프트 변경 시 해당 프롬프트를 원격 참조하는 서비스/애플리케이션 영향 범위 및 의존성 시각화.
 
 5. **Prompt Test & Playground Execution**
-   - 대시보드 Playground 내에서 사용자의 API Key를 이용하여 실제 LLM API 호출 테스트를 수행할 수 있는 테스트 모듈.
+   - MVP Playground의 SDK 기반 로컬 `CompiledPrompt` 프리뷰는 완료되었다. 향후에는 현재의
+     무호출·무상태 경계를 유지할지 별도 실행 서비스로 분리할지 먼저 결정한 뒤, 사용자의
+     API Key로 실제 LLM 호출 테스트를 수행하는 opt-in 모듈을 검토한다.
 
 ---
 

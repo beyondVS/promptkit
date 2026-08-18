@@ -104,6 +104,31 @@ Django 애플리케이션에서는 `PROMPTKIT`에 `CACHE_TTL`(기본 `60.0`초)�
 캐시 읽기와 쓰기를 모두 비활성화합니다. 자세한 계약은
 [Django Integration Requirements](docs/promptkit-django-requirements.md)를 참고하십시오.
 
+### Playground 로컬 프리뷰
+
+스태프 사용자는 대시보드의 버전 상세 화면에서 Playground를 열어 선언된 변수 값을
+입력하고, SDK의 공개 `RetrievedPrompt.compile()` 엔진으로 렌더링된 aggregate content와
+ordered sections를 확인할 수 있습니다. 이 POST 화면은 Django Session Auth와 CSRF로
+보호되며 데이터베이스를 변경하거나 LLM 공급자를 호출하지 않습니다. 실행 방법은
+[Prompt Server 안내](apps/server/README.md)를 참고하십시오.
+
+### Prompt Server → SDK → Gemini E2E 예제
+
+격리된 소비자 예제는 실제 Prompt Server에서 on-live 버전을 조회하고 로컬 컴파일과
+Gemini 인자 변환까지 수행합니다. 기본 실행은 Gemini를 호출하지 않으며, `--live`를
+명시한 경우에만 재시도 없이 Gemini 요청을 정확히 한 번 전송합니다.
+
+```powershell
+Copy-Item examples/gemini-e2e/.env.example examples/gemini-e2e/.env
+uv run --project examples/gemini-e2e python examples/gemini-e2e/gemini_e2e.py
+# 외부 전송과 quota/비용 가능성을 확인한 뒤에만 실행
+uv run --project examples/gemini-e2e python examples/gemini-e2e/gemini_e2e.py --live
+```
+
+예제는 자체 디렉토리의 `.env`를 현재 작업 디렉토리와 무관하게 자동으로 읽으며,
+이미 설정된 shell 환경 변수를 우선합니다. 설정 항목과 안전한 실패 계약은
+[Gemini E2E Example](examples/gemini-e2e/README.md)을 참고하십시오.
+
 ---
 
 ## 🛠️ Local Development & Mechanical Harness
@@ -123,6 +148,14 @@ uv run ruff check ; uv run ruff format ; uv run mypy .
 ### 3. 유닛 및 통합 테스트 구동
 ```bash
 uv run pytest
+```
+
+루트 `pytest` 설정은 `tests/`를 대상으로 하므로 서버 앱 내부의 Playground 테스트는
+다음 명령으로 별도 실행합니다.
+
+```bash
+uv run pytest apps/server/prompts/tests/test_dashboard_playground.py
+uv run pytest tests/examples/test_gemini_e2e.py
 ```
 
 ---

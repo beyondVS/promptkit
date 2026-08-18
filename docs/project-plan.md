@@ -75,9 +75,10 @@
 * [x] **Day 15 (1h): Django Cache 기반 캐싱 및 ETag/TTL 정합성 메커니즘**
     *   호스트의 `CACHES["default"]`를 사용하는 opt-in `fetch_cached()`와 `CACHE_TTL` 설정, prompt/global generation 무효화 구현.
     *   canonical response 기반 strong ETag, `If-None-Match`/`304 Not Modified`, two-window TTL 재검증 및 no-stale-fallback 정합성 전략 구현.
-* [ ] **Day 16 (1h): Playground SDK 연동 및 E2E 예제 구현**
-    *   `examples/` 디렉토리에 실제 DRF 서버-SDK-Gemini API 호출에 이르는 엔드투엔드 예제 시나리오 코드 작성.
-    *   Day 09에 개발한 Playground 뷰에 SDK의 `compile()` 엔진을 최종 결합하여 **LLM 호출 없는 CompiledPrompt 텍스트 프리뷰 기능** 완성.
+* [x] **Day 16 (1h): Playground SDK 연동 및 E2E 예제 구현**
+    *   `examples/gemini-e2e/`에 실제 DRF 서버 조회, SDK 로컬 컴파일, Gemini 변환 및 명시적 `--live` 단일 호출 시나리오 구현. 기본 실행은 Gemini 호출 없이 전체 로컬 경계를 검증하며 `.env`를 자동 로드함.
+    *   Day 09 Playground에 SDK의 `compile()` 엔진을 결합하여 **LLM 호출 및 DB 쓰기 없는 CompiledPrompt aggregate/ordered sections 텍스트 프리뷰 기능** 완성.
+    *   비-live 및 live 수동 E2E 확인, Playground·예제 자동 회귀 테스트와 독립 감사를 완료함.
 * [ ] **Day 17 (1h): 모노레포 통합 배포 및 패키지 상호 운용성 검증**
     *   모노레포의 개별 패키지들이 상호 간섭 없이 각각 독립적으로 설치되고 연동되는지 전체 빌드/배포 격리 테스트.
 * [ ] **Day 18 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
