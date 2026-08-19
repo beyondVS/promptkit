@@ -17,7 +17,8 @@ promptkit/
 │   └── promptkit-django/     # Django 연동 통합 라이브러리
 ├── docs/                     # 설계 및 아키텍처 문서
 ├── examples/                 # 사용 사례 예제 코드
-└── tests/                    # 유닛 및 통합 테스트
+└── tests/
+    └── deployment/           # wheel/Git subdirectory 배포 격리 및 상호 운용 matrix
 ```
 
 ### 1.1 apps/server (Prompt Server)
@@ -47,6 +48,14 @@ promptkit/
 - **캐시 경계**: 호스트의 `CACHES["default"]`만 사용한다. `fetch_cached()`는 TTL 동안 fresh entry를 반환하고 다음 동일 길이 구간에서는 ETag로 재검증한다. `get_client().fetch()`는 기존처럼 항상 uncached이며 `CACHE_TTL=0`이면 모든 캐시 I/O를 우회한다.
 - **정합성**: 서버는 직렬화된 응답 representation의 strong ETag를 반환한다. stale entry는 `If-None-Match` 요청의 `304`로 freshness만 연장하거나 `200` 응답으로 원자적으로 교체하며, 원격 오류에는 stale fallback을 제공하지 않는다.
 - **설치 경계**: 패키지 인덱스를 사용하지 않으므로 외부 사용자는 기본 브랜치의 `packages/promptkit`과 `packages/promptkit-django` Git subdirectory를 함께 설치
+
+### 1.4 배포 단위 및 격리 검증 경계
+- **배포 단위**: `promptkit`, `promptkit-django`, Prompt Server의 세 단위는 각각 새 wheel과 Git subdirectory source에서 설치 가능해야 한다.
+- **Prompt Server artifact**: Hatchling wheel은 기존 `apps.server.*` namespace와 `config`, `core`, `prompts`, templates, migrations를 보존한다. 서버 metadata는 현재 Core SDK 호환 범위인 `promptkit>=0.1,<0.2`를 선언한다.
+- **uv-only 실행**: 격리 환경 생성, dependency 준비, wheel/Git 설치는 모두 uv로 수행한다. local `git+file` preflight가 실패하면 direct pip로 우회하지 않는다.
+- **Artifact 판정**: 외부 runtime dependency 준비와 target artifact 판정을 분리한다. target은 임시 wheelhouse에서 `--no-index --find-links --no-deps`로 설치하여 package index나 workspace source가 결과를 가리지 않게 한다.
+- **상호 운용성**: Core-first와 Django-integration-first 요청 순서 모두 동일한 공개 SDK compile 계약과 단일 Django client 등록을 제공해야 한다.
+- **릴리스 결과**: 8개 실제 소비자 시나리오는 배포 단위, 설치 방식, 최초 실패 단계 및 verdict를 한 요약으로 출력하고, 연속 두 실행에서 동일한 결과를 제공해야 한다.
 
 ---
 

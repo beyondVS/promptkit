@@ -79,3 +79,10 @@
 ```bash
 uv add "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit"
 ```
+
+새 wheel과 local committed Git subdirectory 설치는 각각 별도의 uv 가상환경에서 검증한다.
+검증 환경은 repository root와 `PYTHONPATH`를 노출하지 않으며 설치된 distribution 위치가
+해당 환경 내부인지 확인한다. wheel metadata의 `Name`, `Version`, `Requires-Python` 및
+`Requires-Dist`(`httpx>=0.27,<1`, `pydantic>=2,<3`)를 공개 import·compile smoke와 함께
+검증한다. Pydantic 의존성을 제거한 실제 변조 wheel은 설치 후
+`promptkit-missing-dependency:smoke`로 식별되어야 한다.

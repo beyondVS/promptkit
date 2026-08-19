@@ -66,3 +66,9 @@ uv add \
 두 패키지는 함께 설치·업그레이드한다. `promptkit-django`의 표준 metadata에는
 `promptkit>=0.1,<0.2`가 유지되지만, 통합 패키지만 설치하면 resolver가 configured
 package index에서 코어 SDK를 찾으므로 현재 정책에서는 실패한다.
+
+배포 검증은 새 Core SDK wheel을 임시 wheelhouse에 제공하고 Django integration의 wheel과
+local committed Git subdirectory 경로를 각각 새 uv 환경에 설치한다. 설치 후 repository
+source path 없이 최소 Django `settings.configure()`·`django.setup()`과 단일 `get_client()`
+등록을 확인한다. 또한 core-first와 integration-first의 두 요청 설치 순서가 동일한
+`RetrievedPrompt.compile()` 결과와 호환 metadata를 제공해야 한다.

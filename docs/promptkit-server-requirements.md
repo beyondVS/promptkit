@@ -70,3 +70,14 @@ Prompt Server는 애플리케이션 프롬프트 자산을 중앙에서 저장, 
 - Query Parameter: `?label=<label_name>` (생략 시 On-live 지정 버전 반환)
 - On-live 버전 미존재 시 `404 no_deployable_version` 반환.
 - 상세한 JSON 응답 스키마, ETag 조건부 캐싱 및 HTTP 응답 코드 사양은 [sdk-read-api-contract.md](sdk-read-api-contract.md) 계약 문서를 참조하십시오.
+
+---
+
+## 4. 독립 배포 및 설치 규격
+
+- Prompt Server는 `apps/server` Git subdirectory와 새 wheel 양쪽에서 설치 가능한 독립 배포 단위이다.
+- wheel은 기존 `apps.server.*` namespace, `config`, `core`, `prompts`, Django templates 및 migrations를 포함해야 한다.
+- runtime metadata는 `promptkit>=0.1,<0.2`와 Django, DRF, psycopg, python-dotenv 의존성을 선언한다.
+- 설치 후 repository root나 `PYTHONPATH` 없이 `apps.server.config.settings`를 로드하고 `/api/v1/health/`의 database-free smoke를 통과해야 한다.
+- 검증은 uv-only 환경에서 실행하며 target wheel/Git artifact는 임시 wheelhouse와 `--no-index --find-links` 경계에서 설치한다.
+- 누락 template을 주입한 실제 변조 wheel은 설치 후 landing smoke에서 `server-missing-template:smoke`로 귀속되어야 한다.
