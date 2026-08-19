@@ -62,6 +62,24 @@ uv add \
 두 패키지는 함께 설치·업그레이드해야 합니다. `promptkit-django`만 설치하면
 resolver가 패키지 인덱스에서 `promptkit`을 찾으므로 현재 배포 정책에서는 실패합니다.
 
+### 모노레포 격리 배포 검증
+
+`promptkit`, `promptkit-django`, Prompt Server는 각각 새 wheel과 local committed Git
+subdirectory 설치 경로를 격리 환경에서 검증합니다. SDK와 Django 통합은 core-first 및
+integration-first 요청 순서도 확인합니다. 이 검증은 `uv`만 사용하며, local Git preflight가
+실패하면 direct `pip`로 우회하지 않습니다.
+
+외부 의존성은 artifact 판정 전에 uv로 준비하고, 실제 target artifact는 임시 wheelhouse의
+`--no-index --find-links` 경로에서만 설치합니다. 따라서 repository import path나 package
+index 가용성이 통과 결과를 가리지 않습니다.
+
+```powershell
+uv run pytest tests/deployment/test_isolated_installation.py
+```
+
+출력은 scenario별 deployment unit, 설치 방식, 실패 단계 및 verdict를 요약해 릴리스
+담당자가 빠르게 판정할 수 있게 합니다.
+
 ---
 
 ## ⚡ Quick Start

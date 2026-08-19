@@ -10,7 +10,7 @@
 
 **Purpose**: 루트 pytest 수집 대상에 배포 검증 패키지를 준비한다.
 
-- [ ] T001 Create the deployment-test package marker in `tests/deployment/__init__.py`
+- [X] T001 Create the deployment-test package marker in `tests/deployment/__init__.py`
 
 ---
 
@@ -20,7 +20,7 @@
 
 **⚠️ CRITICAL**: 이 단계가 끝날 때까지 사용자 스토리 구현을 시작하지 않는다.
 
-- [ ] T002 Implement uv local-Git preflight, dependency acquisition, wheelhouse-only `--no-index --find-links` resolution, local Git snapshots, isolated environments, `PYTHONPATH` removal, and stage diagnostics in `tests/deployment/helpers.py`
+- [X] T002 Implement uv local-Git preflight, dependency acquisition, wheelhouse-only `--no-index --find-links` resolution, local Git snapshots, isolated environments, `PYTHONPATH` removal, and stage diagnostics in `tests/deployment/helpers.py`
 
 **Checkpoint**: uv가 로컬 Git 서브디렉터리를 처리하며 각 시나리오가 새 wheelhouse, 전용 가상환경, 저장소 밖 작업 디렉터리를 만들 수 있다. preflight 실패 시 direct pip fallback 없이 prerequisite failure로 중단한다.
 
@@ -34,15 +34,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T003 [US1] Add failing six-path install, Prompt Server namespace, package-data, and artifact-metadata contract tests in `tests/deployment/test_isolated_installation.py`
+- [X] T003 [US1] Add failing six-path install, Prompt Server namespace, package-data, and artifact-metadata contract tests in `tests/deployment/test_isolated_installation.py`
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Configure the Prompt Server installed namespace, complete package tree, templates, and migrations in `apps/server/pyproject.toml`
-- [ ] T005 [US1] Align all affected installed-runtime imports and startup references across `apps/server/config/`, `apps/server/core/`, `apps/server/prompts/`, and `apps/server/manage.py` only if T004 cannot preserve the existing `apps.server.*` namespace
-- [ ] T006 [US1] Validate wheel `Name`, `Version`, `Requires-Python`, `Requires-Dist`, public modules, and Prompt Server package data in `tests/deployment/test_isolated_installation.py`
-- [ ] T007 [US1] Implement the six artifact-install smoke scenarios, installed-distribution location assertions, and core fixture-backed compilation checks in `tests/deployment/test_isolated_installation.py`
-- [ ] T008 [US1] Run the six-scenario P1 matrix from `tests/deployment/test_isolated_installation.py` and record a passing result
+- [X] T004 [US1] Configure the Prompt Server installed namespace, complete package tree, templates, and migrations in `apps/server/pyproject.toml`
+- [X] T005 [US1] Align all affected installed-runtime imports and startup references across `apps/server/config/`, `apps/server/core/`, `apps/server/prompts/`, and `apps/server/manage.py` only if T004 cannot preserve the existing `apps.server.*` namespace
+- [X] T006 [US1] Validate wheel `Name`, `Version`, `Requires-Python`, `Requires-Dist`, public modules, and Prompt Server package data in `tests/deployment/test_isolated_installation.py`
+- [X] T007 [US1] Implement the six artifact-install smoke scenarios, installed-distribution location assertions, and core fixture-backed compilation checks in `tests/deployment/test_isolated_installation.py`
+- [X] T008 [US1] Run the six-scenario P1 matrix from `tests/deployment/test_isolated_installation.py` and record a passing result
 
 **Checkpoint**: 세 배포 단위가 wheel과 local committed Git-subdirectory 설치를 모두 통과하며 metadata, namespace, templates, migrations가 검증된다.
 
@@ -56,12 +56,12 @@
 
 ### Tests for User Story 2
 
-- [ ] T009 [US2] Add failing core-first and integration-first interoperability scenarios with matching-version assertions in `tests/deployment/test_isolated_installation.py`
+- [X] T009 [US2] Add failing core-first and integration-first interoperability scenarios with matching-version assertions in `tests/deployment/test_isolated_installation.py`
 
 ### Implementation for User Story 2
 
-- [ ] T010 [US2] Implement ordered uv wheel installation, minimal Django setup, single-client registration, and equivalent installed-core compilation assertions in `tests/deployment/test_isolated_installation.py`
-- [ ] T011 [US2] Run the two-order interoperability matrix from `tests/deployment/test_isolated_installation.py` and record a passing result
+- [X] T010 [US2] Implement ordered uv wheel installation, minimal Django setup, single-client registration, and equivalent installed-core compilation assertions in `tests/deployment/test_isolated_installation.py`
+- [X] T011 [US2] Run the two-order interoperability matrix from `tests/deployment/test_isolated_installation.py` and record a passing result
 
 **Checkpoint**: 두 설치 순서가 freshly built matching core artifact만 사용하고 동일한 공개 동작을 제공한다.
 
@@ -75,14 +75,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T012 [US3] Add failing diagnostic, scenario-isolation, release-summary, and repeated-run result tests in `tests/deployment/test_isolated_installation.py`
+- [X] T012 [US3] Add failing diagnostic, scenario-isolation, release-summary, and repeated-run result tests in `tests/deployment/test_isolated_installation.py`
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Implement stage-prefixed subprocess reporting and non-mutating malformed-artifact seams in `tests/deployment/helpers.py`
-- [ ] T014 [US3] Implement matrix aggregation, per-scenario isolation, and repeated-run assertions in `tests/deployment/test_isolated_installation.py`
-- [ ] T015 [US3] Implement one-row-per-scenario release summary assertions for unit, installation kind, failed stage, and verdict in `tests/deployment/test_isolated_installation.py`
-- [ ] T016 [US3] Run the full focused matrix twice from `tests/deployment/test_isolated_installation.py` and record identical per-scenario verdicts
+- [X] T013 [US3] Implement stage-prefixed subprocess reporting and non-mutating malformed-artifact seams in `tests/deployment/helpers.py`
+- [X] T014 [US3] Implement matrix aggregation, per-scenario isolation, and repeated-run assertions in `tests/deployment/test_isolated_installation.py`
+- [X] T015 [US3] Implement one-row-per-scenario release summary assertions for unit, installation kind, failed stage, and verdict in `tests/deployment/test_isolated_installation.py`
+- [X] T016 [US3] Run the full focused matrix twice from `tests/deployment/test_isolated_installation.py` and record identical per-scenario verdicts
 
 **Checkpoint**: 실패가 정확한 scenario/stage로 귀속되고 한 요약만으로 5분 이내 판정 가능한 결과가 두 실행에서 동일하다.
 
@@ -92,10 +92,10 @@
 
 **Purpose**: 소비자 문서와 프로젝트 하네스가 확정된 독립 배포 계약을 반영하는지 검증한다.
 
-- [ ] T017 [P] Document uv-only Prompt Server artifact and Git-subdirectory installation prerequisites in `apps/server/README.md`
-- [ ] T018 [P] Document the three-unit matrix, offline validation boundary, and focused command in `README.md`
-- [ ] T019 Run `uv run ruff check`, `uv run ruff format --check`, `uv run mypy .`, and `uv run pytest` from `pyproject.toml` and record passing results
-- [ ] T020 Run the focused release-decision command from `specs/017-package-isolation-validation/quickstart.md` and verify every summary row is present
+- [X] T017 [P] Document uv-only Prompt Server artifact and Git-subdirectory installation prerequisites in `apps/server/README.md`
+- [X] T018 [P] Document the three-unit matrix, offline validation boundary, and focused command in `README.md`
+- [X] T019 Run `uv run ruff check`, `uv run ruff format --check`, `uv run mypy .`, and `uv run pytest` from `pyproject.toml` and record passing results
+- [X] T020 Run the focused release-decision command from `specs/017-package-isolation-validation/quickstart.md` and verify every summary row is present
 
 ---
 
