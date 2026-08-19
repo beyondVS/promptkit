@@ -44,6 +44,9 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
     "promptkit @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit" \
     "promptkit-django @ git+https://github.com/beyondVS/promptkit.git#subdirectory=packages/promptkit-django"
   ```
+- **Isolated Artifact Validation**: `promptkit`, `promptkit-django`, Prompt Server는 각각 새 wheel과 local committed Git subdirectory 경로에서 uv-only로 검증한다. target artifact 설치는 임시 wheelhouse와 `--no-index --find-links`를 사용하며 repository source path와 package index를 판정 경계에서 제외한다.
+- **Artifact Metadata Contract**: 모든 wheel은 `Name`, `Version`, `Requires-Python`, `Requires-Dist` 및 공개 import 모듈을 보존한다. Prompt Server wheel은 `apps.server.*` namespace, templates, migrations와 `promptkit>=0.1,<0.2` 의존성을 포함한다.
+- **Release Decision Matrix**: 6개 독립 설치 경로와 2개 SDK/Django 설치 순서를 실제 소비자 환경에서 검증하고, 실패를 scenario/stage에 귀속하며 동일 matrix를 연속 두 번 실행한다.
 
 ---
 
@@ -51,7 +54,7 @@ PromptKit은 LLM 애플리케이션용 자가호스팅 프롬프트 레지스트
 
 | 패키지 | 주요 역할 및 책임 | 주요 의존성 |
 | :--- | :--- | :--- |
-| `apps/server` | 프롬프트 저장소, 대시보드 CUD, Read-Only API Serving | Django, DRF, PostgreSQL |
+| `apps/server` | 프롬프트 저장소, 대시보드 CUD, Read-Only API Serving, 독립 wheel/Git subdirectory 배포 | Django, DRF, `promptkit>=0.1,<0.2`, PostgreSQL |
 | `packages/promptkit` | 원격 프롬프트 fetch와 ETag 조건부 조회, 로컬 `compile()`, Pydantic 변수 검증, LLM Adapters | Pydantic v2, httpx |
 | `packages/promptkit-django` | `PROMPTKIT` Settings 검증, SDK 자동 등록, opt-in Django Cache/ETag 재검증 및 무효화 | `promptkit`, Django, Pydantic v2 |
 

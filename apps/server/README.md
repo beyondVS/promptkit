@@ -31,6 +31,21 @@ uv run python manage.py createsuperuser
 uv run python manage.py runserver
 ```
 
+## 독립 배포 검증
+
+Prompt Server 배포 artifact는 `apps.server` namespace, Django templates 및 migrations를
+포함한다. 개발자는 새 wheel 또는 저장소의 `apps/server` Git subdirectory에서 설치할 수
+있으며, core SDK artifact를 함께 제공해야 한다.
+
+격리 검증은 `uv`만 사용한다. 현재 uv가 local `git+file` subdirectory URL을 설치할 수
+있는지 먼저 확인하고, 실패 시 direct `pip`로 우회하지 않는다. 실제 artifact 판정 단계는
+임시 wheelhouse에서 `--no-index --find-links`로 실행되어 repository source와 package index
+결과가 섞이지 않는다.
+
+```powershell
+uv run pytest tests/deployment/test_isolated_installation.py -k server
+```
+
 로그인 후 프롬프트 상세 화면에서 대상 버전의 Playground 링크를 선택합니다. 문자열,
 유한 number, 명시적 true/false boolean, JSON object/array 입력을 지원하며 검증 또는
 컴파일 실패 시 같은 화면에 오류가 표시됩니다.

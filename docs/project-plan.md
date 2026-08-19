@@ -79,8 +79,11 @@
     *   `examples/gemini-e2e/`에 실제 DRF 서버 조회, SDK 로컬 컴파일, Gemini 변환 및 명시적 `--live` 단일 호출 시나리오 구현. 기본 실행은 Gemini 호출 없이 전체 로컬 경계를 검증하며 `.env`를 자동 로드함.
     *   Day 09 Playground에 SDK의 `compile()` 엔진을 결합하여 **LLM 호출 및 DB 쓰기 없는 CompiledPrompt aggregate/ordered sections 텍스트 프리뷰 기능** 완성.
     *   비-live 및 live 수동 E2E 확인, Playground·예제 자동 회귀 테스트와 독립 감사를 완료함.
-* [ ] **Day 17 (1h): 모노레포 통합 배포 및 패키지 상호 운용성 검증**
-    *   모노레포의 개별 패키지들이 상호 간섭 없이 각각 독립적으로 설치되고 연동되는지 전체 빌드/배포 격리 테스트.
+* [x] **Day 17 (1h): 모노레포 통합 배포 및 패키지 상호 운용성 검증**
+    *   `promptkit`, `promptkit-django`, Prompt Server의 새 wheel 및 local committed Git subdirectory 설치를 uv-only 격리 환경에서 검증 완료.
+    *   Prompt Server wheel이 `apps.server.*` namespace, templates 및 migrations를 포함하도록 Hatchling 배포 구성을 정립하고 `promptkit>=0.1,<0.2` 호환 계약을 명시.
+    *   Core SDK와 Django integration의 두 요청 설치 순서, artifact metadata, repository source-path 비의존성, 실제 손상 wheel 실패 귀속을 검증.
+    *   8개 실제 소비자 시나리오를 두 번 실행하여 동일한 release summary를 확인하고 전체 Ruff·MyPy·pytest 하네스 및 독립 감사를 통과.
 * [ ] **Day 18 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
     *   서버 다운, 잘못된 변수 주입, 인증 오류 발생 시 SDK의 예외 처리와 로깅 구조의 복원성 검증.
 * [ ] **Day 19 (1h): 에이전트 교차 검증(Audit) 및 Sign-off**
