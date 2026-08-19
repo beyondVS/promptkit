@@ -29,16 +29,26 @@
 - Add the repository root to imports: rejected because it invalidates isolation.
 - Change this feature into package-index publication: rejected as out of scope.
 
-## Decision 4: Seed environments with uv, then use their pip for local Git URLs on Windows
+## Decision 4: Use uv for environment creation and every package operation
 
-**Rationale**: Existing Django integration coverage demonstrates that the current Windows uv release can fail on equivalent local `git+file` URLs. `uv venv --seed` preserves uv-controlled environment setup while the resulting interpreter's pip exercises the actual Git-subdirectory installation contract.
+**Rationale**: Project policy requires uv-only package management. `uv venv --seed` creates each environment and `uv pip install --python <environment-python>` installs wheels and local Git-subdirectory sources. The current uv version must pass a local `git+file` preflight before implementation proceeds; a failure is reported as a blocked prerequisite rather than silently falling back to direct pip.
 
 **Alternatives considered**:
 
+- Invoke the seeded interpreter's pip directly: rejected because it violates the uv-only project rule.
 - Skip local Git verification on Windows: rejected because it would leave the key contract untested.
 - Use remote Git URLs: rejected because it adds network availability and external state to the test.
 
-## Decision 5: Make the Prompt Server distribution self-contained before validating it
+## Decision 5: Separate dependency acquisition from offline artifact validation
+
+**Rationale**: Third-party dependencies may be acquired into a temporary wheelhouse with uv before the scenario begins. Each release-decision scenario then installs with `--no-index --find-links <wheelhouse>` so package-index availability cannot alter its verdict and unpublished `promptkit` resolves only from the freshly built core wheel.
+
+**Alternatives considered**:
+
+- Leave package-index access enabled during scenarios: rejected because it makes results dependent on external state.
+- Vendor third-party dependencies into the repository: rejected as unnecessary scope and maintenance cost.
+
+## Decision 6: Make the Prompt Server distribution self-contained before validating it
 
 **Rationale**: Its current wheel target includes only `config`, while settings and URLs import `apps.server.core` and `apps.server.prompts`; templates and migrations also need package-data coverage. The source-tree-only `manage.py` path setup cannot be the installed distribution contract. Packaging must include the complete server package tree and resources and expose an installed-runtime-safe settings/health-check path.
 
@@ -47,7 +57,7 @@
 - Treat the server as workspace-only: rejected by the clarified three-unit scope.
 - Smoke test only source checkout: rejected because it does not prove the artifact.
 
-## Decision 6: Keep smoke behavior local and network/database-service free
+## Decision 7: Keep smoke behavior local and network/database-service free
 
 **Rationale**: Core compilation can use a local transport/fixture payload; the Django integration can initialize minimal settings and compile a `RetrievedPrompt`; the server can run its database-independent health endpoint with an ephemeral configuration. This verifies packaging without external calls or production data.
 

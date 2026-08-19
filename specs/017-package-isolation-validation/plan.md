@@ -16,7 +16,7 @@
 
 **Storage**: Temporary filesystem for wheelhouse, Git snapshots, and virtual environments; temporary SQLite only for the server smoke configuration
 
-**Testing**: pytest integration tests with standard-library `subprocess`, `tempfile`, `venv`/`uv venv`; isolated interpreters use their seeded `pip` for local Git URLs because the current Windows uv release cannot resolve equivalent `git+file` URLs
+**Testing**: pytest integration tests with standard-library `subprocess` and temporary paths; `uv venv --seed` creates each environment and `uv pip install --python <environment-python>` performs every artifact and local Git installation
 
 **Target Platform**: Windows development environment; commands and assertions keep repository paths out of child-process imports for CI portability
 
@@ -24,7 +24,7 @@
 
 **Performance Goals**: A complete matrix result is readable and release-decidable within 5 minutes; it is not a load or latency benchmark
 
-**Constraints**: Fresh wheel and Git-subdirectory paths for all three units; no editable install, repository-root working directory, inherited `PYTHONPATH`, external Prompt Server, database service, or package-index dependency on unpublished `promptkit`; two SDK/Django requested-install orders must agree
+**Constraints**: uv commands only; fresh wheel and Git-subdirectory paths for all three units; no editable install, repository-root working directory, inherited `PYTHONPATH`, external Prompt Server, database service, or package-index dependency on unpublished `promptkit`; dependency acquisition is separated from wheelhouse-only validation; two SDK/Django requested-install orders must agree
 
 **Scale/Scope**: 3 deployment units, 6 independent installation paths, 2 supported SDK/Django installation orders, and deterministic repeated local execution
 
@@ -38,7 +38,7 @@
 - **Label-driven resolution**: Existing public SDK behavior is reused; no label policy is modified.
 - **Lightweight and self-hosted**: The test harness uses temporary local resources and no new external service, observability platform, or runtime component.
 - **Independent deployment standard**: Both generated artifacts and Git-subdirectory installs are expressly verified. The current unpublished-core policy is handled by supplying a freshly built core wheel through an isolated wheelhouse, never through repository source paths.
-- **Quality and security**: The pure subprocess tests remain under `tests/`, do not contain real credentials, remove inherited `PYTHONPATH`, and verify installed distribution locations.
+- **Quality and security**: The pure subprocess tests remain under `tests/`, use uv for package operations, do not contain real credentials, remove inherited `PYTHONPATH`, verify artifact metadata and installed distribution locations, and expose a single scenario summary.
 
 ## Project Structure
 
@@ -59,10 +59,11 @@ specs/017-package-isolation-validation/
 
 ```text
 apps/server/
-├── pyproject.toml                    # Server distribution metadata and included resources
+├── pyproject.toml                    # Server namespace mapping, metadata, and included resources
+├── manage.py                         # Installed-runtime-safe startup path when retained
 ├── config/                           # Django settings, URLs, WSGI/ASGI
 ├── core/                             # Health and landing application
-└── prompts/                          # Registry application, migrations, templates
+└── prompts/                          # Registry application, imports, migrations, templates
 
 packages/
 ├── promptkit/
@@ -79,7 +80,7 @@ tests/
     └── test_isolated_installation.py # Wheel, Git-subdirectory, and interoperability matrix
 ```
 
-**Structure Decision**: Preserve the existing monorepo. Add one focused test package under `tests/` so the root pytest configuration discovers it, and adjust only the server distribution layout/resources required for the installed artifact to run independently. Existing package-level tests remain their own behavior coverage; the new suite verifies what a consumer actually installs.
+**Structure Decision**: Preserve the existing monorepo and `apps.server.*` public module identity if Hatchling can map that namespace from the subdirectory build context. Add one focused test package under `tests/` so root pytest discovers it. If namespace mapping alone cannot produce a valid wheel, update the complete affected server runtime surface (`config/`, `core/`, and `prompts/`) rather than assuming `settings.py` and `manage.py` are sufficient. Existing package-level tests remain behavior coverage; the new suite verifies what a consumer actually installs.
 
 ## Complexity Tracking
 

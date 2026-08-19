@@ -19,7 +19,9 @@ This is an internal test-harness contract, not a public runtime API.
 
 - Each scenario uses a distinct temporary virtual environment and working directory.
 - Child processes remove inherited `PYTHONPATH` and do not run from repository root.
-- No scenario uses an editable install, source-path injection, package index lookup for unpublished core, external Prompt Server, or non-temporary database service.
+- Every environment and package operation uses uv; direct invocation of pip is prohibited.
+- Third-party dependencies are acquired before validation, then each scenario uses `--no-index --find-links <wheelhouse>` and resolves unpublished core only from the fresh core wheel.
+- No scenario uses an editable install, source-path injection, external Prompt Server, or non-temporary database service.
 - Child-process assertions inspect installed distribution locations and reject locations outside the scenario environment.
 
 ## Failure contract
@@ -28,6 +30,13 @@ Harness errors identify `<scenario-id>:<stage>` before subprocess diagnostics. S
 
 ## Artifact metadata contract
 
-- Every wheel reports its intended distribution name and current version.
+- Every wheel reports its intended `Name`, current `Version`, declared `Requires-Python`, expected `Requires-Dist`, and public import modules.
 - `promptkit-django` and server resolve matching core only through declared dependency metadata and the scenario wheelhouse.
-- The server artifact includes packages and non-code resources required by installed settings and health smoke.
+- The server artifact preserves its selected installed namespace and includes packages, templates, and migrations required by installed settings and health smoke.
+
+## Release decision summary contract
+
+- One summary row is emitted for every scenario ID in the matrix.
+- Each row identifies deployment unit, installation kind, first failed stage, and verdict.
+- The aggregate verdict is derivable from the rows without reading raw subprocess output.
+- The summary format is intentionally compact enough for a release owner to make the documented decision within five minutes after results are available.

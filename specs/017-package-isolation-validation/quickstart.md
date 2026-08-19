@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Python 3.13+ and `uv` are available.
+- The installed uv version can install the local `git+file` subdirectory preflight; do not substitute direct pip if this prerequisite fails.
 - Git is available for local committed-snapshot scenarios.
 - Run from repository root. No external Prompt Server, package publication, or database service is required.
 
@@ -12,7 +13,7 @@
 uv run pytest tests/deployment/test_isolated_installation.py
 ```
 
-Expected result: every wheel and Git-subdirectory scenario reports success. Output identifies the deployment unit and stage for any failure.
+Expected result: every wheel and Git-subdirectory scenario reports success. A single summary identifies deployment unit, installation kind, first failed stage, and verdict for every scenario so the release decision can be made within five minutes of receiving results.
 
 ## Run standard quality checks
 

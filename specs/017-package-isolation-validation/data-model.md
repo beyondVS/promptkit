@@ -39,9 +39,19 @@ This feature adds no persistent application data. These are in-memory test-harne
 | outcome | Pass or fail | Failure message includes unit and stage |
 | distribution_locations | Installed distribution locations inspected by child process | Every location is inside the scenario environment |
 
+## ReleaseDecisionSummary
+
+| Field | Meaning | Validation |
+|---|---|---|
+| results | Ordered `VerificationResult` values | Contains every required scenario exactly once |
+| unit | Deployment unit shown for each result | Required |
+| installation_kind | Wheel or Git-subdirectory path | Required |
+| failed_stage | First failed stage, if any | Uses the contract stage vocabulary |
+| verdict | Per-scenario and aggregate pass/fail | Derivable without inspecting raw subprocess logs |
+
 ## Relationships and lifecycle
 
 1. A `DeploymentUnit` creates one or more fresh `DistributionArtifact` values.
 2. An `IsolatedScenario` receives only its declared artifacts and creates its own environment.
 3. The harness evaluates ordered `VerificationResult` stages and stops that scenario on the first failure while leaving other scenarios unaffected.
-4. The final matrix aggregates results by scenario without persisting them outside test output.
+4. The final matrix creates one `ReleaseDecisionSummary` without persisting it outside test output.
