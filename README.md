@@ -147,6 +147,28 @@ uv run --project examples/gemini-e2e python examples/gemini-e2e/gemini_e2e.py --
 이미 설정된 shell 환경 변수를 우선합니다. 설정 항목과 안전한 실패 계약은
 [Gemini E2E Example](examples/gemini-e2e/README.md)을 참고하십시오.
 
+### SDK 실패 복원성 E2E 검증
+
+테스트가 관리하는 실제 loopback HTTP Prompt Server를 통해 정상 on-live 조회와 401 인증
+거부를 검증합니다. 별도의 test-owned socket은 connection refused 및 연결 수락 후 응답 전
+종료를 재현하며, 두 경우 모두 SDK가 재시도나 fallback 없이 `CommunicationError`를
+반환하는지 확인합니다.
+
+빈 API key는 HTTP 요청 전에 `InvalidConfigurationError`로 거부되고, 컴파일의 필수 변수
+누락·선언되지 않은 변수·잘못된 타입은 각각 구분된 공개 예외를 반환하며 부분
+`CompiledPrompt`나 provider adapter 호출을 만들지 않습니다. 이 fetch/compile 실패
+경로에서 SDK는 로그를 직접 기록하거나 logging 설정을 변경하지 않습니다. 호출
+애플리케이션이 안전한 예외 타입과 메시지를 자체 정책으로 기록합니다. 단, system-only
+adapter 변환의 기존 safe `WARNING` 계약은 유지됩니다.
+
+```powershell
+uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q
+```
+
+상세 검증 계약은
+[Failure Resilience Contract](specs/018-sdk-failure-e2e/contracts/failure-resilience-contract.md)를
+참고하십시오.
+
 ---
 
 ## 🛠️ Local Development & Mechanical Harness

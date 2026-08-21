@@ -84,8 +84,11 @@
     *   Prompt Server wheel이 `apps.server.*` namespace, templates 및 migrations를 포함하도록 Hatchling 배포 구성을 정립하고 `promptkit>=0.1,<0.2` 호환 계약을 명시.
     *   Core SDK와 Django integration의 두 요청 설치 순서, artifact metadata, repository source-path 비의존성, 실제 손상 wheel 실패 귀속을 검증.
     *   8개 실제 소비자 시나리오를 두 번 실행하여 동일한 release summary를 확인하고 전체 Ruff·MyPy·pytest 하네스 및 독립 감사를 통과.
-* [ ] **Day 18 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
-    *   서버 다운, 잘못된 변수 주입, 인증 오류 발생 시 SDK의 예외 처리와 로깅 구조의 복원성 검증.
+* [x] **Day 18 (1h): E2E 통합 테스트 및 예외 시나리오 정밀 점검**
+    *   pytest-django가 관리하는 실제 loopback HTTP Prompt Server에서 readiness, on-live 조회 및 non-empty API key의 401 인증 거부를 SDK 공개 client로 검증.
+    *   bind-only connection refused와 accept-then-close mid-request disconnect를 재현하여 재시도·fallback 없는 `CommunicationError`를 확인하고, 빈 API key는 요청 전 `InvalidConfigurationError`로 분리.
+    *   누락·미선언·잘못된 타입 변수의 원자적 컴파일 실패, provider adapter zero-call, 예외·application log 민감정보 비노출, scoped SDK 무로그·logging 설정 불변성과 3회 반복 실행 복원성을 검증.
+    *   focused/선택/전체 pytest와 Ruff·MyPy 검증 및 독립 auditor 피드백 루프를 완료함.
 * [ ] **Day 19 (1h): 에이전트 교차 검증(Audit) 및 Sign-off**
     *   `AGENTS.md` 7항의 명세서에 의거하여 `auditor` 서브에이전트를 동적으로 정의 및 호출하여 독립 코드 검토 수행.
     *   감사 리포트 피드백 루프(최대 3회)를 거쳐 발견된 결함 자가 치유 및 `[SIGN-OFF: PASSED]` 최종 승인 획득 후 릴리즈 완료.
@@ -102,10 +105,10 @@
 ## ⚠️ 핵심 기술 리스크 및 대책
 1.  **원격 Prompt Server 장애 및 SDK ↔ Server 통신 지연 리스크**
     *   *부작용*: 비즈니스 애플리케이션(SDK 사용자 코드)이 실행 중에 Prompt Server로부터 프롬프트를 실시간 조회할 때, 서버 네트워크 장애나 성능 저하로 인해 비즈니스 서비스 전체가 지연되거나 마비될 수 있습니다.
-    *   *대책*: SDK 내부 REST Client에 엄격한 Connection/Read Timeout(예: 1~2초)을 설정하고, 조회 실패 또는 on-live 부재 시 명시적 오류를 반환합니다. 응답은 `latest`, 사용자 정의 라벨, 초안 또는 로컬 프롬프트로 대체하지 않습니다. `packages/promptkit-django`의 캐시 레이어는 on-live 변경과 정합성을 유지해야 합니다.
+    *   *대책*: SDK REST Client는 기본 10초 timeout을 사용하고 호출자가 양수 값으로 재정의할 수 있으며, 조회 실패 또는 on-live 부재 시 구분된 명시적 오류를 반환합니다. 응답은 `latest`, 사용자 정의 라벨, 초안 또는 로컬 프롬프트로 대체하지 않습니다. `packages/promptkit-django`의 캐시 레이어는 on-live 변경과 정합성을 유지해야 합니다.
 2.  **프롬프트 템플릿 변수 Injection 공격 리스크**
     *   *부작용*: 사용자가 입력하는 프롬프트 변수 내에 LLM 지시사항을 무력화하는 시스템 프롬프트 주입(Injection) 공격이 침투할 수 있습니다.
-    *   *대책*: SDK `compile()` 메서드 내에서 Pydantic v2 스키마를 사용하여 특수 문자를 이스케이프하거나 허용된 타입 및 문자열 길이 규격을 엄격히 검증합니다.
+    *   *대책*: SDK `compile()`은 Pydantic v2로 선언된 엄격한 타입과 변수 이름을 검증하고, 표현식·필터·속성 접근을 허용하지 않는 단순 placeholder 문법을 한 번만 렌더링합니다. 입력 문자열 자체의 LLM prompt injection 의미를 판정하거나 escape하는 것은 SDK 범위가 아니므로, 호출 애플리케이션이 신뢰 경계와 도메인별 입력 정책을 별도로 적용해야 합니다.
 3.  **캐싱 무효화(Cache Invalidation) 및 동기화 지연 리스크**
     *   *부작용*: Django API 서버에서 프롬프트가 수정되었으나 SDK의 로컬 캐시 또는 Django Cache 데코레이터에 의해 구버전 프롬프트가 계속 제공되는 현상이 발생합니다.
     *   *대책*: HTTP ETag / If-None-Match 조건부 헤더 대조 및 적절한 TTL(Time-To-Live) 설정을 통해 서버 상태 변경 시 캐시를 효과적으로 재검증 및 무효화합니다.
@@ -114,4 +117,4 @@
 
 ## 🔒 개발 보안 및 로깅 표준
 1.  **보안 표준 준수**: 시크릿 및 자격 증명 관리는 [constitution.md](../.specify/memory/constitution.md)의 **절대 보안 (No Hardcoding)** 조항을 엄격히 준수합니다.
-2.  **구조화된 로깅 (Structured Logging)**: 프롬프트 컴파일 실패, 변수 유효성 검사 실패, 캐시 동기화 오류 및 API 통신 실패 등 주요 예외 발생 시 원인 분석이 가능하도록 표준화된 Python logging 시스템을 통해 컨텍스트 정보를 기록합니다.
+2.  **애플리케이션 소유 로깅 (Application-Owned Logging)**: Core SDK의 registry 조회 및 로컬 compile 실패 경로는 구분 가능한 공개 예외와 민감정보 없는 안전한 메시지를 반환하며 로그 handler, level 또는 출력 대상을 구성하거나 직접 기록하지 않습니다. 호출 애플리케이션이 예외 타입과 안전한 메시지를 자체 Python logging 정책으로 기록합니다. Provider adapter의 system-only safe `WARNING`은 별도의 기존 변환 계약으로 유지합니다.
