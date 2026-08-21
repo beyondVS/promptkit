@@ -64,13 +64,13 @@ An application developer can catch a safe, distinguishable SDK exception and app
 
 1. **Given** registry availability, authentication, or compilation validation fails, **When** the application catches the SDK exception, **Then** its public category and safe message provide enough context for the application to identify and log the failed stage.
 2. **Given** an API key, distinctive variable value, and distinctive prompt text are used in a failure scenario, **When** all exception renderings and application-created log records are inspected, **Then** none contains those protected values.
-3. **Given** the application has selected its own handlers, levels, and output destinations, **When** the SDK is imported and failure scenarios run, **Then** the SDK emits no records and does not add, replace, or reconfigure the application's logging setup.
+3. **Given** the application has selected its own handlers, levels, and output destinations, **When** the scoped registry retrieval and local compilation failure scenarios run, **Then** the SDK emits no records and does not add, replace, or reconfigure the application's logging setup.
 4. **Given** the application performs no logging, **When** any failure occurs, **Then** the public exception category and message semantics remain observable to the caller unchanged.
 
 ### Edge Cases
 
 - The selected unavailable endpoint refuses a connection immediately or exceeds the configured wait limit; both remain communication failures and do not become authentication failures.
-- A server becomes unavailable after a connection starts; the SDK still returns a communication failure without a partial prompt.
+- A server accepts a connection and then becomes unavailable before completing the response; the SDK still returns a communication failure without a partial prompt.
 - An API key contains characters that would be conspicuous in a log; neither the key nor an authorization header representation appears in diagnostics or exception text.
 - An API key is empty or unusable as local client configuration; it produces a configuration failure before any HTTP request and is not treated as a server authentication rejection.
 - The registry rejects a non-empty expired, revoked, or unknown API key; it produces the established authentication failure without disclosing the credential or the server's credential-management detail.
@@ -94,7 +94,7 @@ An application developer can catch a safe, distinguishable SDK exception and app
 - **FR-006**: Every compilation validation failure MUST be atomic: no role section, aggregate prompt, or provider-ready value may be returned as a successful or partial compilation result.
 - **FR-007**: Public exception categories and safe messages MUST allow the calling application to identify whether failure occurred during registry communication, authentication, or local compilation and MUST remain the caller's authoritative outcome.
 - **FR-008**: Exception text and application-created diagnostic records based on that text MUST NOT contain API keys, authorization header values, supplied variable values, full template content, or full compiled prompt content.
-- **FR-009**: Importing or using the SDK MUST NOT emit log records, install handlers, change logger or root levels, or select an output destination; the calling application owns all logging decisions.
+- **FR-009**: During the scoped registry retrieval and local compilation failure scenarios, the SDK MUST NOT emit log records, install handlers, change logger or root levels, or select an output destination; the calling application owns all logging decisions. Existing adapter logging outside these scenarios is unchanged.
 - **FR-010**: Application logging being disabled, filtered, or failed after exception delivery MUST NOT change the SDK's public exception category or message semantics.
 - **FR-011**: The automated scenarios MUST be repeatable without external LLM calls, paid operations, production credentials, or modification of shared or production prompt data.
 - **FR-012**: The failure checks MUST assert both the expected exception and prohibited side effects, including no fallback prompt, no downstream provider invocation, no secret disclosure, no SDK-emitted log record, and no SDK-installed logging handler.
@@ -116,7 +116,7 @@ An application developer can catch a safe, distinguishable SDK exception and app
 - **SC-002**: 100% of missing, unexpected, and incompatible variable scenarios return no compiled or partially compiled prompt and identify the affected input field or validation reason.
 - **SC-003**: Across all failure scenarios, searches of captured exception text and application-created diagnostic records find zero occurrences of the API key, authorization header value, supplied variable values, full template content, or full compiled content.
 - **SC-004**: 100% of failure scenarios provide a public exception category and safe message from which the calling application can identify the failed stage, regardless of whether the application logs it.
-- **SC-005**: Repeating the complete failure suite at least three times in one process produces zero SDK-emitted log records, installs zero SDK logging handlers, and causes zero cross-run disclosure of protected values.
+- **SC-005**: Repeating the complete scoped failure suite at least three times in one process produces zero SDK-emitted log records, installs zero SDK logging handlers, and causes zero cross-run disclosure of protected values.
 - **SC-006**: The full automated validation completes within the Day 18 one-hour work session, requires zero external LLM requests and zero production credentials, and leaves shared prompt data unchanged.
 - **SC-007**: 100% of the existing successful public retrieval and compilation regression checks selected for this scope continue to pass.
 
@@ -126,6 +126,6 @@ An application developer can catch a safe, distinguishable SDK exception and app
 - The automated suite owns a disposable local HTTP Prompt Server and test-owned prompt/API-key fixtures, so no separately running developer service or shared or production data is required.
 - Server-down behavior is verified with a controlled unreachable local endpoint rather than by stopping a developer's or shared registry process.
 - The SDK remains synchronous and performs no automatic retry, consistent with the existing retrieval contract.
-- The SDK emits no diagnostic logs; the consuming application may log safe exception category and message information under its own policy.
+- The scoped registry retrieval and local compilation failure paths emit no diagnostic logs; the consuming application may log safe exception category and message information under its own policy. Existing adapter logging outside those paths is unchanged.
 - Exact exception message wording is not a compatibility guarantee, but failure category, safe field identification, and absence of protected values are required.
 - External LLM invocation, provider response handling, performance/load testing, new retry or fallback behavior, and observability infrastructure are outside scope.

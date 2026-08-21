@@ -6,6 +6,7 @@
 |---|---:|---|---|
 | Empty or whitespace API key | No HTTP request | `InvalidConfigurationError` | Authentication or communication error |
 | Reserved non-listening loopback endpoint | Real socket connection attempt | `CommunicationError` | Retry, fallback prompt, authentication error |
+| Test-owned listener accepts then closes | Real connection starts but no HTTP response completes | `CommunicationError` | Partial prompt, retry, fallback, authentication error |
 | Local Prompt Server rejects non-empty key | Real HTTP request and 401 response | `AuthenticationError` | Credential disclosure, prompt response, invalid-response error |
 | Required variable omitted | Retrieved prompt, local compilation | `MissingVariableError` | Partial compiled content or downstream call |
 | Undeclared variable supplied | Retrieved prompt, local compilation | `UnexpectedVariableError` | Ignored input, partial output, or downstream call |
@@ -33,8 +34,8 @@ Exact message wording is not a compatibility guarantee.
 
 ## Logging ownership contract
 
-- Communication, authentication, credential-configuration, and compilation-validation failures emit zero records from the PromptKit SDK.
-- The SDK does not install handlers or mutate logger/root handler, level, propagation, or disabled state during these scenarios.
+- Scoped communication, authentication, credential-configuration, and compilation-validation failures emit zero records from the PromptKit SDK.
+- The SDK does not install handlers or mutate logger/root handler, level, propagation, or disabled state during these scoped failure scenarios.
 - Records from the live Django server are not SDK records and must be filtered separately.
 - The calling application may log only the safe public exception type and message through its own logger, handler, level, and destination.
 - Existing adapter warning behavior outside these failure scenarios is unchanged.

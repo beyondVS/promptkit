@@ -29,9 +29,9 @@
 - Treat the first SDK fetch as readiness: rejected because startup failures would be misclassified as the behavior under test.
 - Add polling infrastructure: rejected because `live_server` already waits for startup; one health assertion is sufficient evidence.
 
-## Decision 4: Reserve a refused loopback port with a bind-only socket
+## Decision 4: Use controlled loopback sockets for refused and mid-request-disconnect failures
 
-**Rationale**: Binding an ephemeral loopback port while leaving the socket non-listening prevents another process from claiming it and makes connection refusal deterministic. The SDK receives a real network error and maps it to `CommunicationError` without retry. The socket and client are closed in fixture/finally cleanup.
+**Rationale**: Binding an ephemeral loopback port while leaving the socket non-listening prevents another process from claiming it and makes connection refusal deterministic. A companion test-owned socket listener accepts one SDK connection and closes it before a response to model a mid-request disconnect. Both paths produce a real network error mapped to `CommunicationError` without retry. Sockets and clients are closed in fixture/finally cleanup.
 
 **Alternatives considered**:
 
@@ -51,7 +51,7 @@
 
 ## Decision 6: Scope the zero-log assertion to the selected fetch/compile failure paths
 
-**Rationale**: `client.py` and `compiler.py` currently emit no logs or configure logging. The adapter module has an existing, tested safe warning for a separate successful conversion edge case. Therefore, the E2E suite filters captured records to the `promptkit` namespace during communication, authentication, configuration, and variable-validation failures, and asserts zero SDK records and no logging-configuration mutation for those scenarios. The calling application may log the safe exception type/message through a dedicated test logger.
+**Rationale**: `client.py` and `compiler.py` currently emit no logs or configure logging. The adapter module has an existing, tested safe warning for a separate successful conversion edge case. Therefore, the E2E suite filters captured records to the `promptkit` namespace during the scoped communication, authentication, configuration, and variable-validation failures, and asserts zero SDK records and no logging-configuration mutation only for those scenarios. The calling application may log the safe exception type/message through a dedicated test logger.
 
 **Alternatives considered**:
 

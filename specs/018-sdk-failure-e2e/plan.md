@@ -16,7 +16,7 @@ Add one focused pytest integration module that starts a disposable Prompt Server
 
 **Storage**: Pytest-owned transactional SQLite test database by default; test-owned ORM fixtures only, with no persistent or shared data
 
-**Testing**: pytest-django `live_server` for a real loopback HTTP boundary, transactional database access for cross-thread fixture visibility, standard-library sockets for a reserved refused-connection endpoint, and pytest log capture/application test logger for diagnostics
+**Testing**: pytest-django `live_server` for a real loopback HTTP boundary, transactional database access for cross-thread fixture visibility, standard-library sockets for reserved refused-connection and accept-then-close endpoints, and pytest log capture/application test logger for diagnostics
 
 **Target Platform**: Python 3.13+ development and CI environments, including Windows; loopback networking only
 
@@ -26,7 +26,7 @@ Add one focused pytest integration module that starts a disposable Prompt Server
 
 **Constraints**: uv-only commands; no new dependency, subprocess `runserver`, fixed port, external LLM, production credential, shared server, retry, fallback, tracing, or telemetry backend; every client/socket/server resource must be deterministically closed
 
-**Scale/Scope**: One focused E2E module covering one real-HTTP success setup, one real-HTTP authentication rejection, local credential configuration, deterministic server unavailability, three invalid-variable classes, application-owned safe logging, three repeated executions, and selected success regressions
+**Scale/Scope**: One focused E2E module covering one real-HTTP success setup, one real-HTTP authentication rejection, local credential configuration, refused-connection and mid-request-disconnect server unavailability, three invalid-variable classes, application-owned safe logging, three repeated executions, and selected success regressions
 
 ## Constitution Check
 

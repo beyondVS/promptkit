@@ -26,7 +26,7 @@
 **Purpose**: Build reusable fixtures that block all user-story assertions until a real loopback registry boundary is available safely.
 
 - [ ] T002 Add transactional test-database fixtures that create a category, prompt, required variables, ordered sections, published version, and on-live version through existing services in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T003 Add `live_server` health-readiness, accepted/rejected test-key, SDK-client cleanup, and bind-only ephemeral loopback socket fixtures in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T003 Add `live_server` health-readiness, accepted/rejected test-key, SDK-client cleanup, bind-only refused-connection, and accept-then-close loopback socket fixtures in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T004 Add reusable assertions for public exception non-disclosure, `promptkit`-namespace record filtering, logger-state snapshots, application-owned safe records, and a zero-call downstream spy in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 **Checkpoint**: A test-owned published on-live prompt can be reached through the ready local HTTP Prompt Server; fixture/setup failures remain distinct from SDK scenario failures.
@@ -43,7 +43,7 @@
 
 - [ ] T005 [US1] Write real-HTTP readiness and successful published on-live prompt retrieval assertions using `live_server` and the public `PromptKitClient` in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T006 [US1] Write blank/whitespace API-key construction assertions for `InvalidConfigurationError` and zero HTTP requests in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T007 [US1] Write bind-only loopback server-down assertions for one no-retry `CommunicationError`, zero prompt result, and deterministic client/socket cleanup in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T007 [US1] Write refused-connection and accept-then-close mid-request-disconnect assertions for one no-retry `CommunicationError` each, zero prompt result, and deterministic client/socket cleanup in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T008 [US1] Write real local-HTTP rejected-nonempty-key assertions for `AuthenticationError`, no prompt result, and no credential disclosure in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ### Conditional Contract Correction for User Story 1
@@ -62,9 +62,9 @@
 
 ### Tests for User Story 2
 
-- [ ] T010 [US2] Write the real-HTTP retrieval-to-compilation missing-required-variable assertion for `MissingVariableError`, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T011 [US2] Write the real-HTTP retrieval-to-compilation unexpected-variable assertion for `UnexpectedVariableError`, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T012 [US2] Write the real-HTTP retrieval-to-compilation incompatible-variable-type assertion for `InvalidVariableTypeError`, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T010 [US2] Write the real-HTTP retrieval-to-compilation missing-required-variable assertion for `MissingVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T011 [US2] Write the real-HTTP retrieval-to-compilation unexpected-variable assertion for `UnexpectedVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T012 [US2] Write the real-HTTP retrieval-to-compilation incompatible-variable-type assertion for `InvalidVariableTypeError`, the affected variable name or validation reason in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T013 [US2] Verify all three invalid-variable cases scan exception text and formatted exception chains for protected values in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ### Conditional Contract Correction for User Story 2
@@ -83,7 +83,7 @@
 
 ### Tests for User Story 3
 
-- [ ] T015 [US3] Write logger/root-state snapshot and `promptkit`-namespace zero-record assertions around the configuration, communication, authentication, and compilation failure paths in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [ ] T015 [US3] Write logger/root-state snapshot and `promptkit`-namespace zero-record assertions around the scoped configuration, communication, authentication, and compilation failure paths in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T016 [US3] Write application-owned safe exception-record assertions and protected-sentinel scans while excluding unrelated live-Django server records in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T017 [US3] Write same-process three-run resilience assertions for zero SDK handler creation, zero scoped SDK records, and zero cross-run protected-value leakage in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 - [ ] T018 [US3] Write an application-handler-failure-after-catch assertion proving the already delivered SDK exception category and safe message remain unchanged in `tests/promptkit/integration/test_sdk_failure_e2e.py`
