@@ -28,9 +28,16 @@
 - 기본 Timeout은 10초이며, 호출자가 양수 값으로 재정의할 수 있습니다.
 - **SDK 예외 계층 구조**:
   - `PromptKitError` (기저 예외 클래스)
+  - `InvalidConfigurationError` (빈 API key, 안전하지 않거나 잘못된 client 설정)
+  - `InvalidRequestError` / `InvalidLabelError` (요청 전 입력 또는 금지 라벨 검증 실패)
   - `AuthenticationError` (401 API 키 미인증)
   - `PromptNotFoundError` (404 존재하지 않는 슬러그)
   - `NoDeployableVersionError` (404 On-live 지정 버전 미존재)
+  - `LabelNotFoundError` (404 명시 라벨 미존재)
+  - `RateLimitError` (429 요청 제한)
+  - `RedirectError` (redirect 응답 거부)
+  - `CommunicationError` (connection, timeout, TLS 또는 응답 전 연결 종료)
+  - `InvalidResponseError` (지원하지 않는 상태 또는 잘못된 registry 응답)
   - `MissingVariableError` (필수 변수 누락)
   - `InvalidVariableTypeError` (Pydantic 변수 타입 검증 실패)
   - `UnexpectedVariableError` (선언되지 않은 변수 입력)
@@ -69,6 +76,20 @@
 ### 2.4 Public API 통합 하네스
 - `promptkit.__all__` inventory와 명시적 검증 맵의 일치를 검증하여 public export 누락 또는 stale entry를 식별합니다.
 - 정상 fetch → compile → Gemini·OpenAI·LiteLLM 변환 여정과 공개 예외 계층의 실패 경계를 `pytest` 통합 테스트로 검증합니다.
+
+### 2.5 실제 HTTP 실패 복원성 및 로깅 경계
+- pytest-django가 관리하는 loopback HTTP Prompt Server의 health readiness를 먼저 확인하고, 실제 SDK client로 on-live 성공 조회와 non-empty key의 401 인증 실패를 검증합니다.
+- test-owned socket으로 connection refused와 연결 수락 후 응답 전 종료를 각각 재현하며, 두 경로는 자동 재시도·fallback 없이 `CommunicationError`를 반환해야 합니다.
+- 빈 또는 whitespace API key는 HTTP client 생성 전에 `InvalidConfigurationError`로 거부해야 합니다.
+- 실제 HTTP로 조회한 prompt의 누락·미선언·잘못된 타입 변수는 각각 공개 compile 예외를 반환하고 부분 결과나 provider adapter 호출을 만들지 않아야 합니다.
+- 예외 문자열, traceback 및 호출 애플리케이션이 생성한 diagnostic record에는 API key, authorization header, 변수 값, 전체 template 또는 compiled content가 포함되지 않아야 합니다.
+- registry 조회 및 local compile의 scoped 실패 경로에서 SDK는 log record를 emit하거나 handler·level·propagation·출력 대상을 변경하지 않습니다. 호출 애플리케이션이 안전한 예외 타입과 메시지를 자체 정책으로 기록합니다. 이는 system-only adapter 변환의 기존 safe `WARNING` 계약을 변경하지 않습니다.
+
+Focused 검증 명령:
+
+```powershell
+uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q
+```
 
 ---
 

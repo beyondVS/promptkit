@@ -61,6 +61,45 @@ else:
 거부합니다. 캐시 저장, TTL 정책 및 stale fallback 결정은 호출자의 책임이며,
 `promptkit-django`는 opt-in Django Cache 구현을 제공합니다.
 
+## 조회 실패와 애플리케이션 로깅
+
+빈 또는 whitespace API key는 요청 전에 `InvalidConfigurationError`로 거부됩니다.
+Registry 연결 거부, timeout, TLS 문제 또는 응답 완료 전 연결 종료는 재시도 없이
+`CommunicationError`로 반환하며, non-empty key의 HTTP 401 거부는
+`AuthenticationError`로 구분됩니다. SDK는 실패 시 다른 prompt, label 또는 로컬
+template으로 fallback하지 않습니다.
+
+Core SDK의 registry 조회 및 local compile 실패 경로는 log record를 직접 emit하거나
+애플리케이션의 handler, level, propagation 및 출력 대상을 변경하지 않습니다. 호출자는
+공개 예외 타입과 민감정보 없는 메시지만 자체 logging 정책으로 기록해야 합니다.
+System-only provider adapter 변환에서 발생하는 safe `WARNING`은 이 실패 경로와 별도의
+기존 계약입니다.
+
+```python
+import logging
+import os
+
+from promptkit import CommunicationError, PromptKitClient
+
+logger = logging.getLogger(__name__)
+client = PromptKitClient(
+    os.environ["PROMPTKIT_BASE_URL"],
+    os.environ["PROMPTKIT_API_KEY"],
+)
+
+try:
+    prompt = client.fetch("support-reply")
+except CommunicationError as error:
+    logger.warning("Prompt registry unavailable: %s", error)
+    raise
+finally:
+    client.close()
+```
+
+API key, authorization header, 변수 값 또는 전체 prompt 본문을 log context에 추가하지
+마십시오. 실제 HTTP 실패 검증 계약과 실행 명령은
+[Feature 018 quickstart](../../specs/018-sdk-failure-e2e/quickstart.md)를 참고하십시오.
+
 ## 로컬에서 프롬프트 컴파일
 
 `RetrievedPrompt.compile()`은 애플리케이션 process 안에서 선언된

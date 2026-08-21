@@ -57,6 +57,13 @@ promptkit/
 - **상호 운용성**: Core-first와 Django-integration-first 요청 순서 모두 동일한 공개 SDK compile 계약과 단일 Django client 등록을 제공해야 한다.
 - **릴리스 결과**: 8개 실제 소비자 시나리오는 배포 단위, 설치 방식, 최초 실패 단계 및 verdict를 한 요약으로 출력하고, 연속 두 실행에서 동일한 결과를 제공해야 한다.
 
+### 1.5 SDK 실패 복원성 및 관측 경계
+- **실제 HTTP 검증**: pytest-django `live_server`의 readiness를 확인한 뒤 Core SDK로 on-live 조회와 401 인증 거부를 검증한다.
+- **통신 장애 분류**: connection refused 및 연결 수락 후 응답 전 종료는 재시도·fallback 없이 `CommunicationError`로 귀속한다. 빈 API key는 네트워크 요청 전에 `InvalidConfigurationError`, non-empty key의 서버 거부는 `AuthenticationError`로 분리한다.
+- **원자적 compile 실패**: 누락·미선언·잘못된 타입 변수는 부분 `CompiledPrompt` 또는 provider adapter 호출을 만들지 않는다.
+- **관측 책임**: registry 조회와 local compile의 scoped 실패 경로는 SDK log record 또는 logging 설정 변경을 만들지 않는다. 호출 애플리케이션이 안전한 공개 예외 타입과 메시지를 자체 logging 정책으로 기록하며, 민감한 credential·입력·prompt 본문은 포함하지 않는다.
+- **Adapter 예외**: system-only provider 변환의 safe `WARNING`은 별도 adapter 계약으로 유지한다.
+
 ---
 
 ## 2. Prompt Compile Flow
