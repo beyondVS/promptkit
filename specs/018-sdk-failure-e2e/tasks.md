@@ -17,7 +17,7 @@
 
 **Purpose**: Establish the focused E2E test module and its test-only sentinel vocabulary.
 
-- [ ] T001 Create the focused pytest integration module with test-only API-key, variable-value, and template-content sentinels in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T001 Create the focused pytest integration module with test-only API-key, variable-value, and template-content sentinels in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ---
 
@@ -25,9 +25,9 @@
 
 **Purpose**: Build reusable fixtures that block all user-story assertions until a real loopback registry boundary is available safely.
 
-- [ ] T002 Add transactional test-database fixtures that create a category, prompt, required variables, ordered sections, published version, and on-live version through existing services in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T003 Add `live_server` health-readiness, accepted/rejected test-key, SDK-client cleanup, bind-only refused-connection, and accept-then-close loopback socket fixtures in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T004 Add reusable assertions for public exception non-disclosure, `promptkit`-namespace record filtering, logger-state snapshots, application-owned safe records, and a zero-call downstream spy in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T002 Add transactional test-database fixtures that create a category, prompt, required variables, ordered sections, published version, and on-live version through existing services in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T003 Add `live_server` health-readiness, accepted/rejected test-key, SDK-client cleanup, bind-only refused-connection, and accept-then-close loopback socket fixtures in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T004 Add reusable assertions for public exception non-disclosure, `promptkit`-namespace record filtering, logger-state snapshots, application-owned safe records, and a zero-call downstream spy in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 **Checkpoint**: A test-owned published on-live prompt can be reached through the ready local HTTP Prompt Server; fixture/setup failures remain distinct from SDK scenario failures.
 
@@ -41,14 +41,14 @@
 
 ### Tests for User Story 1
 
-- [ ] T005 [US1] Write real-HTTP readiness and successful published on-live prompt retrieval assertions using `live_server` and the public `PromptKitClient` in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T006 [US1] Write blank/whitespace API-key construction assertions for `InvalidConfigurationError` and zero HTTP requests in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T007 [US1] Write refused-connection and accept-then-close mid-request-disconnect assertions for one no-retry `CommunicationError` each, zero prompt result, and deterministic client/socket cleanup in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T008 [US1] Write real local-HTTP rejected-nonempty-key assertions for `AuthenticationError`, no prompt result, and no credential disclosure in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T005 [US1] Write real-HTTP readiness and successful published on-live prompt retrieval assertions using `live_server` and the public `PromptKitClient` in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T006 [US1] Write blank/whitespace API-key construction assertions for `InvalidConfigurationError` and zero HTTP requests in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T007 [US1] Write refused-connection and accept-then-close mid-request-disconnect assertions for one no-retry `CommunicationError` each, zero prompt result, and deterministic client/socket cleanup in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T008 [US1] Write real local-HTTP rejected-nonempty-key assertions for `AuthenticationError`, no prompt result, and no credential disclosure in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ### Conditional Contract Correction for User Story 1
 
-- [ ] T009 [US1] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T005–T008 expose a public-contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/client.py` or `apps/server/prompts/auth.py` and rerun the focused module
+- [X] T009 [US1] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T005–T008 expose a public-contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/client.py` or `apps/server/prompts/auth.py` and rerun the focused module
 
 **Checkpoint**: Registry configuration, communication, and authentication failures are independently distinguishable and safe through the public SDK.
 
@@ -62,14 +62,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T010 [US2] Write the real-HTTP retrieval-to-compilation missing-required-variable assertion for `MissingVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T011 [US2] Write the real-HTTP retrieval-to-compilation unexpected-variable assertion for `UnexpectedVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T012 [US2] Write the real-HTTP retrieval-to-compilation incompatible-variable-type assertion for `InvalidVariableTypeError`, the affected variable name or validation reason in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T013 [US2] Verify all three invalid-variable cases scan exception text and formatted exception chains for protected values in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T010 [US2] Write the real-HTTP retrieval-to-compilation missing-required-variable assertion for `MissingVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T011 [US2] Write the real-HTTP retrieval-to-compilation unexpected-variable assertion for `UnexpectedVariableError`, the affected variable name in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T012 [US2] Write the real-HTTP retrieval-to-compilation incompatible-variable-type assertion for `InvalidVariableTypeError`, the affected variable name or validation reason in its safe message, no compiled result, and zero downstream calls in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T013 [US2] Verify all three invalid-variable cases scan exception text and formatted exception chains for protected values in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ### Conditional Contract Correction for User Story 2
 
-- [ ] T014 [US2] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T010–T013 expose a compilation contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/compiler.py` and rerun the focused module
+- [X] T014 [US2] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T010–T013 expose a compilation contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/compiler.py` and rerun the focused module
 
 **Checkpoint**: Each invalid variable category remains atomic, publicly distinguishable, and incapable of reaching downstream consumers.
 
@@ -83,14 +83,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T015 [US3] Write logger/root-state snapshot and `promptkit`-namespace zero-record assertions around the scoped configuration, communication, authentication, and compilation failure paths in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T016 [US3] Write application-owned safe exception-record assertions and protected-sentinel scans while excluding unrelated live-Django server records in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T017 [US3] Write same-process three-run resilience assertions for zero SDK handler creation, zero scoped SDK records, and zero cross-run protected-value leakage in `tests/promptkit/integration/test_sdk_failure_e2e.py`
-- [ ] T018 [US3] Write an application-handler-failure-after-catch assertion proving the already delivered SDK exception category and safe message remain unchanged in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T015 [US3] Write logger/root-state snapshot and `promptkit`-namespace zero-record assertions around the scoped configuration, communication, authentication, and compilation failure paths in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T016 [US3] Write application-owned safe exception-record assertions and protected-sentinel scans while excluding unrelated live-Django server records in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T017 [US3] Write same-process three-run resilience assertions for zero SDK handler creation, zero scoped SDK records, and zero cross-run protected-value leakage in `tests/promptkit/integration/test_sdk_failure_e2e.py`
+- [X] T018 [US3] Write an application-handler-failure-after-catch assertion proving the already delivered SDK exception category and safe message remain unchanged in `tests/promptkit/integration/test_sdk_failure_e2e.py`
 
 ### Conditional Contract Correction for User Story 3
 
-- [ ] T019 [US3] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T015–T018 expose a scoped logging contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/client.py` or `packages/promptkit/src/promptkit/compiler.py` and rerun the focused module
+- [X] T019 [US3] Run `uv run pytest tests/promptkit/integration/test_sdk_failure_e2e.py -q`; only if T015–T018 expose a scoped logging contract defect, apply the smallest responsible correction in `packages/promptkit/src/promptkit/client.py` or `packages/promptkit/src/promptkit/compiler.py` and rerun the focused module
 
 **Checkpoint**: The calling application controls diagnostics, while the scoped SDK failures remain log-free, safe, and stable across repeated execution.
 
@@ -100,10 +100,10 @@
 
 **Purpose**: Confirm no regression to existing SDK/server contracts and verify the documented validation path.
 
-- [ ] T020 [P] Run the selected SDK and server regressions from `tests/promptkit/unit/`, `tests/promptkit/integration/test_public_sdk_harness.py`, and `apps/server/prompts/tests/test_read_only_api.py` using `uv run pytest`
-- [ ] T021 [P] Run static quality checks for changed Python paths with `uv run ruff check`, `uv run ruff format --check`, and `uv run mypy .` using `pyproject.toml`
-- [ ] T022 Run the full test suite with `uv run pytest` from `pyproject.toml` and resolve only failures attributable to `tests/promptkit/integration/test_sdk_failure_e2e.py` or a directly exposed contract defect
-- [ ] T023 Verify the focused command and expected outcomes in `specs/018-sdk-failure-e2e/quickstart.md` match the implemented test module
+- [X] T020 [P] Run the selected SDK and server regressions from `tests/promptkit/unit/`, `tests/promptkit/integration/test_public_sdk_harness.py`, and `apps/server/prompts/tests/test_read_only_api.py` using `uv run pytest`
+- [X] T021 [P] Run static quality checks for changed Python paths with `uv run ruff check`, `uv run ruff format --check`, and `uv run mypy .` using `pyproject.toml`
+- [X] T022 Run the full test suite with `uv run pytest` from `pyproject.toml` and resolve only failures attributable to `tests/promptkit/integration/test_sdk_failure_e2e.py` or a directly exposed contract defect
+- [X] T023 Verify the focused command and expected outcomes in `specs/018-sdk-failure-e2e/quickstart.md` match the implemented test module
 
 ---
 
